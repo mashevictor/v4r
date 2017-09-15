@@ -1,0 +1,69 @@
+/* V4R compiled as static or dynamic libs */
+#cmakedefine BUILD_SHARED_LIBS
+
+/* Compile for 'real' NVIDIA GPU architectures */
+#define CUDA_ARCH_BIN "${V4R_CUDA_ARCH_BIN}"
+
+/* Create PTX or BIN for 1.0 compute capability */
+#cmakedefine CUDA_ARCH_BIN_OR_PTX_10
+
+/* NVIDIA GPU features are used */
+#define CUDA_ARCH_FEATURES "${V4R_CUDA_ARCH_FEATURES}"
+
+/* Compile for 'virtual' NVIDIA PTX architectures */
+#define CUDA_ARCH_PTX "${V4R_CUDA_ARCH_PTX}"
+
+/* C= */
+#cmakedefine HAVE_CSTRIPES
+
+/* NVidia Cuda Runtime API*/
+#cmakedefine HAVE_CUDA
+
+/* Eigen Matrix & Linear Algebra Library */
+#cmakedefine HAVE_EIGEN
+
+/* Define to 1 if you have the <inttypes.h> header file. */
+#cmakedefine HAVE_INTTYPES_H 1
+
+/* OpenCL Support */
+#cmakedefine HAVE_OPENCL
+#cmakedefine HAVE_OPENCL_STATIC
+
+/* OpenGL support*/
+#cmakedefine HAVE_OPENGL
+
+/* OpenNI library */
+#cmakedefine HAVE_OPENNI
+
+/* OpenNI library */
+#cmakedefine HAVE_OPENNI2
+
+/* Posix threads (pthreads) */
+#cmakedefine HAVE_PTHREADS
+
+/* parallel_for with pthreads */
+#cmakedefine HAVE_PTHREADS_PF
+
+/* Qt support */
+#cmakedefine HAVE_QT
+
+/* Qt OpenGL support */
+#cmakedefine HAVE_QT_OPENGL
+
+/* Intel Threading Building Blocks */
+#cmakedefine HAVE_TBB
+
+/* Define if your processor stores words with the most significant byte
+   first (like Motorola and SPARC, unlike Intel and VAX). */
+#cmakedefine WORDS_BIGENDIAN
+
+#cmakedefine HAVE_SIFTGPU
+#cmakedefine HAVE_LIBSVM
+#cmakedefine HAVE_METSLIB
+#cmakedefine HAVE_PCL
+#cmakedefine HAVE_OPENCV
+#cmakedefine HAVE_CERES
+#cmakedefine HAVE_ASSIMP
+#cmakedefine HAVE_CAFFE
+
+
