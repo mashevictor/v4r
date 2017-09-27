@@ -164,8 +164,7 @@ void MainWindow::activateAllButtons()
   m_ui->CamStop->setEnabled(true);
   m_ui->TrackerStop->setEnabled(true);
 
-  m_ui->CreateModel->setEnabled(true);
-  m_ui->SaveModel->setEnabled(true);
+  m_ui->CreateAndSaveModel->setEnabled(true);
   m_ui->Reset->setEnabled(true);
   m_ui->setROI->setEnabled(true);
   m_ui->ResetROI->setEnabled(true);
@@ -181,8 +180,7 @@ void MainWindow::deactivateAllButtons()
   m_ui->CamStop->setEnabled(false);
   m_ui->TrackerStop->setEnabled(false);
 
-  m_ui->CreateModel->setEnabled(false);
-  m_ui->SaveModel->setEnabled(false);
+  m_ui->CreateAndSaveModel->setEnabled(false);
   m_ui->Reset->setEnabled(false);
   m_ui->setROI->setEnabled(false);
   m_ui->ResetROI->setEnabled(false);
@@ -307,29 +305,6 @@ void MainWindow::on_ShowObjectModel_clicked()
   m_glviewer->showObject(m_ui->ShowObjectModel->isChecked());
 }
 
-void MainWindow::on_CreateModel_clicked()
-{
-  m_sensor->stop();
-  m_ui->statusLabel->setText("Status: Optimize cameras and create object models... be patient...");
-  deactivateAllButtons();
-  Eigen::Matrix4f base_transform;
-  Eigen::Vector3f bb_min, bb_max;
-  cv::Mat intrinsic, dist_coeffs;
-  m_segmentation->createPointCloud(m_params->createPointCloud());
-  m_segmentation->createViews(m_params->createViews());
-  m_segmentation->createMesh(m_params->createMesh());
-  m_segmentation->createTrackingModel(m_params->createTrackingModel());
-  m_segmentation->useNoiseModel(m_params->useNoiseModel());
-  m_segmentation->useMultiviewICP(m_params->useMultiviewICP());
-  m_segmentation->filterLargestCluster(m_params->filterLargestCluster());
-  m_segmentation->setParameter(m_params->getVoxelGridSize(), m_params->getPoissonDepth(), m_params->getPoissonSamples());
-  m_sensor->getObjectTransform(base_transform, bb_min, bb_max);
-  m_segmentation->setData(m_sensor->getMap(), base_transform, bb_min, bb_max);
-  m_sensor->getCameraParameter(intrinsic, dist_coeffs);
-  m_segmentation->setCameraParameter(intrinsic, dist_coeffs);
-  m_segmentation->finishModelling();
-}
-
 /**
  * @brief MainWindow::finishedObjectSegmentation
  */
@@ -354,10 +329,11 @@ void MainWindow::finishedModelling()
 
   m_ui->imBackward->setEnabled(false);
   m_ui->imForward->setEnabled(false);
-  //m_ui->statusLabel->setText("Status: Finised object modelling");
+
+  m_ui->statusLabel->setText("Status: Finished modelling and stored object models");
 }
 
-void MainWindow::on_SaveModel_clicked()
+void MainWindow::on_CreateAndSaveModel_clicked()
 {
   bool ok;
   QString text = QString::fromStdString(m_params->get_object_name());
@@ -378,9 +354,29 @@ void MainWindow::on_SaveModel_clicked()
     if (ok)
     {
       m_params->set_object_name(object_name);
-      if (m_segmentation->savePointClouds(m_params->get_rgbd_path(), object_name.toStdString()))
-        m_ui->statusLabel->setText("Status: Stored object models");
-      else m_ui->statusLabel->setText("Status: No object to store found!");
+
+      // create model
+      m_sensor->stop();
+      m_ui->statusLabel->setText("Status: Optimize cameras and create object models... be patient...");
+      deactivateAllButtons();
+      Eigen::Matrix4f base_transform;
+      Eigen::Vector3f bb_min, bb_max;
+      cv::Mat intrinsic, dist_coeffs;
+      m_segmentation->createPointCloud(m_params->createPointCloud());
+      m_segmentation->createViews(m_params->createViews());
+      m_segmentation->createMesh(m_params->createMesh());
+      m_segmentation->createTexturedMesh(m_params->createTexturedMesh());
+      m_segmentation->createTrackingModel(m_params->createTrackingModel());
+      m_segmentation->useNoiseModel(m_params->useNoiseModel());
+      m_segmentation->useMultiviewICP(m_params->useMultiviewICP());
+      m_segmentation->filterLargestCluster(m_params->filterLargestCluster());
+      m_segmentation->setParameter(m_params->getVoxelGridSize(), m_params->getPoissonDepth(), m_params->getPoissonSamples());
+      m_sensor->getObjectTransform(base_transform, bb_min, bb_max);
+      m_segmentation->setDirectories(m_params->get_rgbd_path(), object_name.toStdString());
+      m_segmentation->setData(m_sensor->getMap(), base_transform, bb_min, bb_max);
+      m_sensor->getCameraParameter(intrinsic, dist_coeffs);
+      m_segmentation->setCameraParameter(intrinsic, dist_coeffs);
+      m_segmentation->finishModelling(); // starts the modelling thread
     }
   }
 }

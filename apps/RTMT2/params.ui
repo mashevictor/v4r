@@ -218,13 +218,29 @@
      <property name="geometry">
       <rect>
        <x>40</x>
-       <y>230</y>
+       <y>260</y>
        <width>251</width>
        <height>22</height>
       </rect>
      </property>
      <property name="text">
       <string>Tracking model</string>
+     </property>
+     <property name="checked">
+      <bool>false</bool>
+     </property>
+    </widget>
+    <widget class="QCheckBox" name="cb_store_tex_mesh">
+     <property name="geometry">
+      <rect>
+       <x>40</x>
+       <y>230</y>
+       <width>231</width>
+       <height>22</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Textured triangle mesh</string>
      </property>
      <property name="checked">
       <bool>false</bool>
@@ -374,7 +390,7 @@
       </rect>
      </property>
      <property name="text">
-      <string>8</string>
+      <string>7</string>
      </property>
     </widget>
     <widget class="QCheckBox" name="filter_largest_cluster">

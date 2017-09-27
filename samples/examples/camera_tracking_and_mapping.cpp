@@ -24,6 +24,7 @@
 #include "v4r/features/FeatureDetector_KD_FAST_IMGD.h"
 #include "v4r/camera_tracking_and_mapping/TSFGlobalCloudFilteringSimple.h"
 #include "v4r/io/filesystem.h"
+#include "v4r/surface_texturing/OdmTexturing.h"
 
 
 
@@ -63,10 +64,10 @@ cv::Mat_<double> dist_coeffs_opti = cv::Mat::zeros(4, 1, CV_64F);
 cv::Mat_<double> intrinsic_opti = cv::Mat_<double>::eye(3,3);
 
 Eigen::Matrix4f pose;
-float voxel_size = 0.005;
+float voxel_size = 0.002;//0.005;
 double thr_weight = 2;      //e.g. 10    // surfel threshold for the final model
 double thr_delta_angle = 80; // e.g. 80
-int poisson_depth = 6;
+int poisson_depth = 8;//6;
 int display = true;
 
 cv::Point track_win[2];
@@ -120,10 +121,10 @@ int main(int argc, char *argv[] )
   param.diff_delta_angle_map = 10;//3;
   param.filt_param.type = 3;  //0...ori. col., 1..col mean, 2..bilin., 3..bilin col and depth with cut off thr
   param.map_param.nb_tracked_frames = 10;
-  param.map_param.ba.optimize_delta_cloud_rgb_pose_global = false;
+  param.map_param.ba.optimize_delta_cloud_rgb_pose_global = true;
   param.map_param.ba.optimize_delta_cloud_rgb_pose = false;
   param.map_param.ba.optimize_focal_length = true;
-  param.map_param.ba.optimize_principal_point = true;
+  param.map_param.ba.optimize_principal_point = false;//true;
   param.map_param.ba.optimize_radial_k1 = false;
   param.map_param.ba.optimize_radial_k2 = false;
   param.map_param.ba.optimize_radial_k3 = false;
@@ -244,6 +245,12 @@ int main(int argc, char *argv[] )
 
   cout<<"Creat mesh..."<<endl;
   gfilt.getMesh(glob_cloud, mesh);
+
+
+  // test texturing
+  cout<<"Test odm texturing! "<<endl;
+  v4r::OdmTexturing odmTex;
+  odmTex.textureMapping(tsf.getMap(),mesh,intrinsic_opti, Eigen::Matrix4f::Identity(), "log/", "log/");
 
   // store resulting files
   if (file_mesh.size()>0) pcl::io::savePLYFile(file_mesh, mesh);

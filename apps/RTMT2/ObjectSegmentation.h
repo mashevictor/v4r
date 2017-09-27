@@ -63,6 +63,7 @@
 #include <v4r/keypoints/impl/triple.hpp>
 #include <v4r/camera_tracking_and_mapping/TSFFrame.hh>
 #include <v4r/camera_tracking_and_mapping/TSFOptimizeBundle.hh>
+#include <v4r/surface_texturing/OdmTexturing.h>
 #include "params.h"
 #include "sensor.h"
 #include "CreateTrackingModel.h"
@@ -98,6 +99,7 @@ public:
 
   void setCameraParameter(const cv::Mat &_intrinsic, const cv::Mat &_dist_coeffs);
   void setData(const std::vector<v4r::TSFFrame::Ptr> &_map_frames, const Eigen::Matrix4f &_base_transform, const Eigen::Vector3f &_bb_min, const Eigen::Vector3f &_bb_max);
+  void setDirectories(const std::string &_folder, const std::string &_modelname);
   const std::vector< cv::Mat_<unsigned char> > &getMasks() {return masks; }
   bool savePointClouds(const std::string &_folder, const std::string &_modelname);
   void finishModelling();
@@ -105,6 +107,7 @@ public:
   void createPointCloud(bool enable) {create_cloud = enable; }
   void createViews(bool enable) {create_views = enable; }
   void createMesh(bool enable) {create_mesh = enable; }
+  void createTexturedMesh(bool enable) {create_tex_mesh = enable; }
   void createTrackingModel(bool enable) {create_tracking_model = enable; }
   void setParameter(const double &_vx_size, int _poisson_depth, int _poisson_samples) {voxel_size=_vx_size; poisson_depth=_poisson_depth; poisson_samples=_poisson_samples; }
   void useMultiviewICP(bool enable) {use_mvicp = enable;}
@@ -131,7 +134,7 @@ private:
 
   Parameter param;
 
-  bool create_cloud, create_views, create_mesh, create_tracking_model;
+  bool create_cloud, create_views, create_mesh, create_tex_mesh, create_tracking_model;
   double voxel_size;
   int poisson_depth;
   int poisson_samples;
@@ -159,7 +162,7 @@ private:
   pcl::PointCloud<pcl::PointXYZRGBNormal>::Ptr ncloud_filt;
   pcl::PointCloud<pcl::Normal>::Ptr big_normals;
   pcl::PolygonMesh mesh;
-  //pcl::TextureMesh tex_mesh;
+  pcl::TextureMesh tex_mesh;
 
   cv::Mat_<cv::Vec3b> image;
   pcl::PointCloud<pcl::PointXYZRGB>::Ptr tmp_cloud0, tmp_cloud1, tmp_cloud2;
@@ -169,6 +172,8 @@ private:
   Eigen::Matrix4f object_base_transform;
 
   double seg_offs;
+
+  std::string folder, model_name;
 
   RGBDCameraParameter cam_params;
   v4r::TSFOptimizeBundle ba;

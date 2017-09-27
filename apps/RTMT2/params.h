@@ -104,6 +104,7 @@ public:
   bool createPointCloud();
   bool createViews();
   bool createMesh();
+  bool createTexturedMesh();
   bool createTrackingModel();
   int getTsfNbFramesBA();
   int getTsfBatchSize();

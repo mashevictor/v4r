@@ -76,6 +76,7 @@ Params::~Params()
 bool Params::createPointCloud() {return ui->cb_store_cloud->isChecked();}
 bool Params::createViews() {return ui->cb_store_views->isChecked(); }
 bool Params::createMesh() {return ui->cb_store_mesh->isChecked(); }
+bool Params::createTexturedMesh() {return ui->cb_store_tex_mesh->isChecked(); }
 bool Params::createTrackingModel() {return ui->cb_store_tracker->isChecked(); }
 
 int Params::getTsfNbFramesBA() { return ui->nb_frames_ba->text().toInt(); }

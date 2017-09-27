@@ -191,37 +191,27 @@
    <widget class="QWidget" name="layoutWidget">
     <property name="geometry">
      <rect>
-      <x>719</x>
-      <y>162</y>
-      <width>131</width>
-      <height>95</height>
+      <x>685</x>
+      <y>160</y>
+      <width>188</width>
+      <height>71</height>
      </rect>
     </property>
     <layout class="QGridLayout" name="gridLayout_2">
-     <item row="2" column="0">
+     <item row="1" column="0">
       <widget class="QPushButton" name="Reset">
        <property name="text">
-        <string>Reset</string>
-       </property>
-      </widget>
-     </item>
-     <item row="1" column="0">
-      <widget class="QPushButton" name="SaveModel">
-       <property name="enabled">
-        <bool>true</bool>
-       </property>
-       <property name="text">
-        <string>Store Model</string>
+        <string>Clear Memory</string>
        </property>
       </widget>
      </item>
      <item row="0" column="0">
-      <widget class="QPushButton" name="CreateModel">
+      <widget class="QPushButton" name="CreateAndSaveModel">
        <property name="enabled">
         <bool>true</bool>
        </property>
        <property name="text">
-        <string>Create Model</string>
+        <string>Create and Store Models</string>
        </property>
       </widget>
      </item>

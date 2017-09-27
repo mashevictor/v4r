@@ -79,7 +79,7 @@ using namespace std;
  * @brief ObjectSegmentation::ObjectSegmentation
  */
 ObjectSegmentation::ObjectSegmentation()
- : cmd(UNDEF), m_run(false), create_cloud(true), create_views(true), create_mesh(true), create_tracking_model(true),
+ : cmd(UNDEF), m_run(false), create_cloud(true), create_views(true), create_mesh(true), create_tex_mesh(true), create_tracking_model(true),
    voxel_size(0.001),poisson_depth(7), poisson_samples(2), max_dist(0.01f), max_iterations(50), diff_type(1), use_mvicp(true), use_noise(false),
    filter_largest_cluster(true), edge_radius_px(5), max_point_dist(0.03),
    bb_min(Eigen::Vector3f(-FLT_MAX,-FLT_MAX,-FLT_MAX)), bb_max(Eigen::Vector3f(FLT_MAX,FLT_MAX,FLT_MAX)),
@@ -239,6 +239,12 @@ void ObjectSegmentation::set_roi_params(const double &_bbox_scale_xy, const doub
   seg_offs = _seg_offs;
 }
 
+void ObjectSegmentation::setDirectories(const std::string &_folder, const std::string &_modelname)
+{
+  folder = _folder;
+  model_name = _modelname;
+}
+
 /**
  * @brief ObjectSegmentation::setData
  * @param _cameras
@@ -290,13 +296,19 @@ void ObjectSegmentation::run()
       getSegmentedViews();
       if (use_mvicp) optimizePosesMultiviewICP();
       createCloudModel();
+
       if (create_tracking_model)
       {
         tm.setCameraParameter(intrinsic_opti, dist_coeffs_opti);
         tm.createTrackingModel(map_frames, masks, object_base_transform);
       }
 
-      emit printStatus(std::string("Status: Finised object modelling"));
+      if (folder.size()>0 && model_name.size()>0)
+      {
+        savePointClouds(folder, model_name);
+      }
+
+      //emit printStatus(std::string("Status: Finised object modelling"));
       emit update_model_cloud(ncloud_filt);
       emit update_visualization();
     }
@@ -574,7 +586,7 @@ void ObjectSegmentation::optimizePosesMultiviewICP()
 
 void ObjectSegmentation::createCloudModel()
 {
-  if (create_cloud || create_mesh)
+  if (create_cloud || create_mesh || create_tex_mesh)
   {
     // optimize map
     ba.getCameraParameter(intrinsic_opti, dist_coeffs_opti);
@@ -605,12 +617,18 @@ void ObjectSegmentation::createCloudModel()
     }
 
     cout<<"Creat mesh..."<<endl;
-    if (create_mesh)
+    if (create_mesh || create_tex_mesh)
     {
       gfilt.getMesh(ncloud_filt, mesh);
-//      cout<<"[ObjectSegmentation::createCloudModel] TODO: - bug inv poses, - store tex_mesh, - tmp-folder"<<endl;
-//      gfilt.textureMapping(map_frames, mesh, std::string("data")+std::string("/tmp/"), tex_mesh);
-//      gfilt.saveOBJFile("tex_mesh.obj", tex_mesh, 5);
+    }
+
+    if (create_tex_mesh)
+    {
+      cout<<"Texture mapping..."<<endl;
+      v4r::OdmTexturing odmTex;
+      std::string tmp_folder = folder + "/tmp/";
+      std::string tex_model_folder = folder + "/models/" + model_name + "/";
+      odmTex.textureMapping(map_frames, mesh,intrinsic_opti, object_base_transform, tmp_folder, tex_model_folder);
     }
 
     cout<<"Finished!"<<endl;

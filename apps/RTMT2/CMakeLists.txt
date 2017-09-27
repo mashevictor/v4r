@@ -1,4 +1,4 @@
-SET(RTMT2_DEPS v4r_core v4r_io v4r_common v4r_tracking v4r_reconstruction v4r_keypoints v4r_features v4r_camera_tracking_and_mapping v4r_recognition v4r_registration edt ceres)
+SET(RTMT2_DEPS v4r_core v4r_io v4r_common v4r_tracking v4r_reconstruction v4r_keypoints v4r_features v4r_camera_tracking_and_mapping v4r_recognition v4r_registration v4r_surface_texturing edt ceres)
 v4r_check_dependencies(${RTMT2_DEPS})
 
 if(NOT V4R_DEPENDENCIES_FOUND)

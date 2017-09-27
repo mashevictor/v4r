@@ -2,6 +2,22 @@
 Changelog for package v4r
 ^^^^^^^^^^^^^^^^^^^^^^^^^
 
+2.0.1 (2017-09-27)
+------------------
+* Merge branch 'master' into 'master'
+  update version in package.xml
+  See merge request !217
+* update version in package.xml
+* Merge branch 'master' into 'master'
+  Master
+  See merge request !216
+* Merge branch 'master' of rgit.acin.tuwien.ac.at:root/v4r_internal
+* bug fix: removed cam.center_x ... it's not available in pcl-stable
+* bug work-fix: removed OdmTexturing::loadMesh (not available in pcl)
+* New RTMT2 version including a modified version of OpenDroneMap texture mapping
+* test odm texturing
+* Contributors: Johann Prankl, Markus Bajones, Thomas Faeulhammer, Thomas Fäulhammer
+
 1.4.9 (2017-07-28)
 ------------------
 * merge master into release

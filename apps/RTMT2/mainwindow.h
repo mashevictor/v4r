@@ -91,8 +91,7 @@ private slots:
   void on_TrackerStart_clicked();
   void on_TrackerStop_clicked();
 
-  void on_CreateModel_clicked();
-  void on_SaveModel_clicked();
+  void on_CreateAndSaveModel_clicked();
   void on_Reset_clicked();
 
   void on_ResetView_clicked();
