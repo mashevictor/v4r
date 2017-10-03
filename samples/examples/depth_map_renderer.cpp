@@ -107,7 +107,7 @@ int main(int argc, const char * argv[]) {
         //create and save the according pcd files
         std::stringstream ss; ss << out_dir << "/cloud_" << i << ".pcd";
         std::string file = ss.str();
-        if(model.hasColor()) {
+        if(model.hasColor() || model.hasTexture()) {
             pcl::PointCloud<pcl::PointXYZRGB> cloud = renderer.renderPointcloudColor(visible);
             pcl::io::savePCDFileBinary(file, cloud);
 

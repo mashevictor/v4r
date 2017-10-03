@@ -89,7 +89,9 @@ private:
     GLuint _projectionUniform;
     GLuint poseUniform;
     GLuint viewportResUniform;
+    GLuint textureUniform;
     GLuint posAttribute;
+    GLuint texPosAttribute;
 
     //Used to give each triangle its own id
     GLuint atomicCounterBuffer;

@@ -16,18 +16,33 @@
 #include <pcl/Vertices.h>
 #include <pcl/ros/conversions.h>
 
+#include <opencv2/opencv.hpp>
+
+using namespace std;
+using namespace cv;
 namespace v4r
 {
 struct DepthmapRendererModel::Vertex{
     glm::vec3 pos;
     glm::u8vec4 rgba;
+    glm::vec2 texPos; // i know 2 of them will be empty
+    //TODO: add texture coordinates
 };
 
-DepthmapRendererModel::DepthmapRendererModel(const std::string &file, bool shiftToCenterAndNormalizeScale)
+
+
+DepthmapRendererModel::DepthmapRendererModel(const std::string &file, string path, bool shiftToCenterAndNormalizeScale)
 {
     vertexCount=0;
     indexCount=0;
     geometry=false;
+
+    if(path==""){
+        //if we don't have a path variable defined to load the textures from
+        //we extract it from the file
+        std::size_t found = file.find_last_of("/\\");
+        path = file.substr(0,found) + string("/");
+    }
 
     color=false;
     Assimp::Importer importer;
@@ -47,6 +62,26 @@ DepthmapRendererModel::DepthmapRendererModel(const std::string &file, bool shift
 
 
     glm::dvec3 mean(0,0,0);
+    vector<Mat> matTexs;
+    //before first:
+    if(scene->HasMaterials()){
+
+        for(size_t i=0;i<scene->mNumMaterials;i++){
+            Mat tex;
+            if(scene->mMaterials[i]->GetTextureCount(aiTextureType_DIFFUSE)){
+                texture=true;
+                //load the texture.
+                aiString texPath;
+                scene->mMaterials[i]->GetTexture(aiTextureType_DIFFUSE,
+                                                 0,//only take the first diffuse texture for one material
+                                                 &texPath);
+                tex = imread(path + string(texPath.C_Str()));
+
+            }
+             matTexs.push_back(tex);
+        }
+    }
+
     //first count how many geometry we need + find out maxima and average...
     if(scene->HasMeshes()){
         for(size_t i=0;i<scene->mNumMeshes;i++){
@@ -63,6 +98,11 @@ DepthmapRendererModel::DepthmapRendererModel(const std::string &file, bool shift
                 //std::cout << " vertex:" <<vertex.x << " " << vertex.y << " " << vertex.z << std::endl;//Debug
                 mean+=glm::dvec3(vertex.x,vertex.y,vertex.z);
                 color=color||scene->mMeshes[i]->HasVertexColors(0);
+                if(scene->mMeshes[i]->HasTextureCoords(0)){//DEBUG(DELETE)
+                    //cout << "we have texture coords" << endl;
+                    //scene->mMeshes[i]->mNumVertices
+                    //scene->mMeshes[i]->mTextureCoords//mNumVertices in size
+                }
             }
         }
     }
@@ -75,12 +115,23 @@ DepthmapRendererModel::DepthmapRendererModel(const std::string &file, bool shift
     unsigned int k=0;
     unsigned int l=0;
     unsigned int m=0;
+    int overallIndexCount = 0;
     for(size_t i=0;i<scene->mNumMeshes;i++){
+        MeshInfo mesh;
+        mesh.beginIndex = overallIndexCount;
+
         for(size_t j=0;j<scene->mMeshes[i]->mNumVertices;j++){
             Vertex v;
             v.pos=glm::vec3(scene->mMeshes[i]->mVertices[j].x,
                             scene->mMeshes[i]->mVertices[j].y,
                             scene->mMeshes[i]->mVertices[j].z);
+            if(scene->mMeshes[i]->HasTextureCoords(0)){
+                v.texPos=glm::vec2(scene->mMeshes[i]->mTextureCoords[0][j].x,
+                                   1.0f-scene->mMeshes[i]->mTextureCoords[0][j].y);
+                //cout << "tex: " << v.texPos.x << " " << v.texPos.y << endl;
+            }else{
+                v.texPos=glm::vec2(-10,-10);
+            }
             if(shiftToCenterAndNormalizeScale){
                 v.pos=v.pos-glm::vec3(mean);
             }
@@ -101,15 +152,21 @@ DepthmapRendererModel::DepthmapRendererModel(const std::string &file, bool shift
             }
             k++;
         }
-
+        int indicesInMesh=0;
         for(size_t j=0;j<scene->mMeshes[i]->mNumFaces;j++){
             for(size_t n=0;n<scene->mMeshes[i]->mFaces[j].mNumIndices;n++){
 
                 indices[m]=scene->mMeshes[i]->mFaces[j].mIndices[n]+l;
                 m++;
+                indicesInMesh++;
             }
         }
         l+=scene->mMeshes[i]->mNumVertices;
+
+        mesh.indexCount = indicesInMesh;
+        overallIndexCount+=indicesInMesh;
+        mesh.tex = matTexs[scene->mMeshes[i]->mMaterialIndex];
+        meshes.push_back(mesh);
     }
 
     offset=Eigen::Vector3f(-mean.x,-mean.y,-mean.z);
@@ -126,7 +183,8 @@ DepthmapRendererModel::DepthmapRendererModel(const std::string &file, bool shift
 }
 
 DepthmapRendererModel::DepthmapRendererModel(const pcl::PolygonMesh& pclMesh, bool shiftToCenterAndNormalizeScale){
-
+    cout << "warning: [DepthmapRendererModel::DepthmapRendererModel] is not loading vertex colors." << endl <<
+            "if you really need this feature follow the comments and implement it." << endl;
     pcl::PointCloud<pcl::PointXYZ> points;
     pcl::fromPCLPointCloud2(pclMesh.cloud, points);
 
@@ -146,7 +204,11 @@ DepthmapRendererModel::DepthmapRendererModel(const pcl::PolygonMesh& pclMesh, bo
         Vertex vert;
         pcl::PointXYZ point = points.at(i);
         vert.pos=glm::vec3(point.x,point.y,point.z);
+        //this would be the spot to implement the vertex colors
         vert.rgba=glm::u8vec4(128,128,128,255);
+        //this is to tell the fragment shader to use the
+        //vertex color instead of textures
+        vert.texPos=glm::vec2(-10,-10);
         vertices[i]=vert;
         mean+=glm::dvec3(point.x,point.y,point.z);
 
@@ -260,9 +322,47 @@ void DepthmapRendererModel::loadToGPU(GLuint &VBO,GLuint &IBO)
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(GLuint)*indexCount, indices, GL_STATIC_DRAW);
 
 
+    //upload the texture
+    if(meshes.size()){
+        GLuint tex[meshes.size()];
+        glGenTextures(meshes.size(),tex);
+        for(size_t i=0;i<meshes.size();i++){
+            glBindTexture(GL_TEXTURE_2D,tex[i]);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+            float borderColor[] = { 1.0f, 0.0f, 0.0f, 1.0f };
+            glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColor);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+            glGenerateMipmap(GL_TEXTURE_2D);
+
+            glTexImage2D(GL_TEXTURE_2D,0,
+                         GL_RGB8,
+                         meshes[i].tex.cols,meshes[i].tex.rows,
+                         0,
+                         GL_RGB,
+                         GL_UNSIGNED_BYTE,
+                         (void*)meshes[i].tex.data);
+
+            meshes[i].glTex = tex[i];
+        }
+    }
+
+
+
     //Make sure the shader is bound beforehand: (set the attribute location)
 
 
+}
+
+void DepthmapRendererModel::unloadFromGPU()
+{
+    for(size_t i=0;i<meshes.size();i++){
+        if(meshes[i].glTex!=0){
+            glDeleteTextures(1,&(meshes[i].glTex));
+            meshes[i].glTex=0;
+        }
+    }
 }
 
 
@@ -278,6 +378,11 @@ float DepthmapRendererModel::getScale(){
 bool DepthmapRendererModel::hasColor()
 {
     return color;
+}
+
+bool DepthmapRendererModel::hasTexture()
+{
+    return texture;
 }
 
 Eigen::Vector3f DepthmapRendererModel::getOffset(){

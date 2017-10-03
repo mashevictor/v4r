@@ -4,52 +4,110 @@ Changelog for package v4r
 
 2.0.1 (2017-09-27)
 ------------------
-* Merge branch 'master' into 'master'
   update version in package.xml
-  See merge request !217
 * update version in package.xml
-* Merge branch 'master' into 'master'
   Master
-  See merge request !216
-* Merge branch 'master' of rgit.acin.tuwien.ac.at:root/v4r_internal
 * bug fix: removed cam.center_x ... it's not available in pcl-stable
 * bug work-fix: removed OdmTexturing::loadMesh (not available in pcl)
 * New RTMT2 version including a modified version of OpenDroneMap texture mapping
 * test odm texturing
 * Contributors: Johann Prankl, Markus Bajones, Thomas Faeulhammer, Thomas Fäulhammer
 
+2.0.2 (2017-10-03)
+------------------
+  add ODM and indicate existing libraries inside V4R
+* add brief description on Readme and some styling
+* update readme
+* fix typo
+* add ODM and indicate existing libraries inside V4R
+  revert readme overwrite
+* revert readme overwrite
+  Remove all mentions of Qt4 and always use Qt5
+* Remove all mentions of Qt4 and always use Qt5
+  update author list
+  update contribution page
+  Update readme
+  Remove explicit VTK dependency
+* remove VTK and OpenNI
+* fix style
+* Remove explicit VTK dependency
+* update license URL
+* split issue tracker URL
+* fix URL
+* fix URLs
+  Remove all references to OpenCL
+* update contribution page
+  Textured rendering
+* update author list
+* update Readme
+  fix license
+* Remove all references to OpenCL
+  Was inherited from OpenCV build system, but not used in V4R.
+* fix license
+* update deps
+* fix conflicts
+  Strands to v4r in readme
+* update dependencies description
+* As we build ceres within v4r this is not needed anymore
+* Update readme to get rid of Strands links
+  OpenNURBS does not need to depend on PCL
+* OpenNURBS does not need to depend on PCL
+  The only usage of PCL in the code is PCL_EXPORTS macro, which anyway evaluates to nothing on Unix platform.
+  Build deb packages on all repos when tagged
+  Do not process some RTMT headers with Qt MOC
+  # Conflicts:
+  #   .gitlab-ci.yml
+  cleanup gitlab_CI and build fixes
+* Build deb packages on all repos when tagged
+* Merge remote-tracking branch 'v4r_origin/master'
+* Added rendering of textured meshes.
+* Do not process some RTMT headers with Qt MOC
+  This is to avoid classical Qt MOC/Boost error:
+  usr/include/boost/type_traits/detail/has_binary_operator.hp:50: Parse error at "BOOST_JOIN"
+  apps/RTMT2/CMakeFiles/RTMT2.dir/build.make:87: recipe for target 'apps/RTMT2/moc_OctreeVoxelCentroidContainerXYZRGB.cxx' failed
+* Remove "-dev" string from version
+* Remove duplicate job entry
+* Merge remote-tracking branch 'upstream/master'
+  Merge back the released state from v4r
+* 2.0.1
+* update changelog before releasing V4R
+* Merge remote-tracking branch 'upstream/master'
+  update version in package.xml
+* update version in package.xml
+* Merge remote-tracking branch 'upstream/master'
+  Master
+* bug fix: removed cam.center_x ... it's not available in pcl-stable
+* bug work-fix: removed OdmTexturing::loadMesh (not available in pcl)
+* New RTMT2 version including a modified version of OpenDroneMap texture mapping
+* test odm texturing
+* do not compile multiview recognizer
+* fixed: we did not compile on xenial
+* Add missing headers an source files.
+  Arrange them in lexicographical order
+* Contributors: Johann Prankl, Markus 'Bajo' Bajones, Markus Bajones, Sergey Alexandrov, Simon Schreiberhuber, Thomas Faeulhammer, Thomas Fäulhammer, Unknown, V4R Release Manager
+
 1.4.9 (2017-07-28)
 ------------------
 * merge master into release
 * fix changelog, package.xml
-* Merge branch 'fix-rpath-libsvm' into 'master'
   Fix installation of 3rd party shared libs
   Closes #29
-  See merge request !202
-* Merge branch 'ceres_3rd_party' into 'master'
   Include and install Ceres as 3rd party
-  See merge request !201
 * Add CMake command to install libsvm.so
 * Add 3rd party library directory to the CMAKE_INSTALL_RPATH
 * fixed old naming issue
 * install ceres as 3rd party library
   Because of Ubuntu not fixing a bug in their ceres package [1]  we need to add it as a 3rd party lib.
   [1] https://bugs.launchpad.net/ubuntu/+source/ceres-solver/+bug/1596296
-* Merge branch 'remove-include' into 'master'
   Remove useless include
-  See merge request !200
 * Remove useless include
 * Update .gitlab-ci.yml
 * Update .gitlab-ci.yml
 * update changelog
 * Test: Enable deb generation on Ubuntu 16.04
 * merge
-* Merge branch 'master' into 'master'
   RGB-D cloud filtering using a sequence of clouds, (batch version, average of depth and colour)
-  See merge request !197
-* Merge branch 'add_semantic_segmentation' into 'master'
   add semantic segmentation module + apps and scripts for NYU Datasets
-  See merge request !198
 * add semantic segmentation module + apps and scripts for NYU Datasets
   bugfix: renamed one function
   adapted command line arguments
@@ -62,59 +120,37 @@ Changelog for package v4r
   add matlab scripts for nyu depth dataset conversion
   add apps for semantic_segmentation
   add module semantic_segmentation
-* Merge branch 'master' of rgit.acin.tuwien.ac.at:root/v4r
 * changed name of tsf and added example
-* Merge branch 'master' of rgit.acin.tuwien.ac.at:hannes-prankl/v4r
 * tsf batch filtering
-* Merge branch 'fix_global_pipeline_param_bug' into 'master'
   Fix global pipeline param bug
-  See merge request !196
-* Merge branch 'master' of rgit.acin.tuwien.ac.at:root/v4r
-* Merge branch 'forward_declare_caffe_net' into 'master'
   Forward declare caffe net
-  See merge request !195
 * fix bug when global pipeline parameters are not completely defined
-* Merge branch 'fix_caffe' into 'master'
   Fix caffe
   Closes #25
-  See merge request !194
 * comment pcl conflict
-* Merge branch 'forward_declare_caffe_net' of rgit.acin.tuwien.ac.at:t-faeulhammer/v4r
 * comment definitions
 * forward declare caffe net
   avoid caffe include
-* Merge branch 'master' of rgit.acin.tuwien.ac.at:root/v4r
 * fix missing include paths
-* Merge branch 'opencv_fix' into 'master'
   Fix OpenCV Bug for unordered sets
-  See merge request !192
 * Add Caffe Path hints
 * Fix OpenCV Bug for unordered sets
-* Merge branch 'master' of rgit.acin.tuwien.ac.at:root/v4r
 * bug fix: turn off mapping -> tsf-filtering still collected frames
-* Merge branch 'master' into 'master'
   Master
-  See merge request !190
 * bug fix:
   - TSFGlobalCloudFilteringSimple: set width of the point cloud (if not ec-filtered)
   - example: parameter setting: do not ec-filter
 * added modul: camera tracking and mapping (using s temporal smoothing flter - TSF)
-* Merge branch 'master' of rgit.acin.tuwien.ac.at:root/v4r
 * add multiview keypoint correspondence visualization
-* Merge branch 'pcl_mesh_renderer' into 'master'
   Pcl mesh renderer
-  See merge request !189
 * removed loading of pcl files with pcl::io::loadPLYFile. This method 1. tends to fail and 2. does not exist on the continous integration system.
 * Cleanup of the changes. Finally got rid of the flipped coordinate system bug.
 * Added a lot of debug code but principially found the bugs causing the projection to be inverted. TODO: remove debug code!!
-* Merge branch 'master' of rgit.acin.tuwien.ac.at:root/v4r
 * no idea (must be minor)
 * Added new constructor accepting pcl meshes.
 * update doc
 * update doc
-* Merge branch 'add_change_detection' into 'master'
   Add change detection
-  See merge request !188
 * update doc
 * update CMakeLists
 * remove Eval app
@@ -177,9 +213,7 @@ Changelog for package v4r
 * allow subsampling during rendering
 * remove unused normal computation for model
   should be done outside
-* Merge branch 'fix_normals' into 'master'
   fix nasty bug in normals computation (flip always towards viewpoint)
-  See merge request !187
 * use auto
 * use auto
 * revert normal referencing
@@ -269,7 +303,6 @@ Changelog for package v4r
 * allow online mv rec
 * opti model - structure (no impl)
 * 1.4.5
-* Merge branch 'release' of rgit.acin.tuwien.ac.at:markus-bajones/v4r into release
 * update changelog
 * set ros distro
 * update changelog
@@ -278,14 +311,10 @@ Changelog for package v4r
 1.4.8 (2017-04-11)
 ------------------
 * Merge remote-tracking branch 'upstream/master' into release
-* Merge branch 'update_siftgpu_url' into 'master'
   update url for siftgpu
   Closes #24
-  See merge request !186
 * update url for siftgpu
-* Merge branch 'add_eval' into 'master'
   Add eval
-  See merge request !185
 * up
 * update params
 * just to make sure
@@ -361,20 +390,12 @@ Changelog for package v4r
 * add parameter for coordinate axis scale
 * add utility function for aligning two vectors
 * Merge remote-tracking branch 'root/master' into add_eval
-* Merge branch 'add-gtest' into 'master'
   Add GTest
-  See merge request !177
 * add pose refinement to app
-* Merge branch 'add_eval' into 'master'
   Add eval
-  See merge request !182
-* Merge branch 'fix_iol_runtime_error' into 'master'
   fix throwing runtime_error
-  See merge request !181
-* Merge branch 'fix_bug' into 'master'
   change include order to fix opencv bug
   Closes #23
-  See merge request !180
 * fix throwing runtime_error
 * fix throwing runtime_error
 * update default config (elongation can now be part of the feature vector)
@@ -426,9 +447,7 @@ Changelog for package v4r
 * :lipstick:
 * remove keypoint cloud and processed cloud from local estimator
 * Merge remote-tracking branch 'root/master' into add_eval
-* Merge branch 'add_rotation_check' into 'master'
   Add rotation check
-  See merge request !179
 * change include order to fix opencv bug
 * change include order to fix opencv bug
 * remove points not belonging to object during initialization
@@ -477,9 +496,7 @@ Changelog for package v4r
 * add missing executable in cmake
 * add point types include to gcg to hopefully fix compile error on trusty
 * add inidividiual hypotheses check with ground-truth data + :lipstick:
-* Merge branch 'add_param' into 'master'
   add angular threshold parameter
-  See merge request !176
 * temp commit
 * compute normals when init features
 * allow graph-based correspondence grouping
@@ -507,15 +524,9 @@ Changelog for package v4r
   Conflicts:
   modules/segmentation/src/plane_utils.cpp
   modules/segmentation/src/segmentation_utils.cpp
-* Merge branch 'fix_pcl_visualization_issue' into 'master'
   fix opening multiple pcl visualization windows
-  See merge request !173
-* Merge branch 'add_simons_plane_extractor' into 'master'
   add simons plane extractor
-  See merge request !172
-* Merge branch 'add_hellinger_kernel' into 'master'
   add hellinger kernel
-  See merge request !171
 * init params
 * add boost parameter
 * remove redundant param init
@@ -585,18 +596,11 @@ Changelog for package v4r
 * add hellinger kernel
 * add simons plane extractor
 * Merged branch master into add_evaluation_for_diss
-* Merge branch 'master' into 'master'
   ec filter of small clusters - some beautification
-  See merge request !169
 * ec filter of small clusters - some beautification
-* Merge branch 'update_io' into 'master'
   Update io
-  See merge request !167
-* Merge branch 'master' into 'master'
   Master
-  See merge request !168
 * RTMT: remove small clusters before storing the global model
-* Merge branch 'master' of rgit.acin.tuwien.ac.at:root/v4r
 * use random search for hyperparameter
 * prepare for local search
 * fix performance bug
@@ -612,30 +616,19 @@ Changelog for package v4r
 * add parameter class for multipipeline recognizer
 * add remove folder
 * update folder copy
-* Merge branch 'up_recognition_rate_computation' into 'master'
   Up recognition rate computation
-  See merge request !164
 * add chi-square
 * add parameter for num trees of kdtree in feature matching
 * use object centroid for translation error computation
 * make eval compatible to new annotation format
 * object models are read directly from folder instead from init source
-* Merge branch 'up_io' into 'master'
   remove deprecated functions and make paths windows compatible
-  See merge request !165
-* Merge branch 'revert_disabling_apps' into 'master'
   revert disabling of some apps and examples
-  See merge request !166
 * revert disabling of some apps and examples
-* Merge branch 'master' of rgit.acin.tuwien.ac.at:root/v4r
 * minor: config/ test ImGD-Descriptor
 * remove deprecated functions and make paths windows compatible
-* Merge branch 'fix_rf_training' into 'master'
   bug fix in random forest training
-  See merge request !163
-* Merge branch 'rec_eval' into 'master'
   Rec eval
-  See merge request !162
 * fix pcl version madness
 * avoid not available getkeypointsindices in PCL < 1.7.2
 * remove conditional pcl instantiation
@@ -662,22 +655,17 @@ Changelog for package v4r
 * remove pcl 1_8 dependency
 * adds example code for keypoint extraction and filtering
 * add dependencies
-* Merge branch 'add_3rd_partry_libraries_as_example_dependencies' into 'master'
   add dependencies
-  See merge request !159
 * make segment pcd an app
 * fix seg fault when input contains nan points
 * fix wrong if conditions
 * remove siftgpu dependency
 * pnp and/or depth ransac version (not tested)
-* Merge branch 'fix_noise_model_base_integration' into 'master'
   fix noise model based cloud integration when object mask is not available
-  See merge request !158
 * add dependencies
 * fix noise model based cloud integration when object mask is not available
 * fix redundant typename in keypoint init
 * Merged branch master into rename_params
-* Merge branch 'master' of rgit.acin.tuwien.ac.at:root/v4r
 * live version (capture with opencv)
 * bug fix in random forest training
   boost random generator is not thread safe, do not access it from within openmp parallel section
@@ -694,20 +682,12 @@ Changelog for package v4r
 
 1.4.7 (2017-02-23)
 ------------------
-* Merge branch 'upstream_master' into release
-* Merge branch 'fix_wrong_sift_init' into 'master'
   fix missing init
-  See merge request !157
 * fix missing init
-* Merge branch 'master' into 'master'
   added additional parameter for imkRecognizer to specify bin filename
-  See merge request !155
 * changed imkRecognizer example to handle user filename
-* Merge branch 'master' of rgit.acin.tuwien.ac.at:root/v4r
 * added additional parameter to set file name for imk-bin-file
-* Merge branch 'master' into 'master'
   param change: more accurate flann configuration
-  See merge request !154
 * param change: more accurate flann
 * Contributors: Edith Langer, Johann Prankl, Markus Bajones, Thomas Faeulhammer
 
@@ -719,31 +699,19 @@ Changelog for package v4r
 
 1.4.5 (2017-02-13)
 ------------------
-* Merge branch 'release' into 'release'
   Release 1.4.4-internal
-  See merge request !152
 * Contributors: Markus Bajones
 
 1.4.4 (2017-02-13)
 ------------------
-* Merge branch 'fixed_missing_parameter_init' into 'master'
   fix initialize parameters
-  See merge request !151
-* Merge branch 'ceres-warning' into 'master'
   Make sure that found Ceres library is a shared object
-  See merge request !150
 * Make sure that found Ceres library is a shared object
   Otherwise will get relocation error at linker stage.
 * fix initialize parameters
-* Merge branch 'all_updates' into 'master'
   Segmentation, ML and Keypoint extractor updates
-  See merge request !147
-* Merge branch 'update_segmentation' into 'master'
   update segmentation
-  See merge request !146
-* Merge branch 'ci-ceres-shared' into 'master'
   Build Ceres in shared mode on CI server
-  See merge request !149
 * Build Ceres in shared mode on CI server
 * :lipstick:
 * update classifiers
@@ -758,23 +726,18 @@ Changelog for package v4r
   - write a global iniitialization method that allows to initialize any segmenter by its type
   - use visualization from utils
   - move parameters outside class to not make them templates
-* Merge branch 'new_recognizer' into 'master'
   New recognizer
-  See merge request !141
 * put files into v4r module apps to allow to use it as a library
   fixes alignment issues with potentially wrong library versions of PCL, OpenCV, Eigen, Boost etc
 * add pointer check
 * add missing header file to cmake
 * make classes aligned for fixed-sized vectorizable eigen objects
 * Merged branch master into new_recognizer
-* Merge branch 'fix_opencv3_issue' into 'master'
   fixes #19 (duplicate base type for cv::Feature2D)
   Closes #19
-  See merge request !145
 * fix warnings
 * Merged branch fix_opencv3_issue into new_recognizer
 * fixes #19 (duplicate base type for cv::Feature2D)
-  supposed to fix https://rgit.acin.tuwien.ac.at/root/v4r/issues/19
 * update readme
 * fix some warnings
 * do smooth cluster check in global optimization, move visualization option away from param, cleanup
@@ -808,47 +771,26 @@ Changelog for package v4r
   this commit is too huge to comment... sorry a few months work that I can't split up anymore :-P
 * create class for zBuffering, PCL-2-OpenCV converter and Occlusion Reasoning
 * use pcl correspondence grouping instead of a copy
-* Merge branch 'find-devil' into 'master'
   Look for DevIL library and fail if not found when building SiftGPU
   Closes #20
-  See merge request !144
 * Look for DevIL library and fail if not found when building SiftGPU
-* Merge branch 'master' into 'master'
   IMKRecognizer: create model from indices
-  See merge request !142
-* Merge branch 'cmake-cleanup' into 'master'
   Cmake cleanup
-  See merge request !143
 * Remove some occurrences of IOS, WINRT, and ANDROID in CMakeLists
 * Remove options and config variables inherited from OpenCV
 * Remove unused CHECK_MODULE CMake macro
 * Fix defaulting to Release mode
 * load indices files (additional to to masks) for modelling
 * added temporal filtering to RTMT-modelling
-* Merge branch 'update_zBuff_and_OccReasoning' into 'master'
   Update z buff and occ reasoning
-  See merge request !138
-* Merge branch 'feat' into 'master'
   Feat
-  See merge request !137
-* Merge branch 'master' into 'master'
   IMKRecognizer: keypoint based, monocular object recognizer
-  See merge request !132
-* Merge branch 'fix_warning' into 'master'
   fixes shadowed auto variable warning
-  See merge request !140
-* Merge branch 'add_db_creation_from_plyfiles' into 'master'
   creates a recognition database from ply files in folder
-  See merge request !139
 * removed debug cout
 * merged
-* Merge branch 'master' of rgit.acin.tuwien.ac.at:root/v4r
-* Merge branch 'fix_some_shadow_warnings' into 'master'
   fix some warnings (shadowed and unused variables)
-  See merge request !136
-* Merge branch 'update_ml' into 'master'
   make svm class better encapsulated
-  See merge request !133
 * create class for zBuffering, PCL-2-OpenCV converter and Occlusion Reasoning
 * fixes shadowed auto variable warning
 * creates a recognition database from ply files in folder
@@ -879,30 +821,20 @@ Changelog for package v4r
 * Update ObjectDetection.md
 * make svm class better encapsulated
   put files into utility file, add const
-* Merge branch 'update_pcl-1_8' into 'master'
   put pcl files only availble in PCL 1.8 into 3rdparty PCL folder
-  See merge request !128
-* Merge branch 'fix_gitignore' into 'master'
   remove docs from blacklist
   Closes #16
-  See merge request !131
-* Merge branch 'master' of rgit.acin.tuwien.ac.at:root/v4r
-* Merge branch 'fix_warnings' into 'master'
   fix some warnings
-  See merge request !130
 * remove docs from blacklist
 * MIT license, colour confidence value, documentation
 * MIT license header
 * remove unused pcl trunk files
-* Merge branch 'fix_opencv3_error' into 'master'
   fix compile error on OpenCV3
-  See merge request !129
 * Fix compile error
 * remove commment
 * fix some warnings
 * fix some more missing pcl_1_8 bits
 * up
-* Merge branch 'fix_opencv3_error' into update_pcl-1_8
 * fix compile error on OpenCV3
 * use uniform sampling from PCL 1.7 since 1.8 doesn't seem to provide indices
 * getting mad
@@ -914,56 +846,30 @@ Changelog for package v4r
 * c++ does not seem to like dashes too much
 * put pcl files only availble in PCL 1.8 into 3rdparty PCL folder
 * keypoint based monocular object recognizer
-* Merge branch 'master' of rgit.acin.tuwien.ac.at:root/v4r
-* Merge branch 'update_Cam' into 'master'
   add fov to camera
-  See merge request !126
 * remove redundant vertical fiel of view member variable
-* Merge branch 'master' of rgit.acin.tuwien.ac.at:root/v4r
-* Merge branch 'debian_packages' into 'master'
   create debian packages if commit was tagged.
-  See merge request !110
 * add fov to camera
-* Merge branch 'doxy_and_some_minor_beauty' into 'master'
   Doxy and some minor beauty
-  See merge request !125
-* Merge branch 'use_constptr' into 'master'
   use constptr where appropriate
-  See merge request !124
-* Merge branch 'fix_uniform_sampling' into 'master'
   make uniform sampling work on PCL versions 1.8+
-  See merge request !123
 * some doxygen fixes and :lipstick:
 * use constptr when neccessary
 * make uniform sampling work on PCL versions 1.8+
-* Merge branch 'master' of rgit.acin.tuwien.ac.at:root/v4r
-* Merge branch 'some_minor_fixes' into 'master'
   Some minor fixes
-  See merge request !122
-* Merge branch 'ceres_fix' into 'master'
   fix ceres version issue with renamed parameter
-  See merge request !121
 * add function for principal component analysis (elongation / centroid)
 * neglect .autosave files
 * fix  quaternion computation in case not normalized
 * add focal length to boost program options
 * remove openni include
 * fix ceres version issue with renamed parameter
-* Merge branch 'master' of rgit.acin.tuwien.ac.at:root/v4r
-* Merge branch 'feat1' into 'master'
   Feat1
   This adds some functions used for recognition / hypotheses verification
-  See merge request !118
-* Merge branch 'add_serialization' into 'master'
   Add boost serialization for common pcl types
-  See merge request !117
-* Merge branch 'add_doxygen_config' into 'master'
   add doxygen config file to be able to generate Doxygen based documentation
-  See merge request !116
-* Merge branch 'use_pcl_eigen' into 'master'
   remove redundant copy of PCL file
   cleans up v4r repository (redundant PCL copy - PCL is a required dependency anyway)
-  See merge request !115
 * Merged branch master into debian_packages
 * add computeMaskFromImageMap function
 * minor code reduction
@@ -976,20 +882,15 @@ Changelog for package v4r
 * add doxygen config file to be able to generate Doxygen based documentation
 * fix namespace issue
 * replace v4r/common/eigen.h with pcl/eigen.h
-* Merge branch 'master' of rgit.acin.tuwien.ac.at:root/v4r
-* Merge branch 'warningfix_pcl' into 'master'
   Fixed warnings in PCL
   So, this should fix every warning from external libraries. I did this by adding the necessary SYSTEM parameter to the according "(target_)include_directories" calls. As far as i see it it does not suppress any warnings in our own headers (as intended) but due to my lack of understanding of CMAKE and our V4R structure i suggest somebody might want to test it.
-  See merge request !113
 * Fixed another mistake... credits goes to Sergey.
 * Fixed missing }
 * removed comments.
 * Being more selective at suppressing warnings.
   Being more selective at suppressing warnings as now only warnings from external header files will be suppressed.
-* Merge branch 'warningfix_keypoints' into 'master'
   Fixed some Warnings in Keypoints
   As the title says. I hope i broke no real functionality.
-  See merge request !100
 * Update V4RUtils.cmake
 * Suppress warnings in external headers.
   Added the SYSTEM property to V4RUtils.cmake where it is needed to suppress pcl warnings of external include files.
@@ -1003,10 +904,8 @@ Changelog for package v4r
 * Update .gitlab-ci.yml
   Make sure v4r is installed in /usr
 * Merged branch master into master
-* Merge branch 'attention' into 'master'
   Integrate attention based segmentation Now works on Ubuntu 14.04 and 16.04
   @michael-zillich-1 @msuchi Can I get some feedback before I merge this?
-  See merge request !112
 * disable deb packages on xenial for now. issue with libceres to blame
 * Adaptions for v4r source code for compiling under Ubuntu 16.04.
   + changed include from "cvmath" to <cvmath>
@@ -1014,10 +913,8 @@ Changelog for package v4r
   this is tested for opencv 2.4 and pcl 1.7.2 which have to be set when launchi9ng cmake:
   cmake -DPCL_DIR=<path to pcl> -DOpenCV_DIR=<oath to opencv 2.4>
 * Merged origin/attention_segmentation into master
-* Merge branch 'Update_Contributing.md' into 'master'
   Update contributing.md
   Added usage of  setup.sh to CONTRIBUTING.md
-  See merge request !111
 * need to install devscripts
 * need to install python-bloom before we can use it
 * need to install python-bloom before we can use it
@@ -1026,10 +923,8 @@ Changelog for package v4r
 * Added dependency installation "how to" to Contributing.md
 * create debian packages if commit was tagged.
 * Merged branch master into master
-* Merge branch 'ubuntu16.04+opencv3' into 'master'
   Ubuntu16.04+opencv3
   @ghalmets
-  See merge request !103
 * pass 2 parameters to setup. ubuntu and ros codename
 * Removed some warnings in keypoints.
 * escape variables
@@ -1040,11 +935,7 @@ Changelog for package v4r
   Conflicts:
   .gitlab-ci.yml
 * Merged branch master into master
-* Merge branch 'bug_transposed_rendering' into 'master'
   Changed camera matrix input and output of the pointcloud generation class. Now i…
-  This is the bugfix to: https://rgit.acin.tuwien.ac.at/root/v4r/issues/13
-  See merge request !98
-* Merge branch 'Install_dependencies' into 'master'
   Adding Setup.sh
   Added Setup.sh to v4r for a more convenient dependency installation.
   .gitlab-ci.yml was edited to use setup.sh to keep the script in the CI loop.
@@ -1055,7 +946,6 @@ Changelog for package v4r
   `mkdir build && cd build`
   `cmake ..`
   `make -j8`
-  See merge request !96
 * Update Readme.md
 * Update Readme.md to rgit and added usage of ./setup.sh
 * Changed camera matrix input and output of the pointcloud generation class. Now it is not transposed, or does not has to be transposed anymore.
@@ -1093,19 +983,12 @@ Changelog for package v4r
 * small changes to bring eputils into the new v4r structure
 * Inital copy of attention_segmentation from v4r svn
 * Inital copy of eputils from v4r svn
-* Merge branch 'master' into 'master'
   v4r now compiles with OpenCV 2.x and 3.1 on Ubuntu 14.04 and 16.04
-  See merge request !94
-* Merge branch 'master' of rgit.acin.tuwien.ac.at:root/v4r
 * v4r now compiles with OpenCV 2.x and 3.1 on Ubuntu 14.04 and 16.04
-* Merge branch 'master' into 'master'
   temporal filter (tracks pose and integrates several rgb-d frames)
   incl. bug fix: default param in common/occlusion_reasoning.cpp
-  See merge request !93
-* Merge branch 'master' into 'master'
   Update of Contribution.md with results from Structure Workshop.
   I have merged the minutes of V4R structure workshop into the Contribution.md
-  See merge request !92
 * Update CONTRIBUTING.md
 * Fixed some Typos
 * Update CONTRIBUTING.md
@@ -1150,59 +1033,39 @@ Changelog for package v4r
 * fix ubuntu version. and again.
 * fix ubuntu version
 * Also build on Ubuntu 16.04
-* Merge branch 'Test' into 'master'
   Update AUTHORS
-  See merge request !89
-* Merge branch 'libsvm' into 'master'
   fix libsvm dependency in package.xml
-  See merge request !90
 * fix libsvm dependency in package.xml
 * Update AUTHORS
-* Merge branch 'add_boost_dependency' into 'master'
   Update hypotheses_verification.cpp (wtf? I just commited this change)
-  See merge request !88
 * Update hypotheses_verification.cpp
 * Update hypotheses_verification.cpp (wtf? I just commited this change)
-* Merge branch 'master' into 'master'
   Master
-  See merge request !82
-* Merge branch 'add_boost_dependency' into 'master'
   add missing boost dependency
-  See merge request !86
 * add missing boost dependency
 * Go back to use standard ubuntu trusty docker image
   This is easier to support in the future.
 * Merged branch master into master
 * Merged branch master into master
-* Merge branch 'fix_vector_type' into 'master'
   Fix vector type
-  See merge request !79
 * Update hypotheses_verification.cpp
 * Update hypotheses_verification.cpp
 * fix vector type
-* Merge branch 'master' of rgit.acin.tuwien.ac.at:root/v4r
 * fix vector type for new histogram interface
 * Update Readme.md
-* Merge branch 'master' into 'master'
   Use docker image that has those dependencies already installed
-  See merge request !78
 * Use docker image that has those dependencies already installed
-* Merge branch 'master' into 'master'
   Update .gitlab-ci.yml
-  See merge request !77
 * Update .gitlab-ci.yml
 * Merged branch master into master
 * Update .gitlab-ci.yml
 * Update .gitlab-ci.yml
-* Merge branch 'some_fixes' into 'master'
   Some fixes
-  See merge request !56
 * Update .gitlab-ci.yml
 * Merged branch master into master
 * Update .gitlab-ci.yml
   yet again. ;-)
 * Update .gitlab-ci.yml
-* Merge branch 'master' of rgit.acin.tuwien.ac.at:root/v4r
 * put some header defintions into cpp files and remove .hpp files
 * Update .gitlab-ci.yml
 * put miscellaneous functions into more specific files
@@ -1218,10 +1081,8 @@ Changelog for package v4r
 * fixed typo
 * fixed typo
 * clean up .gitlab-ci.yml
-* Merge branch 'master' of rgit.acin.tuwien.ac.at:root/v4r
 * add depdendencies description
 * Update .gitlab-ci.yml
-* Merge branch 'master' of rgit.acin.tuwien.ac.at:root/v4r
 * add contributing and style_format doc files
 * Update package.xml
   test if this compiles now
@@ -1241,10 +1102,7 @@ Changelog for package v4r
 * update color transformation and comparison
 * use boost::dynamic_bitset instead of vector<bool>, add camera class, put some definitions into header files + some code refactoring
 * fix roi when reaching boundary
-* Merge branch 'master' of rgit.acin.tuwien.ac.at:root/v4r
-* Merge branch 'master' into 'master'
   Ubuntu 16.04 compatibility
-  See merge request !54
 * Merge pull request #67 from strands-project/ubuntu1604_compatibility
   Ubuntu1604 compatibility
 * Merge remote-tracking branch 'hannes/master'
@@ -1255,10 +1113,7 @@ Changelog for package v4r
 * fix some warnings
 * Merge pull request #66 from strands-project/sync_from_gitlab
   Sync from gitlab
-* Merge branch 'master' of rgit.acin.tuwien.ac.at:root/v4r
-* Merge branch 'new_try' into 'master'
   New try
-  See merge request !53
 * Merge pull request #64 from strands-project/new_try
   [WIP] New try
 * add timing for pose refinement
@@ -1427,12 +1282,9 @@ Changelog for package v4r
 * Merge pull request #63 from taketwo/remove-x86
   Remove all mentions of x86 and x86_64 in CMake scripts
 * Remove all mentions of x86 and x86_64 in CMake scripts
-* Merge branch 'master' of rgit.acin.tuwien.ac.at:root/v4r
 * use object indices also for unfiltered registered model cloud and only save filtered input clouds if debug option is set
-* Merge branch 'master' into 'master'
   added quick fixed to handle some range check exceptions
   needs proper handling soon
-  See merge request !51
 * 1.3.3
 * 1.3.2
 * Merge remote-tracking branch 'upstream/master'
@@ -1440,27 +1292,21 @@ Changelog for package v4r
 * Merge remote-tracking branch 'remotes/upstream/recognition_update'
 * Contributors: Georg, Georg Halmetschlager-Funek, Johann Prankl, Markus Bajones, Markus Suchi, Martin Velas, Michael Zillich, Sergey Alexandrov, Simon Schreiberhuber, Thomas Faeulhammer, Thomas Fäulhammer
 
-* Merge branch 'attention' into 'master'
   Integrate attention based segmentation Now works on Ubuntu 14.04 and 16.04
   @michael-zillich-1 @msuchi Can I get some feedback before I merge this?
-  See merge request !112
 * Adaptions for v4r source code for compiling under Ubuntu 16.04.
   + changed include from "cvmath" to <cvmath>
   + changed namespace of isnan to std::isnan
   this is tested for opencv 2.4 and pcl 1.7.2 which have to be set when launchi9ng cmake:
   cmake -DPCL_DIR=<path to pcl> -DOpenCV_DIR=<oath to opencv 2.4>
 * Merged origin/attention_segmentation into master
-* Merge branch 'Update_Contributing.md' into 'master'
   Update contributing.md
   Added usage of  setup.sh to CONTRIBUTING.md
-  See merge request !111
 * Update CONTRIBUTING.md
 * Added dependency installation "how to" to Contributing.md
 * Merged branch master into master
-* Merge branch 'ubuntu16.04+opencv3' into 'master'
   Ubuntu16.04+opencv3
   @ghalmets
-  See merge request !103
 * pass 2 parameters to setup. ubuntu and ros codename
 * escape variables
 * update setup.sh and gitlab-ci.yml to be more generic
@@ -1469,11 +1315,7 @@ Changelog for package v4r
 * Merge remote-tracking branch 'refs/remotes/upstream/master'
   Conflicts:
   .gitlab-ci.yml
-* Merge branch 'bug_transposed_rendering' into 'master'
   Changed camera matrix input and output of the pointcloud generation class. Now i…
-  This is the bugfix to: https://rgit.acin.tuwien.ac.at/root/v4r/issues/13
-  See merge request !98
-* Merge branch 'Install_dependencies' into 'master'
   Adding Setup.sh
   Added Setup.sh to v4r for a more convenient dependency installation.
   .gitlab-ci.yml was edited to use setup.sh to keep the script in the CI loop.
@@ -1484,7 +1326,6 @@ Changelog for package v4r
   `mkdir build && cd build`
   `cmake ..`
   `make -j8`
-  See merge request !96
 * Update Readme.md
 * Update Readme.md to rgit and added usage of ./setup.sh
 * Changed camera matrix input and output of the pointcloud generation class. Now it is not transposed, or does not has to be transposed anymore.
@@ -1522,18 +1363,12 @@ Changelog for package v4r
 * small changes to bring eputils into the new v4r structure
 * Inital copy of attention_segmentation from v4r svn
 * Inital copy of eputils from v4r svn
-* Merge branch 'master' into 'master'
   v4r now compiles with OpenCV 2.x and 3.1 on Ubuntu 14.04 and 16.04
-  See merge request !94
 * v4r now compiles with OpenCV 2.x and 3.1 on Ubuntu 14.04 and 16.04
-* Merge branch 'master' into 'master'
   temporal filter (tracks pose and integrates several rgb-d frames)
   incl. bug fix: default param in common/occlusion_reasoning.cpp
-  See merge request !93
-* Merge branch 'master' into 'master'
   Update of Contribution.md with results from Structure Workshop.
   I have merged the minutes of V4R structure workshop into the Contribution.md
-  See merge request !92
 * Update CONTRIBUTING.md
 * Fixed some Typos
 * Update CONTRIBUTING.md
@@ -1578,59 +1413,39 @@ Changelog for package v4r
 * fix ubuntu version. and again.
 * fix ubuntu version
 * Also build on Ubuntu 16.04
-* Merge branch 'Test' into 'master'
   Update AUTHORS
-  See merge request !89
-* Merge branch 'libsvm' into 'master'
   fix libsvm dependency in package.xml
-  See merge request !90
 * fix libsvm dependency in package.xml
 * Update AUTHORS
-* Merge branch 'add_boost_dependency' into 'master'
   Update hypotheses_verification.cpp (wtf? I just commited this change)
-  See merge request !88
 * Update hypotheses_verification.cpp
 * Update hypotheses_verification.cpp (wtf? I just commited this change)
-* Merge branch 'master' into 'master'
   Master
-  See merge request !82
-* Merge branch 'add_boost_dependency' into 'master'
   add missing boost dependency
-  See merge request !86
 * add missing boost dependency
 * Go back to use standard ubuntu trusty docker image
   This is easier to support in the future.
 * Merged branch master into master
 * Merged branch master into master
-* Merge branch 'fix_vector_type' into 'master'
   Fix vector type
-  See merge request !79
 * Update hypotheses_verification.cpp
 * Update hypotheses_verification.cpp
 * fix vector type
-* Merge branch 'master' of rgit.acin.tuwien.ac.at:root/v4r
 * fix vector type for new histogram interface
 * Update Readme.md
-* Merge branch 'master' into 'master'
   Use docker image that has those dependencies already installed
-  See merge request !78
 * Use docker image that has those dependencies already installed
-* Merge branch 'master' into 'master'
   Update .gitlab-ci.yml
-  See merge request !77
 * Update .gitlab-ci.yml
 * Merged branch master into master
 * Update .gitlab-ci.yml
 * Update .gitlab-ci.yml
-* Merge branch 'some_fixes' into 'master'
   Some fixes
-  See merge request !56
 * Update .gitlab-ci.yml
 * Merged branch master into master
 * Update .gitlab-ci.yml
   yet again. ;-)
 * Update .gitlab-ci.yml
-* Merge branch 'master' of rgit.acin.tuwien.ac.at:root/v4r
 * put some header defintions into cpp files and remove .hpp files
 * Update .gitlab-ci.yml
 * put miscellaneous functions into more specific files
@@ -1646,10 +1461,8 @@ Changelog for package v4r
 * fixed typo
 * fixed typo
 * clean up .gitlab-ci.yml
-* Merge branch 'master' of rgit.acin.tuwien.ac.at:root/v4r
 * add depdendencies description
 * Update .gitlab-ci.yml
-* Merge branch 'master' of rgit.acin.tuwien.ac.at:root/v4r
 * add contributing and style_format doc files
 * Update package.xml
   test if this compiles now
@@ -1669,10 +1482,7 @@ Changelog for package v4r
 * update color transformation and comparison
 * use boost::dynamic_bitset instead of vector<bool>, add camera class, put some definitions into header files + some code refactoring
 * fix roi when reaching boundary
-* Merge branch 'master' of rgit.acin.tuwien.ac.at:root/v4r
-* Merge branch 'master' into 'master'
   Ubuntu 16.04 compatibility
-  See merge request !54
 * Merge pull request #67 from strands-project/ubuntu1604_compatibility
   Ubuntu1604 compatibility
 * Merge remote-tracking branch 'hannes/master'
@@ -1683,10 +1493,7 @@ Changelog for package v4r
 * fix some warnings
 * Merge pull request #66 from strands-project/sync_from_gitlab
   Sync from gitlab
-* Merge branch 'master' of rgit.acin.tuwien.ac.at:root/v4r
-* Merge branch 'new_try' into 'master'
   New try
-  See merge request !53
 * Merge pull request #64 from strands-project/new_try
   [WIP] New try
 * add timing for pose refinement
@@ -1855,12 +1662,9 @@ Changelog for package v4r
 * Merge pull request #63 from taketwo/remove-x86
   Remove all mentions of x86 and x86_64 in CMake scripts
 * Remove all mentions of x86 and x86_64 in CMake scripts
-* Merge branch 'master' of rgit.acin.tuwien.ac.at:root/v4r
 * use object indices also for unfiltered registered model cloud and only save filtered input clouds if debug option is set
-* Merge branch 'master' into 'master'
   added quick fixed to handle some range check exceptions
   needs proper handling soon
-  See merge request !51
 * 1.3.3
 * 1.3.2
 * Merge remote-tracking branch 'upstream/master'
@@ -1875,7 +1679,6 @@ Changelog for package v4r
 ------------------
 * Merge pull request `#60 <https://github.com/strands-project/v4r/issues/60>`_ from strands-project/strands
   some quick fixes regarding range check exceptions, need proper fix eventually
-* Merge branch 'master' of github.com:strands-project/v4r into strands
 * added quick fixed to handle some range check exceptions
   needs proper handling soon
 * Merge pull request `#59 <https://github.com/strands-project/v4r/issues/59>`_ from strands-project/fix_range_error_when_using_hv_use_histogram_specification
@@ -1897,19 +1700,14 @@ Changelog for package v4r
 * copy uniform_sampling files from PCL 1.7.2 to make V4R also compile on PCL 1.8
 * updated RTMT noise model parameters
 * Merge remote-tracking branch 'v4r_root/master'
-* Merge branch 'dynamic_object_learning' into 'master'
   Dynamic object learning
-  See merge request !50
-* Merge branch 'master' into 'master'
   Master
-  See merge request !49
 * Contributors: Thomas Fäulhammer
 
 1.4.0 (2016-01-27)
 ------------------
 * Merge pull request `#55 <https://github.com/strands-project/v4r/issues/55>`_ from strands-project/new_recognition_resolved_merge_conflict
   New recognition resolved merge conflict
-* Merge branch 'new_recognition'
 * Merge remote-tracking branch 'strands/master'
 * change default values
 * fix noise model based cloud integration
@@ -1977,8 +1775,6 @@ Changelog for package v4r
 * Merge pull request `#44 <https://github.com/strands-project/v4r/issues/44>`_ from strands-project/dynamic_object_learning
   Dynamic object learning
 * make compatible to new v4r interfaces
-* Merge branch 'dol_rebased'
-* Merge branch 'master' of github.com:strands-project/v4r
 * fix deprecated warning
 * remnants from RAL paper
 * fixed some bugs
@@ -1990,7 +1786,6 @@ Changelog for package v4r
 * added file to test model coverage
 * skip patrol run for which no object has been modelled
 * recognition evaluation with respect to coverage for controlled runs
-* Merge branch 'recognition_dev' into dol_rebased
   Conflicts:
   modules/recognition/include/v4r/recognition/impl/local_recognizer.hpp
 * taken view file is now correct
@@ -2001,8 +1796,6 @@ Changelog for package v4r
 * recognition evaluation for partial model and for offline data more or less ready
 * added first evaluation tool to compute recognition performance with respect to percentage of visible model
 * added visualize_masked_pcd again
-* Merge branch 'recognition_dev' into dol_rebased
-* Merge branch 'dol_rebased' of rgit.acin.tuwien.ac.at:t-faeulhammer/v4r into dol_rebased
   Conflicts:
   samples/examples/dynamic_object_learning.cpp
   samples/icra16/eval_dol_gt.cpp
@@ -2105,12 +1898,8 @@ Changelog for package v4r
 * merged
 * use openni instead of openni2
 * Merge remote-tracking branch 'v4r_root/recognition_dev'
-* Merge branch 'recognition_update' into 'master'
   Recognition update
-  See merge request !2
-* Merge branch 'recognition_update' into 'master'
   Recognition update
-  See merge request !45
 * Contributors: Simon Schreiberhuber, Thomas Fäulhammer
 
 1.3.0 (2016-01-08)
@@ -2132,7 +1921,6 @@ Changelog for package v4r
   uses properties (1) lateral noise, (2) axial noise, (3) distance in px to depth discontinuity
 * backup commit
 * first try for new noise modelling
-* Merge branch 'fix_KeypointSlamRGBD' into recognition_dev
 * fixed problem when training views do not start with cloud_000000.pcd
   TODO: re-initialize problem still exists (if training database is altered, flann matrix will be wrong - have to remove *_flann.idx manually right now)
   fixed trigraph warnings
@@ -2169,9 +1957,7 @@ Changelog for package v4r
 * Merge pull request `#35 <https://github.com/strands-project/v4r/issues/35>`_ from strands-project/recognition_update
   Recognition update
 * Merge remote-tracking branch 'v4r_root/recognition_update' into recognition_update1
-* Merge branch 'fix_glfw3' into 'recognition_update'
   Fix glfw3 and undefined references to X*
-  See merge request !47
 * add multiple X11 linker libs
 * Fix variable names in examples CMakeLists
 * Merge remote-tracking branch 'sergey/fix-glfw3' into recognition_update1
@@ -2181,10 +1967,8 @@ Changelog for package v4r
 * Merge remote-tracking branch 'sergey/fix-glfw3' into recognition_update1
 * added description for go3d parameter
 * Properly add GLFW3 third-party library
-* Merge branch 'fixes-for-recognition-update' into 'recognition_update'
   Fixes for recognition update
   This fixes a few compilation problems in the current recognition update branch.
-  See merge request !46
 * Fix "invalid suffix 'd' on floating constant" error
 * Add missing dependency (rendering depends on GLM)
 * added glog as dependency (otherwise linking potentially fails)
@@ -2284,29 +2068,18 @@ Changelog for package v4r
   polishing multiview recognizer
   add libsvm as system dependency
 * merged remove_tomgine
-* Merge branch 'master' of rgit.acin.tuwien.ac.at:root/v4r
-* Merge branch 'remove-ipp' into 'master'
   Remove all mentions of IPP (Intel Performance Primitives)
   Remove all mentions of IPP (Intel Performance Primitives). This remained from OpenCV scripts.
-  See merge request !43
 * Remove all mentions of IPP (Intel Performance Primitives)
-* Merge branch 'fix-tomgine-assimp' into 'master'
   Fix Assimp dependency
-  This merge request fixes missing Assimp include in Tomgine and updates the CMake script for finding the package.
-  See merge request !42
 * Update Assimp finder script
 * Add missing AssImp include in tomgine
 * Fix a few warnings in tomgine
-* Merge branch 'master' into 'master'
   Master
   created a tracking module and added the monocular object tracker from RTMT
-  See merge request !41
-* Merge branch 'find-system-libsvm' into 'master'
   Add CMake commands to detect system installation of LibSVM
   The possibility to build LibSVM from source is preserved, but has to be enabled by setting BUILD_LIBSVM option (which is now off by default).
-  See merge request !40
 * added monocular camera pose tracker (lk/ keypoint based) from RTMT
-* Merge branch 'master' of rgit.acin.tuwien.ac.at:root/v4r
 * test
 * test
 * mv test
@@ -2337,17 +2110,12 @@ Changelog for package v4r
   silence unused variable warning
   removed unneccessary point cloud copy
   normal method now a parameter
-* Merge branch 'master' into 'master'
   Master
-  See merge request !39
-* Merge branch 'master' into 'master'
   Master
-  See merge request !38
 * Contributors: Sergey Alexandrov, Thomas Fäulhammer
 
 1.0.9 (2015-09-17)
 ------------------
-* Merge branch 'master' of github.com:strands-project/v4r
 * fix Bloom issue with umlauts
 * Merge remote-tracking branch 'strands/master'
 * Contributors: Thomas Fäulhammer
@@ -2382,9 +2150,7 @@ Changelog for package v4r
 * added RandomForest
   fixed some warnings
 * Add libsvm 3rd-party library
-* Merge branch 'master' into 'master'
   Master
-  See merge request !37
 * reverted sv recognizer header file because otherwise cg pointer cast caused seg fault
   fixed some warnings
 * make SIFT_GPU optional by setting BUILD_SIFTGPU in cmake
@@ -2392,10 +2158,8 @@ Changelog for package v4r
 * added binary vector increment
   changed parameter name to avoid confusion in range image computation
 * merged
-* Merge branch 'master' into 'master'
   Master
   this hopefully includes all the changes from LaMoR Summer School + fixes for the Recognizer
-  See merge request !36
 * Contributors: Sergey Alexandrov, Thomas Fäulhammer
 
 1.0.6 (2015-09-07)
@@ -2403,24 +2167,16 @@ Changelog for package v4r
 * Merge pull request `#23 <https://github.com/strands-project/v4r/issues/23>`_ from strands-project/mergeLAMOR
   Merge lamor
 * merged lamor STRANDS
-* Merge branch 'master' of github.com:strands-project/v4r into mergeLAMOR
-* Merge branch 'master' of rgit.acin.tuwien.ac.at:root/v4r into mergeLAMOR
 * added default param for printParams in MV recognizer
   other minor changes
 * Update Readme.md
 * hopefully fixes bug in ourcvfh with different pcl versions
   view_all_point_clouds_in_folder can now also save images to disk
-* Merge branch 'master' into 'master'
   Master
-  See merge request !35
 * catch SIFT FLANN exception when updating model database
 * flann idx now configurable
-* Merge branch 'master' into 'master'
   Master
-  See merge request !34
-* Merge branch 'master' into 'master'
   Master
-  See merge request !33
 * Contributors: Marc Hanheide, Thomas Fäulhammer
 
 1.0.5 (2015-08-30)
@@ -2468,59 +2224,36 @@ Changelog for package v4r
 * added sample eval for single view object recognizer
 * updated ReadMe
 * added libglm-dev as build dependency
-* Merge branch 'add-glm-dependency' into 'master'
   Add GLM dependency
-  See merge request !32
 * Add GLM dependency
-* Merge branch 'master' into 'master'
   Master
-  See merge request !31
 * added cmake files for openni2
-* Merge branch 'master' into 'master'
   Master
-  See merge request !30
-* Merge branch 'fix-u-r' into 'master'
   Fix undefined reference errors (with Octree and 1.7.1)
-  See merge request !29
 * added qt-opengl-dev as dependency
 * added openni in package.xml
-* Merge branch 'master' of rgit.acin.tuwien.ac.at:root/v4r
 * linked openni libraries to RTMT
   added octree_impl to hopefully solve pcl conflicts with versions <= 1.7.1
 * Hopefully fix undefined reference errors (with Octree)
-* Merge branch 'add-template-keyword' into 'master'
   Add missing 'template' keyword (causes clang compilation error)
-  See merge request !28
-* Merge branch 'master' of rgit.acin.tuwien.ac.at:root/v4r
 * added RTMT GL libraries again
 * Add missing 'template' keyword (causes clang compilation error)
 * added binary operations to common
   changed dist calculation for planes available from outside
 * fixed QT4 CMake file
-* Merge branch 'master' into 'master'
   fixed QT4 CMake file
-  See merge request !27
-* Merge branch 'master' into 'master'
   added RTMT
-  See merge request !26
 * added RTMT
-* Merge branch 'master' into 'master'
   Master
-  See merge request !25
 * added possibility to crop image when converting PCD to image
   createDirIfNotExists should now create all directories recursively
   added initial version for pcl segmentation (used in STRANDS in Year1) - not finished
 * make parameters double (instead of float) to make it directly accessible via ros getparam function
-* Merge branch 'master' into 'master'
   Master
-  See merge request !24
 * fixed error with Willow Poses
   removed object modelling dependency which is not yet present
 * added const specifier for get function
-* Merge branch 'master' into 'master'
   Master
-  See merge request !23
-* Merge branch 'master' of rgit.acin.tuwien.ac.at:t-faeulhammer/v4r
   Conflicts:
   samples/cpp/save_pose_into_pcd.cpp
 * added some V4R_EXPORTS in registration module
@@ -2536,37 +2269,26 @@ Changelog for package v4r
 * added initial version for ground truth labelling tool
 * del
 * added samples folder
-* Merge branch 'dynamic_object_learning' of rgit.acin.tuwien.ac.at:t-faeulhammer/v4r into dynamic_object_learning
 * fixed some ns
 * fixes some namespace issues
 * added object learning again
 * fixed pcl version conflict with vector of eigen
-* Merge branch 'master' of rgit.acin.tuwien.ac.at:t-faeulhammer/v4r
 * fixed vector conflict with different PCL versions
 * fixed some ns
-* Merge branch 'master' into dynamic_object_learning
 * changed ns
 * fixed wrong macro names for detect CUDA cmake
-* Merge branch 'dynamic_object_learning' of http://rgit.acin.tuwien.ac.at/t-faeulhammer/v4r into dynamic_object_learning
-* Merge branch 'dynamic_object_learning' of rgit.acin.tuwien.ac.at:t-faeulhammer/v4r into dynamic_object_learning
 * added object learning again
 * fixes some namespace issues
-* Merge branch 'dynamic_object_learning' of rgit.acin.tuwien.ac.at:t-faeulhammer/v4r into dynamic_object_learning
 * added object learning again
 * fixed wrong cmake macro name
 * added object learning again
 * del
-* Merge branch 'master' into 'master'
   del
-  See merge request !22
-* Merge branch 'master' into 'master'
   Master
-  See merge request !21
 * remnoved second layer namespace "rec_3d_framework"
   added some V4R_EXPORTS
   changed some include paths
   removed redundant faat_3d_rec_framework.h file
-* Merge branch 'dependency-propagation' of rgit.acin.tuwien.ac.at:alexandrov88/v4r into dependency_propagation
 * Print OpenCV and Ceres statuses
 * Update find Ceres to export variables
 * Implement dependency propagation
@@ -2580,29 +2302,19 @@ Changelog for package v4r
 * Change SIFTGPU_INCLUDE_DIR -> SIFTGPU_INCLUDE_DIRS
 * Update io module
 * Find Boost globally
-* Merge branch 'master' into 'master'
   Master
-  See merge request !20
-* Merge branch 'master' into dynamic_object_learning
 * added camera tracker - uff, so many changes!
 * updated recognition cmakefile to have correct link to opencv
   fixed some shadow warnings
 * fixed some warning and added V4R_EXPORTS
   added openmp in cmake
-* Merge branch 'master' into 'master'
   fixed some warning and added V4R_EXPORTS
   added openmp in cmake
-  See merge request !19
-* Merge branch 'fix-edt' into 'master'
   Build EDT library with -fPIC option
-  See merge request !18
 * Build EDT library with -fPIC option
 * fixed some warnings
   changed default parameter value of sor
-* Merge branch 'master' into 'master'
   Master
-  See merge request !17
-* Merge branch 'master' into dynamic_object_learning
 * added object_modelling cmakelists.txt
 * added OpenCV as cmake dependency
   added some V4R_EXPORTS
@@ -2610,7 +2322,6 @@ Changelog for package v4r
   added OpenMP cmake c/cxx flags
 * fixed warnings of shadowed variables
   using new v4r namespaces
-* Merge branch 'master' into dynamic_object_learning
   Conflicts:
   modules/object_modelling/include/v4r/object_modelling/do_learning.h
   modules/object_modelling/include/v4r/object_modelling/model_view.h
@@ -2622,22 +2333,15 @@ Changelog for package v4r
 * All modules now explicitly depend on PCL
 * Fix EDT
 * added missing segmentation dependency
-* Merge branch 'master' into 'master'
   added missing segmentation dependency
-  See merge request !16
 * adapted to new cmake system
-* Merge branch 'master' into 'master'
   Master
-  See merge request !15
 * Merge pull request `#19 <https://github.com/strands-project/v4r/issues/19>`_ from strands-project/new_cmake
   New cmake
-* Merge branch 'master' into dynamic_object_learning
   Conflicts:
   modules/CMakeLists.txt
 * Fix 3rd party header handling for the case of no-install usage of V4R
-* Merge branch 'new_cmake' into 'master'
   New cmake
-  See merge request !14
 * changed required PCL version to less restrictive 1.7.
   Otherwise, there is a conflict on Jenkins because it only provides package for 1.7.1
 * hide recognition module for the time being
@@ -2648,12 +2352,9 @@ Changelog for package v4r
   modules/recognition/CMakeLists.txt
   modules/registration/CMakeLists.txt
 * Fix V4RConfig.cmake for use without installation
-* Merge branch 'master' into dynamic_object_learning
 * fixed some warnings with redundant typenames and wrong derived signature (& missing) in Recognition
   fixed missing EDT dependency in Registration
-* Merge branch 'master' into 'master'
   Master
-  See merge request !13
 * updated supervoxel clustering method
   added some function docs
   optional parameter for pairwise transform refinement
@@ -2663,7 +2364,6 @@ Changelog for package v4r
 * Revert "(Temporarily) move miscellaneous to keypoints because it depends on them"
   This reverts commit 8b4bf90048750c95bae136b9b65dbb890c8c900e.
 * Add V4R_EXPORTS here and there
-* Merge branch 'master' into dynamic_object_learning
 * pcl::copyPointCloud now also accepts binary obj mask
 * beautify code - moved from indices to mask
   added parameter filter_planes_only (not working for value false yet)
@@ -2676,55 +2376,37 @@ Changelog for package v4r
   removed some unnecessary includes
 * temporary commit for visualizing table planes supported by object mask
 * Another fix for SiftGPU
-* Merge branch 'revert_merge_request' into 'master'
-  Revert "Merge branch 'dynamic_object_learning' into 'master'"
   This reverts commit 87d034a1a8c8763657ca59ff08f9ec95a5d1c4be, reversing
   changes made to d183d5143b68e70de0e678a3d0659fae2a85a731.
-  See merge request !12
-* Revert "Merge branch 'dynamic_object_learning' into 'master'"
   This reverts commit 87d034a1a8c8763657ca59ff08f9ec95a5d1c4be, reversing
   changes made to d183d5143b68e70de0e678a3d0659fae2a85a731.
 * Trying to add SiftGPU
 * Fix EDT
 * Remove SiftGPU sources
 * Fix EDT third-party dependency
-* Merge branch 'master' into dynamic_object_learning
 * fixed some warnings
   added occlusion reasoning for two clouds (optional tf) which return occlusion mask
-* Merge branch 'dynamic_object_learning' into 'master'
   Dynamic object learning
-  See merge request !11
 * added parameter for statistical outlier removal (mean=50 and stddevmul=1 didn't work well on asus_box)
   fixed bug in CreateMaskFromVecIndices
   there seems to be still a problem in occlusion reasoning
 * Add new build system, migrate common and segmentation modules
 * Get rid of legacy build system stuff
-* Merge branch 'master' into dynamic_object_learning
-* Merge branch 'master' into 'master'
   fixed warning of unused variable in SLICO
   fixed visualization issue when called multiple times
-  See merge request !10
 * fixed warning of unused variable in SLICO
   fixed visualization issue when called multiple times
 * updated region growing such that it does not use points already neglected by plane extractor
   fixed visualizition issue when calling the visualization service more than once
-* Merge branch 'master' into 'master'
   Master
-  See merge request !9
-* Merge branch 'master' into dynamic_object_learning
 * added ceres version check
   updated McLMIcp.cpp to use new fixes from aitor
 * include devil dependency
 * changed to right rosdep key for glew
-* Merge branch 'master' into dynamic_object_learning
 * added some dependencies
-* Merge branch 'master' into 'master'
   Master
-  See merge request !8
-* Merge branch 'master' into dynamic_object_learning
 * removed aitor from maintainer list
 * Merge remote-tracking branch 'strands/package_xml'
-* Merge branch 'master' into dynamic_object_learning
 * added parameter class for noise model based integration
   changed Eigen::Vector4f vector for correct allocation
 * indices are now stored in a more generic way
@@ -2738,35 +2420,25 @@ Changelog for package v4r
 * MST is now a parameter
   plane indices are stored as a vector of a vector now - (otherwise high cost occured in callgrind profiler)
   updated clear function
-* Merge branch 'master' into dynamic_object_learning
 * createDirIfNotExist function is now in common
 * fixed problem with nan values (recursive absolute pose computation based on spanning tree implementation was not correct)
 * minimum spanning tree is working now... there are nan values transferred to nearest neighbor search -> still needs to be fixed!
 * bug fix - should be back to STRANDS review demo state
-* Merge branch 'master' into 'master'
   Master
-  See merge request !7
-* Merge branch 'master' into dynamic_object_learning
 * fixed some linking problems... fixed bug in setCloudPose (last element was not set to 1)
   made code clang compatible...
 * tmp commit
-* Merge branch 'master' into dynamic_object_learning
 * fixed linking error, updated some namespaces
 * tmp commit
-* Merge branch 'master' into dynamic_object_learning
 * changed some recognition files to use new filesystem namespace
 * tmp commit
-* Merge branch 'master' into 'master'
   Master
-  See merge request !6
 * temporary commit of dynamic object learning. not compiling yet!
 * deleted remaining temp(~) files
 * added keypoint files needed for object learning
 * added clustertonormals from keypointTools
 * add initial version of keypoints
-* Merge branch 'master' into 'master'
   Master
-  See merge request !5
 * some fixes to merge to master
 * Merge remote-tracking branch 'v4r_root/master'
   Conflicts:
@@ -2790,20 +2462,14 @@ Changelog for package v4r
 * .
 * .
 * tmp commit
-* Merge branch 'master' into 'master'
   Added multiview recognizer. renamed some namespaces.
-  See merge request !4
 * Added multiview recognizer. renamed some namespaces.
-* Merge branch 'master' into 'master'
   Master
-  See merge request !3
 * Fixed merge conflict
 * Initial commit. For some reason if segmentation app is compiled - there is a linking problem with pcl. Namespaces are a mess!
 * initial commit
 * upd
-* Merge branch 'master' into 'master'
   update readme
-  See merge request !1
 * update readme
 * Add new file
 * Init commit

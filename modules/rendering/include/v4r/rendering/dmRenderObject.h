@@ -60,6 +60,7 @@
 
 #include <pcl/PolygonMesh.h>
 
+#include <opencv2/opencv.hpp>
 
 
 namespace v4r{
@@ -79,9 +80,21 @@ private:
 
 
 
+    //TODO: add this!!!!!!!!!
+    struct MeshInfo{
+        uint32_t beginIndex=0;
+        uint32_t indexCount=0;
+        //TODO: add texture
+        cv::Mat tex;
+        GLuint glTex=0;
+
+    };
+    std::vector<MeshInfo> meshes;
+
     float scale;
     Eigen::Vector3f offset;
     bool color;
+    bool texture;//TODO add
     bool geometry;
 
     /**
@@ -91,6 +104,8 @@ private:
      * @param IBO
      */
     void loadToGPU(GLuint &VBO,GLuint &IBO);
+
+    void unloadFromGPU();
 
     /**
      * @brief getIndexCount
@@ -102,11 +117,13 @@ private:
 
 public:
 
+
+
     /**
      * @brief DepthmapRendererModel loads the geometry data and creates the necessary opengl ressources
      * @param file filename of the geometry file
      */
-    DepthmapRendererModel(const std::string &file, bool shiftToCenterAndNormalizeScale=true);
+    DepthmapRendererModel(const std::string &file, std::string path="", bool shiftToCenterAndNormalizeScale=true);
 
     /**
      * @brief DepthmapRendererModel loads the geometry data into the opengl context
@@ -144,6 +161,10 @@ public:
      * true if the loaded mesh contains color information (suitable to generate a colored pointcloud)
      */
     bool hasColor();
+
+
+
+    bool hasTexture();
 
 
     /**

@@ -6,11 +6,6 @@ if(NOT V4R_DEPENDENCIES_FOUND)
   return()
 endif()
 
-if(NOT WITH_VTK)
-  message("ObjectGroundTruthAnnotator requires WITH_VTK enabled. It will not be compiled.")
-  return()
-endif()
-
 v4r_include_directories("${CMAKE_CURRENT_SOURCE_DIR}")
 v4r_include_modules(${ObjectGroundTruthAnnotator_DEPS})
 
@@ -39,33 +34,24 @@ if(HAVE_OPENNURBS)
   list(APPEND DEP_LIBS ${OPENNURBS_LIBRARIES})
 endif()
 
-if(HAVE_QT4)
-  v4r_include_directories(${QT4_INCLUDE_DIRS})
-  list(APPEND DEP_LIBS ${QT4_LIBRARIES})
-  add_definitions(${QT_DEFINITIONS})
-  QT4_WRAP_CPP(foo_MOC_SRCS main_window.h)
-  include(${QT_USE_FILE})
-  add_definitions(-DQT_NO_KEYWORDS)
-elseif(HAVE_QT5)
-  v4r_include_directories(${Qt5Widgets_INCLUDE_DIRS})
-  v4r_include_directories(${Qt5OpenGL_INCLUDE_DIRS})
-  list(APPEND DEP_LIBS ${Qt5Widgets_LIBRARIES})
-  list(APPEND DEP_LIBS ${Qt5OpenGL_LIBRARIES})
-  add_definitions(${QT_DEFINITIONS})
-  QT5_WRAP_CPP(HEADERS_MOC ${HEADERS})
-endif()
-
-#add_definitions(-std=c++0x)
-add_definitions(-DEIGEN_YES_I_KNOW_SPARSE_MODULE_IS_NOT_STABLE_YET)
-add_definitions(-Dlinux -D__x86_64__)
-
 set(FORMS
         mainwindow.ui
         params.ui
 )
 
+v4r_include_directories(${Qt5Widgets_INCLUDE_DIRS})
+v4r_include_directories(${Qt5OpenGL_INCLUDE_DIRS})
+list(APPEND DEP_LIBS ${Qt5Widgets_LIBRARIES})
+list(APPEND DEP_LIBS ${Qt5OpenGL_LIBRARIES})
+add_definitions(${QT_DEFINITIONS})
+qt5_wrap_ui(FORMS_MOC ${FORMS})
 
-find_package(VTK REQUIRED)
+#add_definitions(-std=c++0x)
+add_definitions(-DEIGEN_YES_I_KNOW_SPARSE_MODULE_IS_NOT_STABLE_YET)
+add_definitions(-Dlinux -D__x86_64__)
+
+
+
 add_executable(GT6DOF GT6DOF.cpp ${foo_MOC_SRCS} main_window.cpp)
 if(VTK_VERSION_MAJOR LESS 6)
 target_link_libraries(GT6DOF ${ObjectGroundTruthAnnotator_DEPS} QVTK ${DEP_LIBS} ${QT_LIBRARIES} ${GL_LIBRARIES})

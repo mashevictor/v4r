@@ -208,9 +208,12 @@ DepthmapRenderer::DepthmapRenderer(int resx, int resy)
     const char *vertex=
             "#version 450 \n\
             in vec4 pos;\n\
+            in vec2 texturePosition;\n\
+            out vec2 texPosIn;\n\
             out vec4 colorIn;\n\
             void main(){\n\
                gl_Position=vec4(pos.xyz,1);\n\
+               texPosIn=texturePosition;\n\
                colorIn=unpackUnorm4x8(floatBitsToUint(pos.w));\n\
             }";
     const char *geometry=
@@ -226,7 +229,9 @@ DepthmapRenderer::DepthmapRenderer(int resx, int resy)
             noperspective out float z;\n\
             out vec4 projectedPos;\n\
             in vec4 colorIn[];\n\
+            in vec2 texPosIn[];\n\
             flat out unsigned int index;\n\
+            out vec2 texPos;\n\
             out vec4 color;\n\
             //uniform vec4 projection;\n\
             uniform mat4 projection;\n\
@@ -244,6 +249,7 @@ DepthmapRenderer::DepthmapRenderer(int resx, int resy)
                 vec4 p1=transformation*gl_in[0].gl_Position;\n\
                 vec2 pp1=gl_Position.xy;\n\
                 z=-(transformation*gl_in[0].gl_Position).z;\n\
+                texPos=texPosIn[0];\n\
                 color=colorIn[0];\n\
                 EmitVertex();\n\
                 gl_Position=project(transformation*gl_in[1].gl_Position);\n\
@@ -251,6 +257,7 @@ DepthmapRenderer::DepthmapRenderer(int resx, int resy)
                 vec2 pp2=gl_Position.xy;\n\
                 vec4 p2=transformation*gl_in[1].gl_Position;\n\
                 z=-(transformation*gl_in[1].gl_Position).z;\n\
+                texPos=texPosIn[1];\n\
                 color=colorIn[1];\n\
                 EmitVertex();\n\
                 gl_Position=project(transformation*gl_in[2].gl_Position);\n\
@@ -259,6 +266,7 @@ DepthmapRenderer::DepthmapRenderer(int resx, int resy)
                 vec2 pp3=gl_Position.xy;\n\
                 z=-(transformation*gl_in[2].gl_Position).z;\n\
                 color=colorIn[2];\n\
+                texPos=texPosIn[2];\n\
                 EmitVertex();\n\
                 //calc triangle surface area\n\
                 float A= length(cross(p1.xyz/p1.w-p3.xyz/p3.w,p2.xyz/p2.w-p3.xyz/p3.w))*0.5;//calculation of the surface area of this triangle\n\
@@ -272,6 +280,7 @@ DepthmapRenderer::DepthmapRenderer(int resx, int resy)
             \
             noperspective in float z;\n\
             flat in unsigned int index;\n\
+            in vec2 texPos;\n\
             in vec4 color;\n\
             in vec4 projectedPos;\n\
             out vec4 depthOutput;\n\
@@ -281,6 +290,7 @@ DepthmapRenderer::DepthmapRenderer(int resx, int resy)
             uniform mat4 _projection;\n\
             uniform float zNear;\n\
             uniform float zFar;\n\
+            uniform sampler2D tex;\n\
             void main(){\n\
             \
                vec4 unprojectedPos=_projection*projectedPos;\n\
@@ -290,6 +300,10 @@ DepthmapRenderer::DepthmapRenderer(int resx, int resy)
                //depthOutput=vec4(vec3(1),1);\n\
                indexOutput=index;//uintBitsToFloat(1234);\n\
                colorOutput=color;\n\
+               //colorOutput=vec4(texPos,0,1);//debug\n\
+               if(texPos.x>-9 ){ \n\
+                    colorOutput = texture(tex,texPos);\n\
+               }\n\
             }";
 
 
@@ -354,9 +368,14 @@ DepthmapRenderer::DepthmapRenderer(int resx, int resy)
     _projectionUniform=glGetUniformLocation(shaderProgram,"_projection");
     poseUniform = glGetUniformLocation(shaderProgram,"transformation");
     viewportResUniform = glGetUniformLocation(shaderProgram,"viewportRes");
+    textureUniform = glGetUniformLocation(shaderProgram,"tex");
 
     //get attribute location
     posAttribute=glGetAttribLocation(shaderProgram,"pos");
+    texPosAttribute = glGetAttribLocation(shaderProgram,"texturePosition");
+
+    if( (err = glGetError()) != GL_NO_ERROR)
+        std::cerr << "A terrible OpenGL error occured during setting up the shader (" << err << ")" << std::endl;
 
 
     //generate framebuffer:
@@ -440,6 +459,9 @@ DepthmapRenderer::~DepthmapRenderer()
         glDeleteBuffers(1,&VBO);
         glDeleteBuffers(1,&IBO);
     }
+    if(this->model!=0){
+        model->unloadFromGPU();
+    }
 
     //remaining buffers
     glDeleteBuffers(1,&SSBO);
@@ -507,6 +529,13 @@ void DepthmapRenderer::setIntrinsics(float fx, float fy, float cx, float cy)
 
 void DepthmapRenderer::setModel(DepthmapRendererModel *_model)
 {
+    GLuint err;
+    if( (err = glGetError()) != GL_NO_ERROR)
+        std::cerr << "A terrible OpenGL error occured before uploading the model (" << err << ")" << std::endl;
+
+    if(this->model!=0){
+
+    }
     this->model=_model;
 
     //bind shader:
@@ -516,8 +545,20 @@ void DepthmapRenderer::setModel(DepthmapRendererModel *_model)
 
     //set vertexAttribArray
     glEnableVertexAttribArray(posAttribute);
-    glVertexAttribPointer(posAttribute,4,GL_FLOAT,GL_FALSE,sizeof(glm::vec4),0);
+    glVertexAttribPointer(posAttribute,4,GL_FLOAT,GL_FALSE,sizeof(glm::vec4)+sizeof(glm::vec2),//the size of our vertex
+                          0);
+    glEnableVertexAttribArray(texPosAttribute);
+    glVertexAttribPointer(texPosAttribute,2,GL_FLOAT,GL_FALSE,sizeof(glm::vec4)+sizeof(glm::vec2),//the size of our vertex
+                          (void*)sizeof(glm::vec4));//offset
+
+    if( (err = glGetError()) != GL_NO_ERROR)
+        std::cerr << "A terrible OpenGL error occured while uploading the model (" << err << ")" << std::endl;
+
     glBindVertexArray(0);
+
+    //set texture slot to the uniform
+    glUniform1i(textureUniform,0);
+
 }
 
 Eigen::Matrix4f DepthmapRenderer::getPoseLookingToCenterFrom(Eigen::Vector3f position)
@@ -570,6 +611,12 @@ void DepthmapRenderer::setCamPose(Eigen::Matrix4f _pose)
 
 cv::Mat DepthmapRenderer::renderDepthmap(float &visible,cv::Mat &color) const
 {
+    GLuint err;
+    if( (err = glGetError()) != GL_NO_ERROR)
+        std::cerr << "A terrible OpenGL error occured before setting up the rendering (" << err << ")" << std::endl;
+
+
+
     //load shader:
     glUseProgram(shaderProgram);
 
@@ -633,14 +680,45 @@ cv::Mat DepthmapRenderer::renderDepthmap(float &visible,cv::Mat &color) const
     glUnmapBuffer(GL_ATOMIC_COUNTER_BUFFER);
 
 
-    //disable culling (Off by default but this would be the right moment)
-    //render
-    glDrawElements(
-        GL_TRIANGLES,      // mode
-        model->getIndexCount(),    // count
-        GL_UNSIGNED_INT,   // type
-        (void*)0           // element array buffer offset
-    );
+    if( (err = glGetError()) != GL_NO_ERROR)
+        std::cerr << "A terrible OpenGL error occured setting up the rendering (" << err << ")" << std::endl;
+
+
+
+    for(size_t i=0;i<model->meshes.size();i++){
+        //disable culling (Off by default but this would be the right moment)
+
+        //first bind the according texture
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D,model->meshes[i].glTex);
+
+        //render
+        glDrawElements(
+            GL_TRIANGLES,      // mode
+            model->meshes[i].indexCount,    // count
+            GL_UNSIGNED_INT,   // type
+            (void*)(sizeof(unsigned int)*model->meshes[i].beginIndex)
+        );// element array buffer offset (bytes)
+
+        if( (err = glGetError()) != GL_NO_ERROR)
+            std::cerr << "A terrible OpenGL error occured during rendering mesh " << i <<  "(" << err << ")" << std::endl;
+
+
+
+    }
+    if(model->meshes.size()==0){
+        //if the model got loaded from the pcl library.
+        //we use this legacy code of rendering.
+
+        //disable culling (Off by default but this would be the right moment)
+        //render
+        glDrawElements(
+            GL_TRIANGLES,      // mode
+            model->getIndexCount(),    // count
+            GL_UNSIGNED_INT,   // type
+            (void*)0           // element array buffer offset
+        );
+    }
 
     glFinish();
 
@@ -710,7 +788,6 @@ cv::Mat DepthmapRenderer::renderDepthmap(float &visible,cv::Mat &color) const
     visible=visibleArea/fullArea;
 
 
-    GLuint err;
     if( (err = glGetError()) != GL_NO_ERROR)
         std::cerr << "A terrible OpenGL error occured during rendering (" << err << ")" << std::endl;
 

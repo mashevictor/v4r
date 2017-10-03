@@ -72,12 +72,10 @@ set(SOURCES
 )
 
 set(HEADERS
-        Camera.h
         CreateTrackingModel.h
         glviewer.h
         mainwindow.h
         ObjectSegmentation.h
-        OctreeVoxelCentroidContainerXYZRGB.hpp
         params.h
         sensor.h
 )
@@ -87,27 +85,13 @@ set(FORMS
         params.ui
 )
 
-if(HAVE_QT4)
-  v4r_include_directories(${QT4_INCLUDE_DIRS})
-  list(APPEND DEP_LIBS ${QT4_LIBRARIES})
-  add_definitions(${QT_DEFINITIONS})
-  QT4_WRAP_CPP(HEADERS_MOC ${HEADERS})
-  QT4_WRAP_UI(FORMS_MOC ${FORMS})
-  set(QT_USE_QTOPENGL TRUE)
-  include(${QT_USE_FILE})
-  
-  message(STATUS "QT_INCLUDE_DIR: ${QT_INCLUDE_DIR}")
-  message(STATUS "QT_USE_FILE: ${QT_USE_FILE}")
-  message(STATUS "QT_DEFINITIONS: ${QT_DEFINITIONS}")
-  message(STATUS "QT_LIBRARIES: ${QT_LIBRARIES}")
-elseif(HAVE_QT5)
-  v4r_include_directories(${Qt5Widgets_INCLUDE_DIRS})
-  v4r_include_directories(${Qt5OpenGL_INCLUDE_DIRS})
-  list(APPEND DEP_LIBS ${Qt5Widgets_LIBRARIES})
-  list(APPEND DEP_LIBS ${Qt5OpenGL_LIBRARIES})
-  set(CMAKE_AUTOMOC ON)
-  set(CMAKE_AUTOUIC ON)
-endif()
+v4r_include_directories(${Qt5Widgets_INCLUDE_DIRS})
+v4r_include_directories(${Qt5OpenGL_INCLUDE_DIRS})
+list(APPEND DEP_LIBS ${Qt5Widgets_LIBRARIES})
+list(APPEND DEP_LIBS ${Qt5OpenGL_LIBRARIES})
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTOUIC ON)
+qt5_wrap_ui(FORMS_MOC ${FORMS})
 
 find_package(PkgConfig REQUIRED)
 pkg_search_module(GL REQUIRED gl)

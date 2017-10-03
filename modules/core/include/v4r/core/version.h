@@ -1,10 +1,10 @@
 #ifndef __V4R_VERSION_HPP__
 #define __V4R_VERSION_HPP__
 
-#define V4R_VERSION_MAJOR    1
+#define V4R_VERSION_MAJOR    2
 #define V4R_VERSION_MINOR    0
-#define V4R_VERSION_REVISION 0
-#define V4R_VERSION_STATUS   "-dev"
+#define V4R_VERSION_REVISION 2
+#define V4R_VERSION_STATUS   ""
 
 #define V4RAUX_STR_EXP(__A)  #__A
 #define V4RAUX_STR(__A)      V4RAUX_STR_EXP(__A)

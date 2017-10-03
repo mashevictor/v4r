@@ -1,9 +1,9 @@
 project(${OPENNURBS_LIBRARY})
 include("openNURBS.cmake")
-v4r_include_directories(${CMAKE_CURRENT_SOURCE_DIR} ${PCL_INCLUDE_DIRS})
+v4r_include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
 add_library(${OPENNURBS_LIBRARY} STATIC ${OPENNURBS_SOURCES})
-target_link_libraries(${OPENNURBS_LIBRARY} ${PCL_LIBRARIES})
+target_link_libraries(${OPENNURBS_LIBRARY})
 
 set_target_properties(${OPENNURBS_LIBRARY}
   PROPERTIES

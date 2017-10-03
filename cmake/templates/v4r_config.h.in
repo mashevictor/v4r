@@ -25,10 +25,6 @@
 /* Define to 1 if you have the <inttypes.h> header file. */
 #cmakedefine HAVE_INTTYPES_H 1
 
-/* OpenCL Support */
-#cmakedefine HAVE_OPENCL
-#cmakedefine HAVE_OPENCL_STATIC
-
 /* OpenGL support*/
 #cmakedefine HAVE_OPENGL
 

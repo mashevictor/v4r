@@ -125,7 +125,6 @@ add_subdirectory(examples)
 add_subdirectory(eval)
 add_subdirectory(tools)
 #add_subdirectory(icra16)
-#add_subdirectory(ocl)
 
 #
 # END OF BUILD CASE 1: Build samples with library sources
@@ -150,6 +149,5 @@ add_subdirectory(examples)
 add_subdirectory(eval)
 add_subdirectory(tools)
 #add_subdirectory(icra16)
-#add_subdirectory(ocl)
 
 endif()
