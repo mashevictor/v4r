@@ -37,7 +37,6 @@
 **
 ****************************************************************************/
 
-
 /**
  * @file img_utils.h
  * @author Thomas Faeulhammer (faeulhammer@acin.tuwien.ac.at)
@@ -50,10 +49,8 @@
 #include <opencv/cv.h>
 #include <v4r/core/macros.h>
 
+namespace v4r {
 
-namespace v4r
-{
-
-V4R_EXPORTS cv::Mat cropImage(const cv::Mat &img, const cv::Rect &roi_original, size_t margin=0, bool make_square = false);
-
+V4R_EXPORTS cv::Mat cropImage(const cv::Mat &img, const cv::Rect &roi_original, size_t margin = 0,
+                              bool make_square = false);
 }

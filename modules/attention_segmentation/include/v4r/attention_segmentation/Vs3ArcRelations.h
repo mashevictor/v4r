@@ -37,7 +37,6 @@
 **
 ****************************************************************************/
 
-
 /**
  * @file Vs3ArcRelations.h
  * @author Richtsfeld
@@ -52,14 +51,14 @@
 // #include <omp.h>
 // #include <vector>
 // #include <cstdio>
-// 
-#include <opencv2/highgui/highgui.hpp>
+//
 #include <opencv2/core/core.h>
+#include <opencv2/highgui/highgui.hpp>
 #include <opencv2/opencv.hpp>
 
 #include "v4r/SurfaceUtils/SurfaceModel.h"
 // #include "v4r/SurfaceBoundary/VisionCore.h"
-// 
+//
 // #include "ColorHistogram3D.h"
 // #include "Texture.h"
 // #include "Fourier.h"
@@ -67,41 +66,36 @@
 // #include "BoundaryRelations.h"
 // #include "ContourNormalsDistance.h"
 
+namespace surface {
 
-namespace surface
-{
-  
-class Vs3ArcRelations
-{
-public:
-// EIGEN_MAKE_ALIGNED_OPERATOR_NEW     /// for 32-bit systems for pcl mandatory
-  
-protected:
+class Vs3ArcRelations {
+ public:
+  // EIGEN_MAKE_ALIGNED_OPERATOR_NEW     /// for 32-bit systems for pcl mandatory
 
-private:
-  
+ protected:
+ private:
   bool have_input_image;
   bool have_view;
   bool preprocessed;
-  
-//   pcl::PointCloud<pcl::PointXYZRGB>::Ptr pcl_cloud;             ///< Input cloud
-  cv::Mat edges_image;                                                ///< Canny edge image
-  v4r::View *view;                                          ///< Surface models
 
-  cv::Mat_<cv::Vec3b> matImage;                                 ///< Image as Mat
-  IplImage *iplImage;                                           ///< Image as IplImage
+  //   pcl::PointCloud<pcl::PointXYZRGB>::Ptr pcl_cloud;             ///< Input cloud
+  cv::Mat edges_image;  ///< Canny edge image
+  v4r::View *view;      ///< Surface models
+
+  cv::Mat_<cv::Vec3b> matImage;  ///< Image as Mat
+  IplImage *iplImage;            ///< Image as IplImage
 
   inline int GetIdx(short x, short y);
   inline short X(int idx);
   inline short Y(int idx);
-  
-public:
+
+ public:
   Vs3ArcRelations();
   ~Vs3ArcRelations();
 
   /** Set input point cloud **/
   void setInputImage(cv::Mat &_matImage);
-  
+
   /** Set input surface patches **/
   void setView(v4r::View *_view);
 
@@ -109,30 +103,25 @@ public:
   void preprocess();
 
   /** Compute relations for the segmenter **/
-//   void computeRelations();
-
+  //   void computeRelations();
 };
 
 /*************************** INLINE METHODES **************************/
 /** Return index for coordinates x,y **/
-inline int Vs3ArcRelations::GetIdx(short x, short y)
-{
-  return y*view->width + x;
+inline int Vs3ArcRelations::GetIdx(short x, short y) {
+  return y * view->width + x;
 }
 
 /** Return x coordinate for index **/
-inline short Vs3ArcRelations::X(int idx)
-{
-  return idx%view->width;
+inline short Vs3ArcRelations::X(int idx) {
+  return idx % view->width;
 }
 
 /** Return y coordinate for index **/
-inline short Vs3ArcRelations::Y(int idx)
-{
-  return idx/view->width;
+inline short Vs3ArcRelations::Y(int idx) {
+  return idx / view->width;
 }
 
-} //--END--
+}  //--END--
 
 #endif
-

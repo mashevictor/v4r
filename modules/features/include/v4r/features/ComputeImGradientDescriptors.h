@@ -37,71 +37,55 @@
 **
 ****************************************************************************/
 
-
 /**
  * @file main.cpp
  * @author Johann Prankl (prankl@acin.tuwien.ac.at)
  * @date 2017
  * @brief
  *
- */ 
+ */
 
 #ifndef V4R_COMPUTE_GRADIENT_DESCRIPTORS_HH
 #define V4R_COMPUTE_GRADIENT_DESCRIPTORS_HH
 
 #include <opencv2/core/core.hpp>
-#include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/features2d/features2d.hpp>
+#include <opencv2/imgproc/imgproc.hpp>
 
 #include "ImGradientDescriptor.h"
 
-namespace v4r 
-{
+namespace v4r {
 
-class V4R_EXPORTS ComputeImGradientDescriptors
-{
-public:
-  class Parameter
-  {
-  public:
+class V4R_EXPORTS ComputeImGradientDescriptors {
+ public:
+  class Parameter {
+   public:
     int win_size;
     ImGradientDescriptor::Parameter ghParam;
-    Parameter(int _win_size=34, 
-      const ImGradientDescriptor::Parameter &_ghParam=ImGradientDescriptor::Parameter())
+    Parameter(int _win_size = 34, const ImGradientDescriptor::Parameter &_ghParam = ImGradientDescriptor::Parameter())
     : win_size(_win_size), ghParam(_ghParam) {}
   };
 
-private:
+ private:
   Parameter param;
 
   int h_win;
 
-public:
- 
-
-  ComputeImGradientDescriptors(const Parameter &p=Parameter());
+ public:
+  ComputeImGradientDescriptors(const Parameter &p = Parameter());
   ~ComputeImGradientDescriptors();
 
-  void compute(const cv::Mat_<unsigned char> &image, const std::vector<cv::Point2f> &pts, 
-        cv::Mat &descriptors);
-  void compute(const cv::Mat_<unsigned char> &image, const std::vector<cv::KeyPoint> &keys, 
-        cv::Mat &descriptors);
-  //void compute(const cv::Mat_<unsigned char> &image, const std::vector<AffKeypoint> &keys, 
+  void compute(const cv::Mat_<unsigned char> &image, const std::vector<cv::Point2f> &pts, cv::Mat &descriptors);
+  void compute(const cv::Mat_<unsigned char> &image, const std::vector<cv::KeyPoint> &keys, cv::Mat &descriptors);
+  // void compute(const cv::Mat_<unsigned char> &image, const std::vector<AffKeypoint> &keys,
   //      cv::Mat &descriptors);
 
-
-
-
-  typedef SmartPtr< ::v4r::ComputeImGradientDescriptors> Ptr;
-  typedef SmartPtr< ::v4r::ComputeImGradientDescriptors const> ConstPtr;
-
+  typedef SmartPtr<::v4r::ComputeImGradientDescriptors> Ptr;
+  typedef SmartPtr<::v4r::ComputeImGradientDescriptors const> ConstPtr;
 };
-
 
 /*************************** INLINE METHODES **************************/
 
-
-} //--END--
+}  //--END--
 
 #endif
-

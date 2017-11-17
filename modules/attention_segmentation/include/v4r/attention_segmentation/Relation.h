@@ -37,7 +37,6 @@
 **
 ****************************************************************************/
 
-
 /**
  * @file Relation.h
  * @author Richtsfeld
@@ -51,27 +50,24 @@
 
 #include <vector>
 
-namespace v4r
-{
+namespace v4r {
 
 enum RelationModel {
-  ALL_RELATIONS        = 0,
+  ALL_RELATIONS = 0,
   STRUCTURAL_RELATIONS,
   ASSEMBLY_RELATIONS,
 };
-  
-struct Relation
-{
-  int type;                                ///< Type of relation (structural level = 1 / assembly level = 2)
-  int id_0;                                ///< ID of first surface 
-  int id_1;                                ///< ID of second surface
-  std::vector<double> rel_value;           ///< relation values (feature vector)
-  std::vector<double> rel_probability;     ///< probabilities of correct prediction (two class)
-  int groundTruth;                         ///< 0=false / 1=true
-  int prediction;                          ///< 0=false / 1=true
-  bool valid;                              ///< validity flag
-};
 
+struct Relation {
+  int type;                             ///< Type of relation (structural level = 1 / assembly level = 2)
+  int id_0;                             ///< ID of first surface
+  int id_1;                             ///< ID of second surface
+  std::vector<double> rel_value;        ///< relation values (feature vector)
+  std::vector<double> rel_probability;  ///< probabilities of correct prediction (two class)
+  int groundTruth;                      ///< 0=false / 1=true
+  int prediction;                       ///< 0=false / 1=true
+  bool valid;                           ///< validity flag
+};
 }
 
 #endif

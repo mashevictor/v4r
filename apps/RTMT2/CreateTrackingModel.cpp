@@ -37,79 +37,66 @@
 **
 ****************************************************************************/
 
-
 /**
  * @file main.cpp
  * @author Johann Prankl (prankl@acin.tuwien.ac.at)
  * @date 2017
  * @brief
  *
- */ 
+ */
 
 #include "CreateTrackingModel.h"
 #include <pcl/common/io.h>
-#include <v4r/keypoints/impl/invPose.hpp>
-#include <v4r/keypoints/impl/toString.hpp>
-#include <v4r/common/convertCloud.h>
-#include <v4r/io/filesystem.h>
-#include <v4r/keypoints/CodebookMatcher.h>
 #include <pcl/io/pcd_io.h>
 #include <pcl/sample_consensus/ransac.h>
 #include <pcl/sample_consensus/sac_model_plane.h>
+#include <v4r/common/convertCloud.h>
+#include <v4r/io/filesystem.h>
+#include <v4r/keypoints/CodebookMatcher.h>
+#include <v4r/keypoints/impl/invPose.hpp>
+#include <v4r/keypoints/impl/toString.hpp>
 
 using namespace std;
-
 
 /**
  * @brief CreateTrackingModel::CreateTrackingModel
  */
-CreateTrackingModel::CreateTrackingModel() :
-  create_codebook(1), thr_desc_rnn(0.55)
-{
+CreateTrackingModel::CreateTrackingModel() : create_codebook(1), thr_desc_rnn(0.55) {
   cloud.reset(new pcl::PointCloud<pcl::PointXYZRGB>());
 }
 
 /**
  * @brief CreateTrackingModel::~CreateTrackingModel
  */
-CreateTrackingModel::~CreateTrackingModel()
-{
-}
-
-
+CreateTrackingModel::~CreateTrackingModel() {}
 
 /******************************** public *******************************/
 
-void CreateTrackingModel::setCameraParameter(const cv::Mat_<double> &_intrinsic, const cv::Mat_<double> &_dist_coeffs)
-{
+void CreateTrackingModel::setCameraParameter(const cv::Mat_<double> &_intrinsic, const cv::Mat_<double> &_dist_coeffs) {
   _intrinsic.copyTo(intrinsic);
   _dist_coeffs.copyTo(dist_coeffs);
 }
 
-
-
-
-
-
 /**
  * @brief CreateTrackingModel::createTrackingModel
  */
-void CreateTrackingModel::createTrackingModel(const std::vector<v4r::TSFFrame::Ptr> &map_frames, const std::vector< cv::Mat_<unsigned char> > &masks, const Eigen::Matrix4f &object_base_transform)
-{
+void CreateTrackingModel::createTrackingModel(const std::vector<v4r::TSFFrame::Ptr> &map_frames,
+                                              const std::vector<cv::Mat_<unsigned char>> &masks,
+                                              const Eigen::Matrix4f &object_base_transform) {
   Eigen::Matrix4f pose0, pose;
 
   cv::Mat_<cv::Vec3b> image;
   cv::Mat_<unsigned char> im_gray;
-  v4r::DataMatrix2D<Eigen::Vector3f>::Ptr kp_cloud( new v4r::DataMatrix2D<Eigen::Vector3f>() );
-  v4r::DataMatrix2D<Eigen::Vector3f>::Ptr kp_normals( new v4r::DataMatrix2D<Eigen::Vector3f>() );
+  v4r::DataMatrix2D<Eigen::Vector3f>::Ptr kp_cloud(new v4r::DataMatrix2D<Eigen::Vector3f>());
+  v4r::DataMatrix2D<Eigen::Vector3f>::Ptr kp_normals(new v4r::DataMatrix2D<Eigen::Vector3f>());
 
   v4r::ZAdaptiveNormals::Parameter n_param;
   n_param.adaptive = true;
   v4r::ZAdaptiveNormals::Ptr nest(new v4r::ZAdaptiveNormals(n_param));
 
-  //v4r::FeatureDetector_KD_FAST_IMGD::Parameter param(10000, 1.44, 2, 17);
+  // v4r::FeatureDetector_KD_FAST_IMGD::Parameter param(10000, 1.44, 2, 17);
   v4r::FeatureDetector_KD_FAST_IMGD::Parameter param(10000, 1.2, 6, 13);
-  //v4r::FeatureDetector_KD_FAST_IMGD::Parameter param(10000, 1.32, 4, 15);
+  // v4r::FeatureDetector_KD_FAST_IMGD::Parameter param(10000, 1.32, 4, 15);
   param.do_feature_selection = true;
   keyDet.reset(new v4r::FeatureDetector_KD_FAST_IMGD(param));
   keyDesc = keyDet;
@@ -119,29 +106,28 @@ void CreateTrackingModel::createTrackingModel(const std::vector<v4r::TSFFrame::P
 
   pose0 = object_base_transform;
 
-  for (unsigned i=0; i<map_frames.size(); i++)
-  {
+  for (unsigned i = 0; i < map_frames.size(); i++) {
     v4r::TSFData::convert(map_frames[i]->sf_cloud, *cloud);
     v4r::convertImage(*cloud, image);
 
-    if( image.type() != CV_8U ) cv::cvtColor( image, im_gray, CV_RGB2GRAY );
-    else im_gray = image;
+    if (image.type() != CV_8U)
+      cv::cvtColor(image, im_gray, CV_RGB2GRAY);
+    else
+      im_gray = image;
 
     pose = map_frames[i]->pose;
 
     v4r::convertCloud(*cloud, *kp_cloud);
     nest->compute(*kp_cloud, *kp_normals);
 
-    addObjectView(*kp_cloud, *kp_normals, im_gray, masks[i], pose*pose0, *model);
-
+    addObjectView(*kp_cloud, *kp_normals, im_gray, masks[i], pose * pose0, *model);
   }
 
-  if (create_codebook==1)
-  {
-    v4r::CodebookMatcher cm = v4r::CodebookMatcher( v4r::CodebookMatcher::Parameter(thr_desc_rnn) );
+  if (create_codebook == 1) {
+    v4r::CodebookMatcher cm = v4r::CodebookMatcher(v4r::CodebookMatcher::Parameter(thr_desc_rnn));
 
-    for (unsigned i=0; i<model->views.size(); i++)
-      cm.addView(model->views[i]->descs,i);
+    for (unsigned i = 0; i < model->views.size(); i++)
+      cm.addView(model->views[i]->descs, i);
 
     cm.createCodebook(model->cb_centers, model->cb_entries);
   }
@@ -153,10 +139,9 @@ void CreateTrackingModel::createTrackingModel(const std::vector<v4r::TSFFrame::P
 /**
  * @brief CreateTrackingModel::saveTrackingModel
  */
-void CreateTrackingModel::saveTrackingModel(const std::string &folder, const std::string &objectname)
-{
-  if (model.get()==0)
-      return;
+void CreateTrackingModel::saveTrackingModel(const std::string &folder, const std::string &objectname) {
+  if (model.get() == 0)
+    return;
 
   boost::filesystem::create_directories(folder);
 
@@ -172,7 +157,6 @@ void CreateTrackingModel::saveTrackingModel(const std::string &folder, const std
   model = v4r::ArticulatedObject::Ptr();
 }
 
-
 /**
  * @brief CreateTrackingModel::addObjectView
  * @param cloud
@@ -182,8 +166,10 @@ void CreateTrackingModel::saveTrackingModel(const std::string &folder, const std
  * @param pose
  * @param model
  */
-void CreateTrackingModel::addObjectView(const v4r::DataMatrix2D<Eigen::Vector3f> &cloud, const v4r::DataMatrix2D<Eigen::Vector3f> &normals, const cv::Mat_<unsigned char> &im, const cv::Mat_<unsigned char> &mask, const Eigen::Matrix4f &pose, v4r::ArticulatedObject &_model)
-{
+void CreateTrackingModel::addObjectView(const v4r::DataMatrix2D<Eigen::Vector3f> &cloud,
+                                        const v4r::DataMatrix2D<Eigen::Vector3f> &normals,
+                                        const cv::Mat_<unsigned char> &im, const cv::Mat_<unsigned char> &mask,
+                                        const Eigen::Matrix4f &pose, v4r::ArticulatedObject &_model) {
   // get and transform 3d points
   Eigen::Matrix4f inv_pose;
   Eigen::Vector3f pt_model, n_model, vr_model;
@@ -191,65 +177,51 @@ void CreateTrackingModel::addObjectView(const v4r::DataMatrix2D<Eigen::Vector3f>
 
   v4r::invPose(pose, inv_pose);
 
-  Eigen::Matrix3f R = inv_pose.topLeftCorner<3,3>();
-  Eigen::Vector3f t = inv_pose.block<3, 1>(0,3);
+  Eigen::Matrix3f R = inv_pose.topLeftCorner<3, 3>();
+  Eigen::Vector3f t = inv_pose.block<3, 1>(0, 3);
 
   std::vector<cv::KeyPoint> keys;
   cv::Mat descs;
-  unsigned cnt=0;
+  unsigned cnt = 0;
 
   // detect keypoints
   keyDet->detect(im, keys);
   keyDesc->extract(im, keys, descs);
 
-  for (unsigned i=0; i<keys.size(); i++)
-  {
+  for (unsigned i = 0; i < keys.size(); i++) {
     cv::KeyPoint &key = keys[i];
 
-    int idx = int(key.pt.y+.5)*cloud.cols+int(key.pt.x+.5);
+    int idx = int(key.pt.y + .5) * cloud.cols + int(key.pt.x + .5);
 
-    const Eigen::Vector3f &pt =  cloud[idx];
+    const Eigen::Vector3f &pt = cloud[idx];
     const Eigen::Vector3f &n = normals[idx];
 
-    if(!isnan(pt[0]) && !isnan(n[0]) && mask(key.pt.y,key.pt.x)>128)
+    if (!isnan(pt[0]) && !isnan(n[0]) && mask(key.pt.y, key.pt.x) > 128)
       cnt++;
   }
 
-
-  if (cnt<MIN_KEYPOINTS) return;
+  if (cnt < MIN_KEYPOINTS)
+    return;
 
   v4r::ObjectView &view = _model.addObjectView(pose, im);
 
-
-  for (unsigned i=0; i<keys.size(); i++)
-  {
+  for (unsigned i = 0; i < keys.size(); i++) {
     cv::KeyPoint &key = keys[i];
 
-    int idx = int(key.pt.y+.5)*cloud.cols+int(key.pt.x+.5);
+    int idx = int(key.pt.y + .5) * cloud.cols + int(key.pt.x + .5);
 
-    const Eigen::Vector3f &pt =  cloud[idx];
+    const Eigen::Vector3f &pt = cloud[idx];
     const Eigen::Vector3f &n = normals[idx];
 
-    if(!isnan(pt[0]) && !isnan(n[0]) && mask(key.pt.y,key.pt.x)>128)
-    {
-      pt_model = R*pt + t;
-      n_model = (R*n).normalized();
-      vr_model = -(R*pt).normalized();
+    if (!isnan(pt[0]) && !isnan(n[0]) && mask(key.pt.y, key.pt.x) > 128) {
+      pt_model = R * pt + t;
+      n_model = (R * n).normalized();
+      vr_model = -(R * pt).normalized();
 
-      view.add(keys[i], &descs.at<float>(i,0), descs.cols, pt_model, n_model, vr_model);
+      view.add(keys[i], &descs.at<float>(i, 0), descs.cols, pt_model, n_model, vr_model);
     }
   }
 
   view.descs.copyTo(descs);
   view.descs = descs;
 }
-
-
-
-
-
-
-
-
-
-

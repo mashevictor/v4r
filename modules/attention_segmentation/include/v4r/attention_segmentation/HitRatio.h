@@ -37,8 +37,6 @@
 **
 ****************************************************************************/
 
-
-
 #ifndef HITRATIO_HPP
 #define HITRATIO_HPP
 
@@ -46,12 +44,12 @@
 
 namespace EPEvaluation {
 
-struct ObjectEvaluation{
+struct ObjectEvaluation {
   float distance;
   int attentionPointIdx;
 };
 
-struct PointEvaluation{
+struct PointEvaluation {
   float distance;
   int ObjectIdx;
 };
@@ -59,12 +57,12 @@ struct PointEvaluation{
 void labeling2Mask(cv::Mat &mask, cv::Mat labeling, int maskNum);
 float hitRatio(std::vector<cv::Point> attentionPoints, cv::Mat labeling, std::vector<bool> &usedPoints);
 void calculateAccumulatedHR(std::vector<bool> usedPoints, std::vector<int> &accumulatedHR);
-void distance2Center(std::vector<cv::Point> attentionPoints, cv::Mat labeling, std::vector<cv::Point> centers, 
-                     std::vector<ObjectEvaluation> &firstDistance2Objects, std::vector<ObjectEvaluation> &bestDistance2Objects, 
-                     std::vector<bool> &usedObjects);
-void distance2Center(std::vector<cv::Point> attentionPoints, cv::Mat labeling, std::vector<cv::Point> centers, 
+void distance2Center(std::vector<cv::Point> attentionPoints, cv::Mat labeling, std::vector<cv::Point> centers,
+                     std::vector<ObjectEvaluation> &firstDistance2Objects,
+                     std::vector<ObjectEvaluation> &bestDistance2Objects, std::vector<bool> &usedObjects);
+void distance2Center(std::vector<cv::Point> attentionPoints, cv::Mat labeling, std::vector<cv::Point> centers,
                      std::vector<PointEvaluation> &distances, std::vector<bool> &usedAttentionPoints);
-  
-} //namespace EPEvaluation
 
-#endif //HITRATIO_HPP
+}  // namespace EPEvaluation
+
+#endif  // HITRATIO_HPP

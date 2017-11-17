@@ -37,7 +37,6 @@
 **
 ****************************************************************************/
 
-
 /**
  * @file RansacSolvePnPdepth.h
  * @author Johann Prankl (prankl@acin.tuwien.ac.at)
@@ -50,37 +49,31 @@
 #define KP_IMK_VIEW_HH
 
 #include <stdio.h>
-#include <string>
-#include <stdexcept>
+#include <Eigen/Dense>
+#include <opencv2/calib3d/calib3d.hpp>
 #include <opencv2/core/core.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
-#include <opencv2/calib3d/calib3d.hpp>
-#include <Eigen/Dense>
+#include <stdexcept>
+#include <string>
 #include <v4r/common/impl/DataMatrix2D.hpp>
 
+namespace v4r {
 
-namespace v4r
-{
-
-
-class V4R_EXPORTS IMKView
-{
-public:
+class V4R_EXPORTS IMKView {
+ public:
   unsigned object_id;
-  std::vector< Eigen::Vector3f > points;
-  std::vector< cv::KeyPoint > keys;
+  std::vector<Eigen::Vector3f> points;
+  std::vector<cv::KeyPoint> keys;
 
   DataMatrix2D<Eigen::Vector3f> cloud;
   cv::Mat_<float> weight_mask;
   std::vector<float> conf_desc;
 
   cv::Mat_<unsigned char> im_gray;
-  IMKView(){}
+  IMKView() {}
   IMKView(const unsigned &_object_id) : object_id(_object_id) {}
 };
 
-
-} //--END--
+}  //--END--
 
 #endif
-

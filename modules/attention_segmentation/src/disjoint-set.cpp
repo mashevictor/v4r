@@ -20,11 +20,9 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 
 #include "v4r/attention_segmentation/disjoint-set.h"
 
-namespace gc
-{
-  
-universe::universe(int elements) 
-{
+namespace gc {
+
+universe::universe(int elements) {
   elts = new uni_elt[elements];
   num = elements;
   for (int i = 0; i < elements; i++) {
@@ -33,9 +31,9 @@ universe::universe(int elements)
     elts[i].p = i;
   }
 }
-  
+
 universe::~universe() {
-  delete [] elts;
+  delete[] elts;
 }
 
 int universe::find(int x) {
@@ -47,8 +45,7 @@ int universe::find(int x) {
   return y;
 }
 
-void universe::join(int x, int y) 
-{
+void universe::join(int x, int y) {
   if (elts[x].rank > elts[y].rank) {
     elts[y].p = x;
     elts[x].size += elts[y].size;
@@ -61,11 +58,8 @@ void universe::join(int x, int y)
   num--;
 }
 
-void universe::printAll() 
-{
-  for(int i=0; i<num; i++)
+void universe::printAll() {
+  for (int i = 0; i < num; i++)
     printf("[universe::printAll] %u: elts: rank: %u - p: %u - size: %u\n", i, elts[i].rank, elts[i].p, elts[i].size);
 }
-
 }
-

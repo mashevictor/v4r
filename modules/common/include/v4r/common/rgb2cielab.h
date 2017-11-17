@@ -37,7 +37,6 @@
 **
 ****************************************************************************/
 
-
 /**
  * @file rgb2cielab.h
  * @author Thomas Faeulhammer (faeulhammer@acin.tuwien.ac.at), Aitor Aldoma (aldoma@acin.tuwien.ac.at)
@@ -50,55 +49,54 @@
 
 #include <v4r/common/color_transforms.h>
 
-namespace v4r
-{
+namespace v4r {
 
-class V4R_EXPORTS RGB2CIELAB : public ColorTransform
-{
-private:
-    std::vector<float> sRGB_LUT;
-    std::vector<float> sXYZ_LUT;
+class V4R_EXPORTS RGB2CIELAB : public ColorTransform {
+ private:
+  std::vector<float> sRGB_LUT;
+  std::vector<float> sXYZ_LUT;
 
-//    static omp_lock_t initialization_lock;
-//    static bool is_initialized_;
+  //    static omp_lock_t initialization_lock;
+  //    static bool is_initialized_;
 
-    void initializeLUT();
+  void initializeLUT();
 
-public:
-    typedef boost::shared_ptr< RGB2CIELAB > Ptr;
+ public:
+  typedef boost::shared_ptr<RGB2CIELAB> Ptr;
 
-    RGB2CIELAB()
-    {
-        initializeLUT();
-    }
+  RGB2CIELAB() {
+    initializeLUT();
+  }
 
-    /**
-     * @brief Converts RGB color in LAB color space defined by CIE
-     * @param R (0...255)
-     * @param G (0...255)
-     * @param B (0...255)
-     * @param L (0...100)
-     * @param A (approx -170...100)
-     * @param B2 (approx -100...150)
-     */
-    Eigen::VectorXf do_conversion(unsigned char R, unsigned char G, unsigned char B) const;
+  /**
+   * @brief Converts RGB color in LAB color space defined by CIE
+   * @param R (0...255)
+   * @param G (0...255)
+   * @param B (0...255)
+   * @param L (0...100)
+   * @param A (approx -170...100)
+   * @param B2 (approx -100...150)
+   */
+  Eigen::VectorXf do_conversion(unsigned char R, unsigned char G, unsigned char B) const;
 
-    /**
-     * @brief Converts RGB color into normalized LAB color space
-     * @param R (0...255)
-     * @param G (0...255)
-     * @param B (0...255)
-     * @param L (-1...1)
-     * @param A (-1...1)
-     * @param B2 (-1...1)
-     */
-//    static void
-//    RGB2CIELAB_normalized (unsigned char R, unsigned char G, unsigned char B, float &L, float &A,float &B2);
+  /**
+   * @brief Converts RGB color into normalized LAB color space
+   * @param R (0...255)
+   * @param G (0...255)
+   * @param B (0...255)
+   * @param L (-1...1)
+   * @param A (-1...1)
+   * @param B2 (-1...1)
+   */
+  //    static void
+  //    RGB2CIELAB_normalized (unsigned char R, unsigned char G, unsigned char B, float &L, float &A,float &B2);
 
-    void
-    do_inverse_conversion(const Eigen::VectorXf &converted_color, unsigned char &R, unsigned char &G, unsigned char &B) const;
+  void do_inverse_conversion(const Eigen::VectorXf &converted_color, unsigned char &R, unsigned char &G,
+                             unsigned char &B) const;
 
-    size_t getOutputNumColorCompenents() const { return 3; }
+  size_t getOutputNumColorCompenents() const {
+    return 3;
+  }
 };
 }
 #endif

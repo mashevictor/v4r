@@ -1,6 +1,6 @@
 /**
  * $Id$
- * 
+ *
  * Software License Agreement (GNU General Public License)
  *
  *  Copyright (C) 2015:
@@ -33,21 +33,17 @@
 #ifndef KP_TO_STRING_HH
 #define KP_TO_STRING_HH
 
-#include <iostream>
 #include <iomanip>
+#include <iostream>
 
-namespace v4r
-{
+namespace v4r {
 
 template <class T>
-inline std::string toString (const T& t, unsigned precision=2)
-{
+inline std::string toString(const T& t, unsigned precision = 2) {
   std::stringstream ss;
   ss << std::setprecision(precision) << t;
   return ss.str();
 }
-
-
 }
 
 #endif

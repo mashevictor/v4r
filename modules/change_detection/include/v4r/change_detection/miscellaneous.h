@@ -8,19 +8,17 @@
 #ifndef MISCELLANEOUS_CHANGEDET_H_
 #define MISCELLANEOUS_CHANGEDET_H_
 
-#include <pcl/point_cloud.h>
 #include <pcl/common/eigen.h>
+#include <pcl/point_cloud.h>
 
 namespace v4r {
 
 template <class PointType>
-V4R_EXPORTS typename pcl::PointCloud<PointType>::Ptr downsampleCloud(
-		typename pcl::PointCloud<PointType>::Ptr input,
-		double resolution = 0.005f);
+V4R_EXPORTS typename pcl::PointCloud<PointType>::Ptr downsampleCloud(typename pcl::PointCloud<PointType>::Ptr input,
+                                                                     double resolution = 0.005f);
 
 template <class PointType>
 V4R_EXPORTS Eigen::Affine3f resetViewpoint(typename pcl::PointCloud<PointType>::Ptr input);
-
 }
 
 #include <v4r/change_detection/impl/miscellaneous.hpp>

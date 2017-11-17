@@ -20,74 +20,69 @@
 #ifndef CVGABOR_H
 #define CVGABOR_H
 
-#include <iostream>
 #include <stdio.h>
+#include <iostream>
 
 #include <v4r/core/macros.h>
 
 #include <opencv2/opencv.hpp>
 
-namespace v4r
-{
+namespace v4r {
 
 #define PI 3.1415926534
 #define CV_GABOR_REAL 1
 #define CV_GABOR_IMAG 2
-#define CV_GABOR_MAG  3
+#define CV_GABOR_MAG 3
 #define CV_GABOR_PHASE 4
-
 
 /**
 @author Mian Zhou
 */
-class V4R_EXPORTS CvGabor{
-public:
-    CvGabor();
-    CvGabor(int iMu, int iNu);
-    ~CvGabor();
-  
-    CvGabor(int iMu, int iNu, double dSigma);
-    CvGabor(int iMu, int iNu, double dSigma, double dF);
-    CvGabor(double dPhi, int iNu);
-    CvGabor(double dPhi, int iNu, double dSigma);
-    CvGabor(double dPhi, int iNu, double dSigma, double dF);
-    bool IsInit();
-    long mask_width();
-    IplImage* get_image(int Type);
-    bool IsKernelCreate();
-    long get_mask_width();
-    void Init(int iMu, int iNu, double dSigma, double dF);
-    void Init(double dPhi, int iNu, double dSigma, double dF);
-    void output_file(const char *filename, int Type);
-    CvMat* get_matrix(int Type);
-    void show(int Type);
-    void normalize( const CvArr* src, CvArr* dst, double a, double b, int norm_type, const CvArr* mask );
+class V4R_EXPORTS CvGabor {
+ public:
+  CvGabor();
+  CvGabor(int iMu, int iNu);
+  ~CvGabor();
 
-    void conv_img_a(IplImage *src, IplImage *dst, int Type);
-    void conv_img(IplImage *src, IplImage *dst, int Type);
-//     void conv_img(cv::Mat_<cv::Vec3b> &_src, cv::Mat_<cv::Vec3b> &_dst, int type);
+  CvGabor(int iMu, int iNu, double dSigma);
+  CvGabor(int iMu, int iNu, double dSigma, double dF);
+  CvGabor(double dPhi, int iNu);
+  CvGabor(double dPhi, int iNu, double dSigma);
+  CvGabor(double dPhi, int iNu, double dSigma, double dF);
+  bool IsInit();
+  long mask_width();
+  IplImage *get_image(int Type);
+  bool IsKernelCreate();
+  long get_mask_width();
+  void Init(int iMu, int iNu, double dSigma, double dF);
+  void Init(double dPhi, int iNu, double dSigma, double dF);
+  void output_file(const char *filename, int Type);
+  CvMat *get_matrix(int Type);
+  void show(int Type);
+  void normalize(const CvArr *src, CvArr *dst, double a, double b, int norm_type, const CvArr *mask);
 
-protected:
-                              /// iMu ... The orientations which is iMu*PI.8
-                              /// iNu ... The scale can be from -5 to infinit
+  void conv_img_a(IplImage *src, IplImage *dst, int Type);
+  void conv_img(IplImage *src, IplImage *dst, int Type);
+  //     void conv_img(cv::Mat_<cv::Vec3b> &_src, cv::Mat_<cv::Vec3b> &_dst, int type);
 
-    double Sigma;             /// dSigma ... The Sigma value of gabor, normally set to 2*PI 
-    double F;                 /// The spatial frequence , normally is sqrt(2)
-    double Kmax;              /// Kmax = PI/2.
-    double K;                 /// K = Kmax / pow(F, (double)iNu);
-    double Phi;               /// Phi = PI*iMu/8;
-    bool bInitialised;
-    bool bKernel;
-    long Width;               /// The kernel with (Width x Width)
-    CvMat *Imag;
-    CvMat *Real;
-  
-private:
-    void creat_kernel();
-    
+ protected:
+  /// iMu ... The orientations which is iMu*PI.8
+  /// iNu ... The scale can be from -5 to infinit
 
+  double Sigma;  /// dSigma ... The Sigma value of gabor, normally set to 2*PI
+  double F;      /// The spatial frequence , normally is sqrt(2)
+  double Kmax;   /// Kmax = PI/2.
+  double K;      /// K = Kmax / pow(F, (double)iNu);
+  double Phi;    /// Phi = PI*iMu/8;
+  bool bInitialised;
+  bool bKernel;
+  long Width;  /// The kernel with (Width x Width)
+  CvMat *Imag;
+  CvMat *Real;
+
+ private:
+  void creat_kernel();
 };
-
 }
 
 #endif

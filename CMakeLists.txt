@@ -65,37 +65,40 @@ else()
   list(APPEND CMAKE_LIBRARY_PATH /usr/lib)
 endif()
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -fopenmp")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 
-# ----------------------------------------------------------------------------
-# V4R cmake options
-# ----------------------------------------------------------------------------
 
-# Optional 3rd party components
-# ===================================================
-V4R_OPTION(WITH_ASSIMP         "Include Assimp (Open Asset Import library) support"            ON)
-V4R_OPTION(WITH_CERES          "Include Ceres Support"                       ON)
-V4R_OPTION(WITH_CUDA           "Include NVidia Cuda Runtime support"         ON)
-V4R_OPTION(WITH_OPENGL         "Include OpenGL support"                      ON)
-V4R_OPTION(WITH_OPENNI         "Include OpenNI support"                      OFF)
-V4R_OPTION(WITH_OPENNI2        "Include OpenNI2 support"                     ON)
-V4R_OPTION(WITH_QT             "Build with Qt Backend support"               ON)
-V4R_OPTION(WITH_OPENMP         "Include OpenMP support"                      ON)
-V4R_OPTION(WITH_PTHREADS_PF    "Use pthreads-based parallel_for"             ON)
-V4R_OPTION(WITH_EDT            "Include EDT support"                         ON)
-V4R_OPTION(WITH_OPENCV         "Include OpenCV support"                      ON)
-V4R_OPTION(WITH_SIFTGPU        "Include SiftGPU support"                     ON)
-V4R_OPTION(WITH_METSLIB        "Include METSlib support"                     ON)
-V4R_OPTION(WITH_LIBSVM         "Include LIBSVM support"                      ON)
-V4R_OPTION(WITH_PCL            "Include PCL support"                         ON)
-V4R_OPTION(WITH_BOOST          "Include Boost support"                       ON)
-V4R_OPTION(WITH_EIGEN          "Include Eigen3 support"                      ON)
-V4R_OPTION(WITH_GLM            "Include GLM support"                         ON)
-V4R_OPTION(WITH_GLEW           "Include GLEW support"                        ON)
-V4R_OPTION(WITH_GLOG           "Include Google Logging support"              ON)
-V4R_OPTION(WITH_CAFFE          "Include Caffe support"                       ON)
-V4R_OPTION(WITH_OPENNURBS      "Include OPENNURBS support"                   ON)
-V4R_OPTION(WITH_ON_NURBS       "Include ON_NURBS support"                    ON)
+include(cmake/V4RThirdParty.cmake)
+
+
+#--------------------------------------------------------------------------------------------------#
+#                                         V4R Dependencies                                         #
+#--------------------------------------------------------------------------------------------------#
+#                                                                                                  #
+#                  Name             Default state (ON/OFF)     Prefer from source build (YES/NO)   #
+#                                   Leave blank if mandatory   Leave blank if no choice            #
+#                                                                                                  #
+v4r_add_dependency(PCL                                                                             )
+v4r_add_dependency(Boost                                                                           )
+v4r_add_dependency(OpenCV                                                                          )
+v4r_add_dependency(Glog                                                                            )
+v4r_add_dependency(EDT                                                                             )
+v4r_add_dependency(PCL_1_8                                                                         )
+v4r_add_dependency(Qt               ON                                                             )
+v4r_add_dependency(Eigen            ON                                                             )
+v4r_add_dependency(GLM              ON                         NO                                  )
+v4r_add_dependency(Ceres            ON                         YES                                 )
+v4r_add_dependency(OpenGL           ON                                                             )
+v4r_add_dependency(GLEW             ON                                                             )
+v4r_add_dependency(Assimp           ON                                                             )
+v4r_add_dependency(SiftGPU          ON                                                             )
+v4r_add_dependency(LibSVM           ON                         NO                                  )
+v4r_add_dependency(METSlib          ON                                                             )
+v4r_add_dependency(OpenNURBS        ON                                                             )
+v4r_add_dependency(Gtest           OFF                                                             )
+v4r_add_dependency(Caffe            ON                                                             )
+v4r_add_dependency(OpenMP           ON                                                             )
+v4r_add_dependency(Radical          ON                        YES                                  )
 
 # V4R build components
 # ===================================================
@@ -107,17 +110,6 @@ V4R_OPTION(BUILD_EVALUATION_TOOLS   "Build all evaluation tools"                
 V4R_OPTION(BUILD_UTILITY_TOOLS      "Build all utility tools"                                            ON)
 V4R_OPTION(BUILD_TESTS              "Build tests"                                                        ON)
 V4R_OPTION(BUILD_WITH_DEBUG_INFO    "Include debug info into debug libs (not MSCV only)"                 ON)
-
-# 3rd party libs
-V4R_OPTION(BUILD_EDT                "Build libedt from source"           ON)
-V4R_OPTION(BUILD_OPENNURBS          "Build OPENNURBS from source" 	 ON)
-V4R_OPTION(BUILD_ON_NURBS           "Build ON_NURBS from source" 	 ON)
-V4R_OPTION(BUILD_TBB                "Download and build TBB from source" ANDROID )
-V4R_OPTION(BUILD_SIFTGPU            "Download and build SiftGPU from source" ON)
-V4R_OPTION(BUILD_GTEST              "Download and build Google Test from source" ON)
-V4R_OPTION(BUILD_METSLIB            "Download and build METSlib from source" ON)
-V4R_OPTION(BUILD_LIBSVM             "Download and build LIBSVM from source" OFF)
-V4R_OPTION(BUILD_CERES              "Download and build Ceres from source" ON)
 
 # V4R installation options
 # ===================================================
@@ -158,7 +150,6 @@ endif()
 # ----------------------------------------------------------------------------
 include(cmake/V4RVersion.cmake)
 
-
 # ----------------------------------------------------------------------------
 #  Build & install layouts
 # ----------------------------------------------------------------------------
@@ -179,6 +170,7 @@ set(V4R_SAMPLES_SRC_INSTALL_PATH share/V4R/samples)
 set(V4R_OTHER_INSTALL_PATH       share/V4R)
 set(V4R_INCLUDE_INSTALL_PATH     "include")
 set(V4R_3P_INCLUDE_INSTALL_PATH  share/V4R/3rdparty/${V4R_INCLUDE_INSTALL_PATH})
+set(V4R_3P_INSTALL_PATH          share/V4R/3rdparty)
 
 math(EXPR SIZEOF_VOID_P_BITS "8 * ${CMAKE_SIZEOF_VOID_P}")
 if(LIB_SUFFIX AND NOT SIZEOF_VOID_P_BITS EQUAL LIB_SUFFIX)
@@ -190,6 +182,15 @@ endif()
 set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/${V4R_LIB_INSTALL_PATH};${CMAKE_INSTALL_PREFIX}/${V4R_3P_LIB_INSTALL_PATH}")
 set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 
+# Postfix of so's:
+set(V4R_DLLVERSION "")
+set(V4R_DEBUG_POSTFIX "")
+
+if(DEFINED CMAKE_DEBUG_POSTFIX)
+  set(V4R_DEBUG_POSTFIX "${CMAKE_DEBUG_POSTFIX}")
+endif()
+
+
 if(INSTALL_TO_MANGLED_PATHS)
   set(V4R_INCLUDE_INSTALL_PATH ${V4R_INCLUDE_INSTALL_PATH}/v4r-${V4R_VERSION})
   string(REPLACE "V4R" "V4R-${V4R_VERSION}" V4R_3P_LIB_INSTALL_PATH "${V4R_3P_LIB_INSTALL_PATH}")
@@ -200,13 +201,7 @@ if(INSTALL_TO_MANGLED_PATHS)
   string(REPLACE "V4R" "V4R-${V4R_VERSION}" V4R_OTHER_INSTALL_PATH "${V4R_OTHER_INSTALL_PATH}")
 endif()
 
-# Postfix of so's:
-set(V4R_DLLVERSION "")
-set(V4R_DEBUG_POSTFIX "")
-
-if(DEFINED CMAKE_DEBUG_POSTFIX)
-  set(V4R_DEBUG_POSTFIX "${CMAKE_DEBUG_POSTFIX}")
-endif()
+v4r_install_dependencies()
 
 # ----------------------------------------------------------------------------
 #  Path for build/platform -specific headers
@@ -260,7 +255,6 @@ find_package(PkgConfig QUIET)
 include(CheckFunctionExists)
 include(CheckIncludeFile)
 
-CHECK_INCLUDE_FILE(pthread.h HAVE_LIBPTHREAD)
 set(V4R_LINKER_LIBS ${V4R_LINKER_LIBS} X11 Xrandr Xinerama Xcursor Xxf86vm)
 set(V4R_LINKER_LIBS ${V4R_LINKER_LIBS} dl m pthread rt)
 
@@ -273,55 +267,11 @@ include(cmake/V4RModule.cmake)
 include(TestBigEndian)
 test_big_endian(WORDS_BIGENDIAN)
 
-# ----------------------------------------------------------------------------
-#  Detect 3rd-party libraries
-# ----------------------------------------------------------------------------
-
-#include(cmake/V4RFindLibsGrfmt.cmake)
-#include(cmake/V4RFindLibsGUI.cmake)
-#include(cmake/V4RFindLibsVideo.cmake)
-include(cmake/V4RFindAssimp.cmake)
-include(cmake/V4RFindCeres.cmake)
-include(cmake/V4RFindLibsPerf.cmake)
-include(cmake/V4RFindEigen.cmake)
-include(cmake/V4RFindGlew.cmake)
-include(cmake/V4RFindGLM.cmake)
-include(cmake/V4RFindGlog.cmake)
-include(cmake/V4RFindOpenGL.cmake)
-include(cmake/V4RFindPCL.cmake)
-include(cmake/V4RFindQt.cmake)
-include(cmake/V4RFindOpenCV.cmake)
-include(cmake/V4RFindOpenNI2.cmake)
-include(cmake/V4RFindBoost.cmake)
-include(cmake/V4RFindCaffe.cmake)
-include(cmake/V4RFindOpenNURBS.cmake)
-include(cmake/V4RFindON_NURBS.cmake)
-# ----------------------------------------------------------------------------
-#  Detect optional 3rd-party libraries/tools
-# ----------------------------------------------------------------------------
-
-include(cmake/V4RFindEDT.cmake)
-include(cmake/V4RFindPCL_1_8.cmake)
-include(cmake/V4RFindSiftGPU.cmake)
-include(cmake/V4RFindMETSlib.cmake)
-include(cmake/V4RFindLIBSVM.cmake)
-
-if(BUILD_TESTS)
-  include(cmake/V4RFindGTest.cmake)
-endif()
-
 # --- Doxygen for documentation ---
 unset(DOXYGEN_FOUND CACHE)
 if(BUILD_DOCS)
   find_package(Doxygen)
 endif(BUILD_DOCS)
-
-# ----------------------------------------------------------------------------
-# Add CUDA libraries (needed for apps/tools, samples)
-# ----------------------------------------------------------------------------
-if(HAVE_CUDA)
-  set(V4R_LINKER_LIBS ${V4R_LINKER_LIBS} ${CUDA_LIBRARIES} ${CUDA_npp_LIBRARY})
-endif()
 
 # Extra V4R targets: uninstall, package_source, perf, etc.
 include(cmake/V4RExtraTargets.cmake)
@@ -383,9 +333,13 @@ if(NOT V4R_LICENSE_FILE)
   set(V4R_LICENSE_FILE ${CMAKE_CURRENT_SOURCE_DIR}/LICENSE)
 endif()
 
-# ----------------------------------------------------------------------------
-# Summary:
-# ----------------------------------------------------------------------------
+
+include(cmake/V4RStatus.cmake)
+
+#--------------------------------------------------------------------------------------------------#
+#                                             Summary                                              #
+#--------------------------------------------------------------------------------------------------#
+
 status("")
 status("General configuration for V4R ${V4R_VERSION} =====================================")
 if(V4R_VCSVERSION)
@@ -430,7 +384,6 @@ status("    Linker flags (Debug):"   ${CMAKE_SHARED_LINKER_FLAGS} ${CMAKE_SHARED
 
 # ========================== Dependencies ============================
 status("    Extra dependencies:" ${deps_extra})
-status("    3rdparty dependencies:" ${deps_3rdparty})
 
 # ========================== V4R modules ==========================
 status("")
@@ -459,143 +412,22 @@ status("    Disabled:"               V4R_MODULES_DISABLED_USER  THEN ${V4R_MODUL
 status("    Disabled by dependency:" V4R_MODULES_DISABLED_AUTO  THEN ${V4R_MODULES_DISABLED_AUTO_ST}  ELSE "-")
 status("    Unavailable:"            V4R_MODULES_DISABLED_FORCE THEN ${V4R_MODULES_DISABLED_FORCE_ST} ELSE "-")
 
-# ========================== GUI ==========================
-status("")
-status("  GUI: ")
-
-if(HAVE_QT)
-  status("    QT 5.x:"            HAVE_QT        THEN "YES (ver ${Qt5Core_VERSION})" ELSE NO)
-  status("    QT OpenGL support:" HAVE_QT_OPENGL THEN "YES (${Qt5OpenGL_LIBRARIES} ${Qt5OpenGL_VERSION})" ELSE NO)
-elseif(DEFINED WITH_QT)
-  status("    QT:" NO)
-endif()
-
-status("    OpenGL support:" HAVE_OPENGL THEN "YES (${OPENGL_LIBRARIES})" ELSE NO)
-
-status("")
-
-if(WITH_EDT)
-  status("    EDT:"  EDT_FOUND  THEN "${EDT_LIBRARIES} (ver ${EDT_VERSION})" ELSE "build (ver ${EDT_VERSION})")
-else()
-  status("    EDT:"  "NO")
-endif()
-if(WITH_SIFTGPU)
-  status("    SiftGPU:"  SIFTGPU_FOUND  THEN "${SIFTGPU_LIBRARIES} (ver ${SIFTGPU_VERSION})" ELSE "build (ver ${SIFTGPU_VERSION})")
-else()
-  status("    SiftGPU:"  "NO")
-endif()
-if(WITH_METSLIB)
-  status("    METSlib:"  METSLIB_FOUND  THEN "${METSLIB_LIBRARIES} (ver ${METSLIB_VERSION})" ELSE "build (ver ${METSLIB_VERSION})")
-else()
-  status("    METSlib:"  "NO")
-endif()
-if(WITH_LIBSVM)
-  status("    LIBSVM:"  LIBSVM_FOUND  THEN "${LIBSVM_LIBRARIES} (ver ${LIBSVM_VERSION})" ELSE "build (ver ${LIBSVM_VERSION})")
-else()
-  status("    LIBSVM:"  "NO")
-endif()
-if(WITH_PCL AND HAVE_PCL)
-  status("    PCL:"  "YES (ver ${PCL_VERSION})")
-else()
-  status("    PCL:"  "NO")
-endif()
-if(WITH_OPENCV AND HAVE_OPENCV)
-  status("    OpenCV:"  "YES (ver ${OpenCV_VERSION})")
-else()
-  status("    OpenCV:"  "NO")
-endif()
-if(WITH_OPENNI2 AND HAVE_OPENNI2)
-    status("    OpenNI2:"  "YES (ver ${OPENNI2_VERSION})")
-else()
-  status("    OpenNI2:"  "NO")
-endif()
-if(WITH_CERES AND HAVE_CERES)
-  status("    Ceres:"  "YES (ver ${CERES_VERSION})")
-else()
-  status("    Ceres:"  "NO")
-endif()
-
-if(WITH_OPENGL AND HAVE_OPENGL)
-  status("    OPENGL:"  "YES")
-else()
-  status("    OPENGL:"  "NO")
-endif()
-
-if(WITH_ASSIMP AND HAVE_ASSIMP)
-  status("    Assimp:"  "${ASSIMP_LIBRARIES} (ver ${ASSIMP_VERSION})")
-else()
-  status("    Assimp:"  "NO")
-endif()
-
-if(WITH_GLOG AND HAVE_GLOG)
-  status("    GLOG:"  "${GLOG_LIBRARIES}")
-else()
-  status("    GLOG:"  "NO")
-endif()
-
-
-if(WITH_CAFFE AND HAVE_CAFFE)
-  status("    CAFFE:"  "${CAFFE_LIBRARIES}")
-else()
-  status("    CAFFE:"  "NO")
-endif()
-
-# ========================== VIDEO IO ==========================
-status("")
-status("  Video I/O:")
-
-if(WITH_OPENNI)
-  status("    OpenNI:"         HAVE_OPENNI         THEN "YES (ver ${OPENNI_VERSION_STRING}, build ${OPENNI_VERSION_BUILD})"
-                                                                                                   ELSE NO)
-  status("    OpenNI PrimeSensor Modules:" HAVE_OPENNI_PRIME_SENSOR_MODULE
-                                                   THEN "YES (${OPENNI_PRIME_SENSOR_MODULE})"      ELSE NO)
-else()
-  status("    OpenNI:"  "NO")
-endif()
-
-if(WITH_OPENNI2)
-  status("    OpenNI2:"		   HAVE_OPENNI2	   THEN "YES (ver ${OPENNI2_VERSION})"
-                                                                                                   ELSE NO)
-endif()
-
-# Order is similar to CV_PARALLEL_FRAMEWORK in core/src/parallel.cpp
-v4r_clear_vars(CV_PARALLEL_FRAMEWORK)
-if(HAVE_TBB)
-  set(CV_PARALLEL_FRAMEWORK "TBB (ver ${TBB_VERSION_MAJOR}.${TBB_VERSION_MINOR} interface ${TBB_INTERFACE_VERSION})")
-elseif(HAVE_CSTRIPES)
-  set(CV_PARALLEL_FRAMEWORK "C=")
-elseif(HAVE_OPENMP)
-  set(CV_PARALLEL_FRAMEWORK "OpenMP")
-elseif(HAVE_GCD)
-  set(CV_PARALLEL_FRAMEWORK "GCD")
-elseif(WINRT OR HAVE_CONCURRENCY)
-  set(CV_PARALLEL_FRAMEWORK "Concurrency")
-elseif(HAVE_PTHREADS_PF)
-  set(CV_PARALLEL_FRAMEWORK "pthreads")
-else()
-  set(CV_PARALLEL_FRAMEWORK "none")
-endif()
-status("")
-status("  Parallel framework:" TRUE THEN "${CV_PARALLEL_FRAMEWORK}" ELSE NO)
-
-
-# ========================== Other third-party libraries ==========================
-status("")
-status("  Other third-party libraries:")
-
-status("    Use Eigen:"      HAVE_EIGEN       THEN "YES (ver ${EIGEN_WORLD_VERSION}.${EIGEN_MAJOR_VERSION}.${EIGEN_MINOR_VERSION})" ELSE NO)
-status("    Use GLM:"        HAVE_GLM         THEN "YES (ver ${GLM_VERSION})" ELSE NO)
-status("    Use Cuda:"       HAVE_CUDA        THEN "YES (ver ${CUDA_VERSION_STRING})" ELSE NO)
-status("    Use GLEW:"       HAVE_GLEW        THEN YES ELSE NO)
-
-if(HAVE_CUDA)
-  status("")
-  status("  NVIDIA CUDA")
-
-  status("    NVIDIA GPU arch:"      ${V4R_CUDA_ARCH_BIN})
-  status("    NVIDIA PTX archs:"     ${V4R_CUDA_ARCH_PTX})
-  status("    Use fast math:"        CUDA_FAST_MATH THEN YES ELSE NO)
-endif()
+# ========================== Third-party libraries ==========================
+v4r_status("")
+v4r_status("  Third-party libraries:")
+v4r_status("")
+v4r_status("  # Mandatory:")
+v4r_status("")
+foreach(_NAME ${V4R_3P_MANDATORY})
+  v4r_dependency_status(${_NAME})
+endforeach()
+v4r_status("")
+v4r_status("  # Optional:")
+v4r_status("")
+foreach(_NAME ${V4R_3P_OPTIONAL})
+  v4r_dependency_status(${_NAME})
+endforeach()
+v4r_status("")
 
 # ========================== documentation ==========================
 if(BUILD_DOCS)
@@ -608,7 +440,6 @@ endif()
 status("")
 status("  Tests and samples:")
 status("    Tests:"             BUILD_TESTS AND HAVE_v4r_ts   THEN YES ELSE NO)
-status("    GTest:"             HAVE_GTEST                    THEN "YES (ver ${GTEST_VERSION})" ELSE NO)
 status("    C/C++ Examples:"    BUILD_EXAMPLES                THEN YES ELSE NO)
 
 # ========================== auxiliary ==========================
@@ -618,6 +449,10 @@ status("")
 status("  v4r_config.h is in:" "${V4R_CONFIG_FILE_INCLUDE_DIR}")
 status("-----------------------------------------------------------------")
 status("")
+
+foreach(_name ${V4R_3P})
+  message(STATUS "-- ${_name} : ${V4R_3P_${_name}_NAME} : ${${_name}_BUILT} : ${HAVE_${_name}}")
+endforeach()
 
 v4r_finalize_status()
 
@@ -634,3 +469,12 @@ endif()
 
 # TODO
 #include(cmake/V4RPackaging.cmake)
+
+#--------------------------------------------------------------------------------------------------#
+#                                              Debug                                               #
+#--------------------------------------------------------------------------------------------------#
+# Print all cache variables matching a certain string
+# To enable, pass to cmake something like: -DPRINT_CACHE=STRING_TO_MATCH
+# To disable, pass: -DPRINT_CACHE=""
+
+v4r_print_cache_variables("${PRINT_CACHE}")

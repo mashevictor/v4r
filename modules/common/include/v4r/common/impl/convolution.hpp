@@ -39,32 +39,23 @@
 #define FAAT_PCL_2D_CONVOLUTION_IMPL_HPP
 
 //////////////////////////////////////////////////////////////////////////////
-template <typename PointT> void
-v4r::Convolution<PointT>::filter (pcl::PointCloud<PointT> &output)
-{
+template <typename PointT>
+void v4r::Convolution<PointT>::filter(pcl::PointCloud<PointT> &output) {
   int input_row = 0;
   int input_col = 0;
   // default boundary option : zero padding
   output = *input_;
 
-  int iw = static_cast<int> (input_->width),
-      ih = static_cast<int> (input_->height),
-      kw = static_cast<int> (kernel_.width),
-      kh = static_cast<int> (kernel_.height);
-  switch (boundary_options_)
-  {
+  int iw = static_cast<int>(input_->width), ih = static_cast<int>(input_->height), kw = static_cast<int>(kernel_.width),
+      kh = static_cast<int>(kernel_.height);
+  switch (boundary_options_) {
     default:
-    case BOUNDARY_OPTION_CLAMP:
-    {
-      for (int i = 0; i < ih; i++)
-      {
-        for (int j = 0; j < iw; j++)
-        {
+    case BOUNDARY_OPTION_CLAMP: {
+      for (int i = 0; i < ih; i++) {
+        for (int j = 0; j < iw; j++) {
           float intensity = 0;
-          for (int k = 0; k < kh; k++)
-          {
-            for (int l = 0; l < kw; l++)
-            {
+          for (int k = 0; k < kh; k++) {
+            for (int l = 0; l < kw; l++) {
               int ikkh = i + k - kh / 2, jlkw = j + l - kw / 2;
               if (ikkh < 0)
                 input_row = 0;
@@ -80,26 +71,21 @@ v4r::Convolution<PointT>::filter (pcl::PointCloud<PointT> &output)
               else
                 input_col = jlkw;
 
-              intensity += kernel_ (l, k).intensity * (*input_)(input_col, input_row).intensity;
+              intensity += kernel_(l, k).intensity * (*input_)(input_col, input_row).intensity;
             }
           }
-          output (j, i).intensity = intensity;
+          output(j, i).intensity = intensity;
         }
       }
       break;
     }
 
-    case BOUNDARY_OPTION_MIRROR:
-    {
-      for (int i = 0; i < ih; i++)
-      {
-        for (int j = 0; j < iw; j++)
-        {
+    case BOUNDARY_OPTION_MIRROR: {
+      for (int i = 0; i < ih; i++) {
+        for (int j = 0; j < iw; j++) {
           float intensity = 0;
-          for (int k = 0; k < kh; k++)
-          {
-            for (int l = 0; l < kw; l++)
-            {
+          for (int k = 0; k < kh; k++) {
+            for (int l = 0; l < kw; l++) {
               int ikkh = i + k - kh / 2, jlkw = j + l - kw / 2;
               if (ikkh < 0)
                 input_row = -ikkh - 1;
@@ -115,34 +101,29 @@ v4r::Convolution<PointT>::filter (pcl::PointCloud<PointT> &output)
               else
                 input_col = jlkw;
 
-              intensity += kernel_ (l, k).intensity * ((*input_)(input_col, input_row).intensity);
+              intensity += kernel_(l, k).intensity * ((*input_)(input_col, input_row).intensity);
             }
           }
-          output (j, i).intensity = intensity;
+          output(j, i).intensity = intensity;
         }
       }
       break;
     }
-    
-    case BOUNDARY_OPTION_ZERO_PADDING:
-    {
-      for (int i = 0; i < ih; i++)
-      {
-        for (int j = 0; j < iw; j++)
-        {
+
+    case BOUNDARY_OPTION_ZERO_PADDING: {
+      for (int i = 0; i < ih; i++) {
+        for (int j = 0; j < iw; j++) {
           float intensity = 0;
-          for (int k = 0; k < kh; k++)
-          {
-            for (int l = 0; l < kw; l++)
-            {
+          for (int k = 0; k < kh; k++) {
+            for (int l = 0; l < kw; l++) {
               int ikkh = i + k - kh / 2, jlkw = j + l - kw / 2;
               if (ikkh < 0 || ikkh >= ih || jlkw < 0 || jlkw >= iw)
                 continue;
               else
-                intensity += kernel_ (l, k).intensity * ((*input_)(jlkw, ikkh).intensity);
+                intensity += kernel_(l, k).intensity * ((*input_)(jlkw, ikkh).intensity);
             }
           }
-          output (j, i).intensity = intensity;
+          output(j, i).intensity = intensity;
         }
       }
       break;

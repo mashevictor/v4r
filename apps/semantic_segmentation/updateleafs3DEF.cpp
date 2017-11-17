@@ -37,7 +37,6 @@
 **
 ****************************************************************************/
 
-
 /**
  * @file updateleafs3DEF.cpp
  * @author Daniel Wolf (wolf@acin.tuwien.ac.at)
@@ -45,8 +44,8 @@
  * @brief
  *
  */
-#include <iostream>
 #include <ctime>
+#include <iostream>
 
 #include <opencv2/core/core.hpp>
 
@@ -60,7 +59,6 @@ using namespace std;
 using namespace boost::posix_time;
 namespace po = boost::program_options;
 
-
 string inputfile;
 string outputfile;
 
@@ -71,61 +69,52 @@ double updateWeight;
 
 bool bagUniformly;
 
-static bool parseArgs(int argc, char **argv)
-{
-    po::options_description forest("Options");
-    forest.add_options()
-            ("help,h", "")
-            ("input,i", po::value<string>(&inputfile), "Input forest file")
-            ("output,o", po::value<std::string>(&outputfile)->default_value("output.ef"), "Output forest file")
-            ("trainingdata,t", po::value<std::string>(&datadir)->default_value("."),
-             "Input directory of training data")
-            ("indexfile,x", po::value<std::string>(&indexfile)->default_value("indextraining"),
-             "Index file of training data")
-            ("depth,d", po::value<int>(&depth)->default_value(100), "Depth level to update")
-            ("updateweight,u", po::value<double>(&updateWeight)->default_value(1.0),
-             "Weight of new distribution compared to old one")
-            ("unibags,b", po::value<bool>(&bagUniformly)->default_value(false),
-             "Try to uniformly sample training data");
+static bool parseArgs(int argc, char **argv) {
+  po::options_description forest("Options");
+  forest.add_options()("help,h", "")("input,i", po::value<string>(&inputfile), "Input forest file")(
+      "output,o", po::value<std::string>(&outputfile)->default_value("output.ef"), "Output forest file")(
+      "trainingdata,t", po::value<std::string>(&datadir)->default_value("."), "Input directory of training data")(
+      "indexfile,x", po::value<std::string>(&indexfile)->default_value("indextraining"), "Index file of training data")(
+      "depth,d", po::value<int>(&depth)->default_value(100), "Depth level to update")(
+      "updateweight,u", po::value<double>(&updateWeight)->default_value(1.0),
+      "Weight of new distribution compared to old one")(
+      "unibags,b", po::value<bool>(&bagUniformly)->default_value(false), "Try to uniformly sample training data");
 
-    po::options_description all("");
-    all.add(forest);
+  po::options_description all("");
+  all.add(forest);
 
-    po::variables_map vm;
-    po::store(po::command_line_parser(argc, argv).
-            options(all).run(), vm);
+  po::variables_map vm;
+  po::store(po::command_line_parser(argc, argv).options(all).run(), vm);
 
-    po::notify(vm);
+  po::notify(vm);
 
-    std::string usage = "General usage: updateleafs -i inputfile -o outputfile";
+  std::string usage = "General usage: updateleafs -i inputfile -o outputfile";
 
-    if (vm.count("help"))
-    {
-        std::cout << usage << std::endl;
-        std::cout << all;
-        return false;
-    }
+  if (vm.count("help")) {
+    std::cout << usage << std::endl;
+    std::cout << all;
+    return false;
+  }
 
-    return true;
+  return true;
 }
 
-int main(int argc, char **argv)
-{
-    if (!parseArgs(argc, argv))
-        return -1;
+int main(int argc, char **argv) {
+  if (!parseArgs(argc, argv))
+    return -1;
 
-    cout << "Load forest " << inputfile << endl;
-    v4r::EntangledForest f;
-    v4r::EntangledForest::LoadFromBinaryFile(inputfile, f);
+  cout << "Load forest " << inputfile << endl;
+  v4r::EntangledForest f;
+  v4r::EntangledForest::LoadFromBinaryFile(inputfile, f);
 
-    cout << "Load training data from " << datadir << endl;
-    v4r::EntangledForestData d;
-    d.LoadTrainingData(datadir, indexfile);
+  cout << "Load training data from " << datadir << endl;
+  v4r::EntangledForestData d;
+  d.LoadTrainingData(datadir, indexfile);
 
-    // update leaf nodes at certain depth and cut off deeper nodes
-    f.updateLeafs(&d, depth, updateWeight, bagUniformly);
+  // update leaf nodes at certain depth and cut off deeper nodes
+  f.updateLeafs(&d, depth, updateWeight, bagUniformly);
 
-    cout << "DONE. Save new forest as " << outputfile << endl;
-    f.SaveToBinaryFile(outputfile);
-    cout << "DONE" << endl;
+  cout << "DONE. Save new forest as " << outputfile << endl;
+  f.SaveToBinaryFile(outputfile);
+  cout << "DONE" << endl;
 }

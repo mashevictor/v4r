@@ -37,67 +37,56 @@
 **
 ****************************************************************************/
 
-
 /**
  * @file main.cpp
  * @author Johann Prankl (prankl@acin.tuwien.ac.at)
  * @date 2017
  * @brief
  *
- */ 
+ */
 
 #ifndef KP_FEATURE_DETECTOR_ORB_HH
 #define KP_FEATURE_DETECTOR_ORB_HH
 
 #include <v4r/features/FeatureDetector.h>
-#include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/core/core.hpp>
 #include <opencv2/features2d/features2d.hpp>
+#include <opencv2/imgproc/imgproc.hpp>
 
+namespace v4r {
 
-namespace v4r 
-{
-
-class V4R_EXPORTS FeatureDetector_KD_ORB : public FeatureDetector
-{
-public:
-  class V4R_EXPORTS Parameter
-  {
-  public:
+class V4R_EXPORTS FeatureDetector_KD_ORB : public FeatureDetector {
+ public:
+  class V4R_EXPORTS Parameter {
+   public:
     int nfeatures;
     float scaleFactor;
     int nlevels;
     int patchSize;
-    Parameter(int _nfeatures=1000, float _scaleFactor=1.44, int _nlevels=2, int _patchSize=17)
+    Parameter(int _nfeatures = 1000, float _scaleFactor = 1.44, int _nlevels = 2, int _patchSize = 17)
     : nfeatures(_nfeatures), scaleFactor(_scaleFactor), nlevels(_nlevels), patchSize(_patchSize) {}
   };
 
-private:
+ private:
   Parameter param;
-  cv::Mat_<unsigned char> im_gray;  
+  cv::Mat_<unsigned char> im_gray;
 
   cv::Ptr<cv::ORB> orb;
 
-public:
-  FeatureDetector_KD_ORB(const Parameter &_p=Parameter());
+ public:
+  FeatureDetector_KD_ORB(const Parameter &_p = Parameter());
   ~FeatureDetector_KD_ORB();
 
-  virtual void detect(const cv::Mat &image, std::vector<cv::KeyPoint> &keys, cv::Mat &descriptors); 
-  virtual void detect(const cv::Mat &image, std::vector<cv::KeyPoint> &keys); 
-  virtual void extract(const cv::Mat &image, std::vector<cv::KeyPoint> &keys, cv::Mat &descriptors); 
+  virtual void detect(const cv::Mat &image, std::vector<cv::KeyPoint> &keys, cv::Mat &descriptors);
+  virtual void detect(const cv::Mat &image, std::vector<cv::KeyPoint> &keys);
+  virtual void extract(const cv::Mat &image, std::vector<cv::KeyPoint> &keys, cv::Mat &descriptors);
 
-
-  typedef SmartPtr< ::v4r::FeatureDetector_KD_ORB> Ptr;
-  typedef SmartPtr< ::v4r::FeatureDetector_KD_ORB const> ConstPtr;
+  typedef SmartPtr<::v4r::FeatureDetector_KD_ORB> Ptr;
+  typedef SmartPtr<::v4r::FeatureDetector_KD_ORB const> ConstPtr;
 };
-
-
 
 /*************************** INLINE METHODES **************************/
 
-
-
-} //--END--
+}  //--END--
 
 #endif
-

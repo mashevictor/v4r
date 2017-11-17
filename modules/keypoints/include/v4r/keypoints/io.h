@@ -37,32 +37,29 @@
 **
 ****************************************************************************/
 
-
 /**
  * @file main.cpp
  * @author Johann Prankl (prankl@acin.tuwien.ac.at)
  * @date 2017
  * @brief
  *
- */ 
+ */
 
 #ifndef KP_ARTICULATED_OBJECT_IO_HH
 #define KP_ARTICULATED_OBJECT_IO_HH
 
-#include <iostream>
-#include <fstream>
-#include <boost/archive/binary_oarchive.hpp>
-#include <boost/archive/binary_iarchive.hpp>
 #include <v4r/core/macros.h>
 #include <v4r/keypoints/ArticulatedObject.h>
+#include <boost/archive/binary_iarchive.hpp>
+#include <boost/archive/binary_oarchive.hpp>
+#include <fstream>
+#include <iostream>
 #include <v4r/keypoints/impl/ArticulatedObject_serialization.hpp>
 
-namespace v4r
-{
-namespace io
-{
-  V4R_EXPORTS bool write(const std::string &file, const ArticulatedObject::Ptr &model);
-  V4R_EXPORTS bool read(const std::string &file, ArticulatedObject::Ptr &model);
+namespace v4r {
+namespace io {
+V4R_EXPORTS bool write(const std::string &file, const ArticulatedObject::Ptr &model);
+V4R_EXPORTS bool read(const std::string &file, ArticulatedObject::Ptr &model);
 }
 }
 

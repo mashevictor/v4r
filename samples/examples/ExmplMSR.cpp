@@ -1,5 +1,5 @@
 /**
- *  Copyright (C) 2012  
+ *  Copyright (C) 2012
  *    Ekaterina Potapova
  *    Automation and Control Institute
  *    Vienna University of Technology
@@ -21,7 +21,6 @@
  *  along with this program.  If not, see http://www.gnu.org/licenses/
  */
 
-
 #include <opencv2/opencv.hpp>
 
 #include "v4r/attention_segmentation/AttentionModule.h"
@@ -30,59 +29,57 @@
 // This program shows the use of MSR to extract attention points
 void printUsage(const char *argv0);
 
-void printUsage(const char *argv0)
-{
+void printUsage(const char *argv0) {
   printf(
-    "Extracts attention points using MSR\n"
-    "usage: %s image.png saliency.png points.txt points.png useMorphologyOpenning\n"
-    "  image.png             ... color image\n"
-    "  saliency.png          ... saliency image\n"
-    "  points.txt            ... output text file with points\n"
-    "  points.png            ... output image with points\n"
-    "  useMorphologyOpenning ... 0 -- useMorphologyOpenning = false; !=0 -- useMorphologyOpenning = true\n", argv0);
-  printf(" Example: %s 1 image.png saliency.png points.txt points.png 0\n",argv0);
+      "Extracts attention points using MSR\n"
+      "usage: %s image.png saliency.png points.txt points.png useMorphologyOpenning\n"
+      "  image.png             ... color image\n"
+      "  saliency.png          ... saliency image\n"
+      "  points.txt            ... output text file with points\n"
+      "  points.png            ... output image with points\n"
+      "  useMorphologyOpenning ... 0 -- useMorphologyOpenning = false; !=0 -- useMorphologyOpenning = true\n",
+      argv0);
+  printf(" Example: %s 1 image.png saliency.png points.txt points.png 0\n", argv0);
 }
 
-int main(int argc, char** argv)
-{
-  srand ( time(NULL) );
+int main(int argc, char **argv) {
+  srand(time(NULL));
 
-  if(argc != 6)
-  {
+  if (argc != 6) {
     printUsage(argv[0]);
-    return(0);
+    return (0);
   }
-  
+
   std::string image_name(argv[1]);
   std::string map_name(argv[2]);
   std::string output_file_name(argv[3]);
   std::string output_png_name(argv[4]);
-  
+
   int useMorphologyOpenning = atoi(argv[5]);
-  
+
   // read image
-  cv::Mat image = cv::imread(image_name,-1);
-  
+  cv::Mat image = cv::imread(image_name, -1);
+
   // read saliency map
-  cv::Mat saliencyMap = cv::imread(map_name,0);
-  saliencyMap.convertTo(saliencyMap,CV_32F,1.0/255);
-  
+  cv::Mat saliencyMap = cv::imread(map_name, 0);
+  saliencyMap.convertTo(saliencyMap, CV_32F, 1.0 / 255);
+
   v4r::MRSParams msrParams;
   v4r::defaultParamsMSR(msrParams);
-  //modify wta
+  // modify wta
   msrParams.useMorphologyOpenning = (useMorphologyOpenning == 0 ? false : true);
 
   std::vector<cv::Point> attentionPoints;
   attentionPoints.clear();
-  v4r::detectMSR(attentionPoints,saliencyMap,msrParams);
+  v4r::detectMSR(attentionPoints, saliencyMap, msrParams);
 
-  v4r::writeAttentionPoints(attentionPoints,output_file_name);
-    
-  //save image with attantion points
-  v4r::drawAttentionPoints(image,attentionPoints,10);
-    
-  cv::imwrite(output_png_name,image);
-  //cv::waitKey();
+  v4r::writeAttentionPoints(attentionPoints, output_file_name);
 
-  return(0);
+  // save image with attantion points
+  v4r::drawAttentionPoints(image, attentionPoints, 10);
+
+  cv::imwrite(output_png_name, image);
+  // cv::waitKey();
+
+  return (0);
 }

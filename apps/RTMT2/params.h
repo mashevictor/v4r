@@ -37,64 +37,57 @@
 **
 ****************************************************************************/
 
-
 /**
  * @file main.cpp
  * @author Johann Prankl (prankl@acin.tuwien.ac.at)
  * @date 2017
  * @brief
  *
- */ 
+ */
 
 #ifndef _GRAB_PCD_PARAMS_H_
 #define _GRAB_PCD_PARAMS_H_
 
 #ifndef Q_MOC_RUN
+#include <Eigen/Dense>
 #include <QDialog>
 #include <opencv2/core/core.hpp>
-#include <Eigen/Dense>
 #endif
-
 
 namespace Ui {
 class Params;
 }
 
-class RGBDCameraParameter
-{
-public:
+class RGBDCameraParameter {
+ public:
   double f[2];
   double c[2];
   int width, height;
   double range[2];
   RGBDCameraParameter() {
-    f[0] = 525; f[1] = 525;
-    c[0] = 320; c[1] = 240;
+    f[0] = 525;
+    f[1] = 525;
+    c[0] = 320;
+    c[1] = 240;
     width = 640;
     height = 480;
-    range[0] = 0.1; range[1] = 3.14;
+    range[0] = 0.1;
+    range[1] = 3.14;
   }
 };
-
-
-
-
 
 /**
  * @brief The Params class
  */
-class Params : public QDialog
-{
+class Params : public QDialog {
   Q_OBJECT
 
-public:
-
+ public:
   //! Constructor.
   explicit Params(QWidget *parent = 0);
 
   //! Destructor.
   ~Params();
-
 
   void apply_params();
   void apply_cam_params();
@@ -117,29 +110,23 @@ public:
   bool useMultiviewICP();
   bool useNoiseModel();
 
+ signals:
 
-signals:
-
-  void cam_params_changed(const RGBDCameraParameter& cam);
+  void cam_params_changed(const RGBDCameraParameter &cam);
   void rgbd_path_changed();
   void set_roi_params(const double &_bbox_scale_xy, const double &_bbox_scale_height, const double &_seg_offs);
 
-
-
-private slots:
+ private slots:
 
   void on_okButton_clicked();
   void on_pushFindRGBDPath_pressed();
 
   void on_applyButton_clicked();
 
-private:
-
-  Ui::Params* ui;
+ private:
+  Ui::Params *ui;
 
   RGBDCameraParameter cam_params;
-
-
 };
 
-#endif // PARAMS_H
+#endif  // PARAMS_H

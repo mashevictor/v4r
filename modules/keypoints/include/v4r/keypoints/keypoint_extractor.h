@@ -37,7 +37,6 @@
 **
 ****************************************************************************/
 
-
 /**
  * @file keypoint_extractor.h
  * @author Thomas Faeulhammer (faeulhammer@acin.tuwien.ac.at), Aitor Aldoma (aldoma@acin.tuwien.ac.at)
@@ -48,97 +47,80 @@
 
 #pragma once
 
-#include <v4r/core/macros.h>
 #include <pcl/common/common.h>
+#include <v4r/core/macros.h>
 #include <v4r/keypoints/types.h>
 
-namespace v4r
-{
+namespace v4r {
 
-template<typename PointT>
-class V4R_EXPORTS KeypointExtractor
-{
-protected:
-    typename pcl::PointCloud<PointT>::ConstPtr input_; ///< input cloud
-    pcl::PointCloud<pcl::Normal>::ConstPtr normals_; ///< surface normals for input cloud
-    typename pcl::PointCloud<PointT>::Ptr keypoints_; /// extracted keypoints
-    std::vector<int> keypoint_indices_; ///< extracted keypoint indices
-    std::vector<int> indices_;  ///< indices of the segmented object (extracted keypoints outside of this will be neglected)
+template <typename PointT>
+class V4R_EXPORTS KeypointExtractor {
+ protected:
+  typename pcl::PointCloud<PointT>::ConstPtr input_;  ///< input cloud
+  pcl::PointCloud<pcl::Normal>::ConstPtr normals_;    ///< surface normals for input cloud
+  typename pcl::PointCloud<PointT>::Ptr keypoints_;   /// extracted keypoints
+  std::vector<int> keypoint_indices_;                 ///< extracted keypoint indices
+  std::vector<int>
+      indices_;  ///< indices of the segmented object (extracted keypoints outside of this will be neglected)
 
-public:
-    virtual ~KeypointExtractor() = 0;
+ public:
+  virtual ~KeypointExtractor() = 0;
 
-    /**
-     * @brief setInputCloud
-     * @param input input cloud
-     */
-    void
-    setInputCloud (const typename pcl::PointCloud<PointT>::ConstPtr & input)
-    {
-        input_ = input;
-    }
+  /**
+   * @brief setInputCloud
+   * @param input input cloud
+   */
+  void setInputCloud(const typename pcl::PointCloud<PointT>::ConstPtr &input) {
+    input_ = input;
+  }
 
-    void
-    setNormals (const pcl::PointCloud<pcl::Normal>::ConstPtr & normals)
-    {
-        normals_ = normals;
-    }
+  void setNormals(const pcl::PointCloud<pcl::Normal>::ConstPtr &normals) {
+    normals_ = normals;
+  }
 
-    virtual bool
-    needNormals () const
-    {
-        return false;
-    }
+  virtual bool needNormals() const {
+    return false;
+  }
 
-    std::vector<int>
-    getKeypointIndices () const
-    {
-        return keypoint_indices_;
-    }
+  std::vector<int> getKeypointIndices() const {
+    return keypoint_indices_;
+  }
 
-    /**
-     * @brief setIndices
-     * @param indices indices of the segmented object (extracted keypoints outside of this will be neglected)
-     */
-    void
-    setIndices(const std::vector<int> &indices)
-    {
-        indices_ = indices;
-    }
+  /**
+   * @brief setIndices
+   * @param indices indices of the segmented object (extracted keypoints outside of this will be neglected)
+   */
+  void setIndices(const std::vector<int> &indices) {
+    indices_ = indices;
+  }
 
-    /**
-     * @brief getKeypointExtractorType
-     * @return unique type id of keypoint extractor (as stated in keypoint/types.h)
-     */
-    virtual int getKeypointExtractorType() const = 0;
+  /**
+   * @brief getKeypointExtractorType
+   * @return unique type id of keypoint extractor (as stated in keypoint/types.h)
+   */
+  virtual int getKeypointExtractorType() const = 0;
 
-    /**
-     * @brief getKeypointExtractorName
-     * @return type name of keypoint extractor
-     */
-    virtual std::string getKeypointExtractorName() const = 0;
+  /**
+   * @brief getKeypointExtractorName
+   * @return type name of keypoint extractor
+   */
+  virtual std::string getKeypointExtractorName() const = 0;
 
-    /**
-     * @brief compute
-     * @param keypoints
-     */
-    virtual void
-    compute () = 0;
+  /**
+   * @brief compute
+   * @param keypoints
+   */
+  virtual void compute() = 0;
 
-    /**
-     * @brief getKeypoints
-     * @return extracted keypoints
-     */
-    virtual
-    typename pcl::PointCloud<PointT>::Ptr
-    getKeypoints() const
-    {
-        return keypoints_;
-    }
+  /**
+   * @brief getKeypoints
+   * @return extracted keypoints
+   */
+  virtual typename pcl::PointCloud<PointT>::Ptr getKeypoints() const {
+    return keypoints_;
+  }
 
-
-    typedef boost::shared_ptr< KeypointExtractor<PointT> > Ptr;
-    typedef boost::shared_ptr< KeypointExtractor<PointT> const> ConstPtr;
+  typedef boost::shared_ptr<KeypointExtractor<PointT>> Ptr;
+  typedef boost::shared_ptr<KeypointExtractor<PointT> const> ConstPtr;
 };
 }
-

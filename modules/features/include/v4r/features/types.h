@@ -37,7 +37,6 @@
 **
 ****************************************************************************/
 
-
 /**
  * @file types.h
  * @author Thomas Faeulhammer (faeulhammer@acin.tuwien.ac.at)
@@ -47,24 +46,22 @@
  */
 #pragma once
 
-namespace v4r
-{
-        enum FeatureType
-        {
-            SIFT_GPU = 0x01, // 00000001
-            SIFT_OPENCV = 0x02, // 00000010
-            SHOT  = 0x04, // 00000100
-            OURCVFH  = 0x08,  // 00001000
-            FPFH = 0x10,  // 00010000
-            ESF = 0x20,  // 00100000
-            SHOT_COLOR = 0x40,  // 01000000
+namespace v4r {
+enum FeatureType {
+  SIFT_GPU = 0x01,     // 00000001
+  SIFT_OPENCV = 0x02,  // 00000010
+  SHOT = 0x04,         // 00000100
+  OURCVFH = 0x08,      // 00001000
+  FPFH = 0x10,         // 00010000
+  ESF = 0x20,          // 00100000
+  SHOT_COLOR = 0x40,   // 01000000
 #if PCL_VERSION >= 100702
-            ALEXNET = 0x80,  // 10000000
-            ROPS = 0x200,  // 10000000
+  ALEXNET = 0x80,  // 10000000
+  ROPS = 0x200,    // 10000000
 #else
-            ALEXNET = 0x80,
+  ALEXNET = 0x80,
 #endif
-            SIMPLE_SHAPE = 0x400,
-            GLOBAL_COLOR = 0x800
-        };
+  SIMPLE_SHAPE = 0x400,
+  GLOBAL_COLOR = 0x800
+};
 }

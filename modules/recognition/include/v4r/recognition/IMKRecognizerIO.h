@@ -37,7 +37,6 @@
 **
 ****************************************************************************/
 
-
 /**
  * @file IMKRecognizerIO.h
  * @author Johann Prankl (prankl@acin.tuwien.ac.at)
@@ -49,46 +48,40 @@
 #ifndef KP_IMK_RECOGNIZER_IO_HH
 #define KP_IMK_RECOGNIZER_IO_HH
 
-#include <iostream>
-#include <fstream>
-#include <boost/archive/binary_oarchive.hpp>
-#include <boost/archive/binary_iarchive.hpp>
-#include <v4r/recognition/IMKRecognizer.h>
-#include <v4r/recognition/IMKRecognizer_serialization.hpp>
 #include <v4r/keypoints/CodebookMatcher.h>
+#include <v4r/recognition/IMKRecognizer.h>
+#include <boost/archive/binary_iarchive.hpp>
+#include <boost/archive/binary_oarchive.hpp>
+#include <fstream>
+#include <iostream>
 #include <opencv2/core/core.hpp>
+#include <v4r/recognition/IMKRecognizer_serialization.hpp>
 #include "boost/filesystem.hpp"
 
+namespace v4r {
 
-namespace v4r
-{
-
-
-
-/*************************************************************************** 
+/***************************************************************************
  * IMKRecognizerIO
  */
-class V4R_EXPORTS IMKRecognizerIO
-{
-private:
+class V4R_EXPORTS IMKRecognizerIO {
+ private:
   static void generateDir(const std::string &dir, const std::vector<std::string> &object_names, std::string &full_dir);
-  static void generateName(const std::string &dir, const std::vector<std::string> &object_names, std::string &full_name);
+  static void generateName(const std::string &dir, const std::vector<std::string> &object_names,
+                           std::string &full_name);
 
-public:
-  IMKRecognizerIO() {};
+ public:
+  IMKRecognizerIO(){};
 
   /** write **/
-  static void write(const std::string &dir, const std::vector<std::string> &object_names, const std::vector<IMKView> &object_models, const CodebookMatcher &cb, const std::string &codebookFilename="");
+  static void write(const std::string &dir, const std::vector<std::string> &object_names,
+                    const std::vector<IMKView> &object_models, const CodebookMatcher &cb,
+                    const std::string &codebookFilename = "");
 
   /** read **/
-  static bool read(const std::string &dir, std::vector<std::string> &object_names, std::vector<IMKView> &object_models, CodebookMatcher &cb, const std::string &codebookFilename="");
+  static bool read(const std::string &dir, std::vector<std::string> &object_names, std::vector<IMKView> &object_models,
+                   CodebookMatcher &cb, const std::string &codebookFilename = "");
 };
 
-
-
-
-
-} //--END--
+}  //--END--
 
 #endif
-

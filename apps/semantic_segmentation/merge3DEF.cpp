@@ -37,7 +37,6 @@
 **
 ****************************************************************************/
 
-
 /**
  * @file merge3DEF.cpp
  * @author Daniel Wolf (wolf@acin.tuwien.ac.at)
@@ -45,8 +44,8 @@
  * @brief
  *
  */
-#include <iostream>
 #include <ctime>
+#include <iostream>
 
 #include <boost/date_time/posix_time/posix_time_types.hpp>
 #include <boost/program_options.hpp>
@@ -64,61 +63,52 @@ namespace po = boost::program_options;
 std::vector<string> forestfiles;
 string outputfile;
 
-static bool parseArgs(int argc, char** argv)
-{
-    po::options_description forest("Options");
-    forest.add_options()
-            ("help,h","")
-            ("forests,f", po::value<std::vector< string > >(&forestfiles)->multitoken(), "Forest files to merge" )
-            ("output,o", po::value<std::string>(&outputfile)->default_value("merged.ef"), "" )
-            ;
+static bool parseArgs(int argc, char** argv) {
+  po::options_description forest("Options");
+  forest.add_options()("help,h", "")("forests,f", po::value<std::vector<string>>(&forestfiles)->multitoken(),
+                                     "Forest files to merge")(
+      "output,o", po::value<std::string>(&outputfile)->default_value("merged.ef"), "");
 
-    po::options_description all("");
-    all.add(forest);
+  po::options_description all("");
+  all.add(forest);
 
+  po::variables_map vm;
+  po::store(po::command_line_parser(argc, argv).options(all).run(), vm);
 
-    po::variables_map vm;
-    po::store(po::command_line_parser(argc, argv).
-              options(all).run(), vm);
+  po::notify(vm);
 
-    po::notify(vm);
+  std::string usage = "General usage: mergeforests -f forest1 forest2 ... -o outputfile";
 
-    std::string usage = "General usage: mergeforests -f forest1 forest2 ... -o outputfile";
+  if (forestfiles.size() < 2) {
+    std::cout << "You have to list at least 2 forest files!" << std::endl;
+    return false;
+  }
 
-    if(forestfiles.size() < 2)
-    {
-        std::cout << "You have to list at least 2 forest files!" << std::endl;
-        return false;
-    }
+  if (vm.count("help")) {
+    std::cout << usage << std::endl;
+    std::cout << all;
+    return false;
+  }
 
-    if(vm.count("help"))
-    {
-        std::cout << usage << std::endl;
-        std::cout << all;
-        return false;
-    }
-
-    return true;
+  return true;
 }
 
-int main (int argc, char** argv)
-{
-    if(!parseArgs(argc, argv))
-        return -1;
+int main(int argc, char** argv) {
+  if (!parseArgs(argc, argv))
+    return -1;
 
-    cout << "Load forest " << forestfiles[0] << endl;
-    v4r::EntangledForest merged;
-    v4r::EntangledForest::LoadFromBinaryFile(forestfiles[0], merged);
+  cout << "Load forest " << forestfiles[0] << endl;
+  v4r::EntangledForest merged;
+  v4r::EntangledForest::LoadFromBinaryFile(forestfiles[0], merged);
 
-    for(unsigned int i=1; i < forestfiles.size(); ++i)
-    {
-        cout << "Merge with forest " << forestfiles[i] << endl;
-        v4r::EntangledForest tomerge;
-        v4r::EntangledForest::LoadFromBinaryFile(forestfiles[i], tomerge);
-        merged.Merge(tomerge);
-    }
+  for (unsigned int i = 1; i < forestfiles.size(); ++i) {
+    cout << "Merge with forest " << forestfiles[i] << endl;
+    v4r::EntangledForest tomerge;
+    v4r::EntangledForest::LoadFromBinaryFile(forestfiles[i], tomerge);
+    merged.Merge(tomerge);
+  }
 
-    cout << "DONE. Save new forest as " << outputfile << endl;
-    merged.SaveToBinaryFile(outputfile);
-    cout << "DONE"<< endl;
+  cout << "DONE. Save new forest as " << outputfile << endl;
+  merged.SaveToBinaryFile(outputfile);
+  cout << "DONE" << endl;
 }

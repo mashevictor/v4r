@@ -37,67 +37,59 @@
 **
 ****************************************************************************/
 
-
 /**
  * @file main.cpp
  * @author Johann Prankl (prankl@acin.tuwien.ac.at)
  * @date 2017
  * @brief
  *
- */ 
+ */
 
 #ifndef KP_LK_POSE_TRACKER_RT_HH
 #define KP_LK_POSE_TRACKER_RT_HH
 
 #include <stdio.h>
+#include <v4r/keypoints/RigidTransformationRANSAC.h>
+#include <Eigen/Dense>
 #include <iostream>
-#include <string>
-#include <stdexcept>
+#include <opencv2/calib3d/calib3d.hpp>
 #include <opencv2/core/core.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
-#include <opencv2/calib3d/calib3d.hpp>
-#include <Eigen/Dense>
-#include "v4r/common/impl/SmartPtr.hpp"
-#include <v4r/keypoints/RigidTransformationRANSAC.h>
+#include <stdexcept>
+#include <string>
 #include <v4r/common/impl/DataMatrix2D.hpp>
 #include <v4r/keypoints/impl/Object.hpp>
+#include "v4r/common/impl/SmartPtr.hpp"
 
-
-namespace v4r
-{
-
+namespace v4r {
 
 /**
  * LKPoseTrackerRT
  */
-class V4R_EXPORTS LKPoseTrackerRT
-{
-public:
-  class V4R_EXPORTS Parameter
-  {
-  public:
+class V4R_EXPORTS LKPoseTrackerRT {
+ public:
+  class V4R_EXPORTS Parameter {
+   public:
     bool compute_global_pose;
     cv::Size win_size;
     int max_level;
     cv::TermCriteria termcrit;
-    float max_error;                     //100
-    RigidTransformationRANSAC::Parameter rt_param; // 0.01 (slam: 0.03)
-    Parameter(bool _compute_global_pose=true, const cv::Size &_win_size=cv::Size(21,21), int _max_level=2,
-      const cv::TermCriteria &_termcrit=cv::TermCriteria(CV_TERMCRIT_ITER|CV_TERMCRIT_EPS,20,0.03), 
-      float _max_error=100, 
-      const RigidTransformationRANSAC::Parameter &_rt_param=RigidTransformationRANSAC::Parameter(0.01))
-    : compute_global_pose(_compute_global_pose), win_size(_win_size), max_level(_max_level),
-      termcrit(_termcrit),
-      max_error(_max_error),
-      rt_param(_rt_param) {}
+    float max_error;                                // 100
+    RigidTransformationRANSAC::Parameter rt_param;  // 0.01 (slam: 0.03)
+    Parameter(bool _compute_global_pose = true, const cv::Size &_win_size = cv::Size(21, 21), int _max_level = 2,
+              const cv::TermCriteria &_termcrit = cv::TermCriteria(CV_TERMCRIT_ITER | CV_TERMCRIT_EPS, 20, 0.03),
+              float _max_error = 100,
+              const RigidTransformationRANSAC::Parameter &_rt_param = RigidTransformationRANSAC::Parameter(0.01))
+    : compute_global_pose(_compute_global_pose), win_size(_win_size), max_level(_max_level), termcrit(_termcrit),
+      max_error(_max_error), rt_param(_rt_param) {}
   };
 
-private:
+ private:
   Parameter param;
 
   cv::Mat_<unsigned char> im_gray, im_last;
-  std::vector< cv::Point2f > im_points0, im_points1;
-  std::vector< int > inliers;
+  std::vector<cv::Point2f> im_points0, im_points1;
+  std::vector<int> inliers;
   Eigen::Matrix4f last_pose;
 
   bool have_im_last;
@@ -108,38 +100,30 @@ private:
   cv::Mat_<double> dist_coeffs;
   cv::Mat_<double> intrinsic;
 
-
   ObjectView::Ptr model;
 
   RigidTransformationRANSAC::Ptr rt;
 
-
-
-public:
+ public:
   cv::Mat dbg;
 
-  LKPoseTrackerRT(const Parameter &p=Parameter());
+  LKPoseTrackerRT(const Parameter &p = Parameter());
   ~LKPoseTrackerRT();
 
   double detectIncremental(const cv::Mat &im, const DataMatrix2D<Eigen::Vector3f> &cloud, Eigen::Matrix4f &pose);
   void setLastFrame(const cv::Mat &image, const Eigen::Matrix4f &pose);
 
-
   void setModel(const ObjectView::Ptr &_model);
   void setCameraParameter(const cv::Mat &_intrinsic, const cv::Mat &_dist_coeffs);
 
-  void getProjections(std::vector< std::pair<int,cv::Point2f> > &im_pts);
+  void getProjections(std::vector<std::pair<int, cv::Point2f>> &im_pts);
 
-  typedef SmartPtr< ::v4r::LKPoseTrackerRT> Ptr;
-  typedef SmartPtr< ::v4r::LKPoseTrackerRT const> ConstPtr;
+  typedef SmartPtr<::v4r::LKPoseTrackerRT> Ptr;
+  typedef SmartPtr<::v4r::LKPoseTrackerRT const> ConstPtr;
 };
-
 
 /***************************** inline methods *******************************/
 
-
-
-} //--END--
+}  //--END--
 
 #endif
-

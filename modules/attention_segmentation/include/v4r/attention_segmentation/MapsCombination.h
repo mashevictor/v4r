@@ -37,28 +37,19 @@
 **
 ****************************************************************************/
 
-
-
 #ifndef MAPS_COMBINATION_HPP
 #define MAPS_COMBINATION_HPP
 
 #include "v4r/attention_segmentation/headers.h"
 
-namespace v4r
-{
+namespace v4r {
 
-enum CombinationTypes
-{
-  AM_SUM      = 0,
-  AM_MUL,
-  AM_MIN,
-  AM_MAX
-};
-  
+enum CombinationTypes { AM_SUM = 0, AM_MUL, AM_MIN, AM_MAX };
+
 // assume that maps are normalized to (0,1) range
-int CombineMaps(std::vector<cv::Mat> &maps, cv::Mat &combinedMap, int combination_type = AM_SUM, 
+int CombineMaps(std::vector<cv::Mat> &maps, cv::Mat &combinedMap, int combination_type = AM_SUM,
                 int normalization_type = v4r::NT_NONE);
-  
-} //namespace v4r
 
-#endif //MAPS_COMBINATION_HPP
+}  // namespace v4r
+
+#endif  // MAPS_COMBINATION_HPP

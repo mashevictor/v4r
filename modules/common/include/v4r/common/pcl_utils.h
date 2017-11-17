@@ -37,7 +37,6 @@
 **
 ****************************************************************************/
 
-
 /**
  * @file pcl_utils.h
  * @author Thomas Faeulhammer (faeulhammer@acin.tuwien.ac.at)
@@ -48,56 +47,51 @@
 
 #pragma once
 
-#include <boost/dynamic_bitset.hpp>
 #include <pcl/common/common.h>
 #include <v4r/core/macros.h>
+#include <boost/dynamic_bitset.hpp>
 
-
-namespace v4r
-{
+namespace v4r {
 /**
  * @brief sets the sensor origin and sensor orientation fields of the PCL pointcloud header by the given transform
  */
-template<typename PointT>
-V4R_EXPORTS void
-setCloudPose(const Eigen::Matrix4f &trans, pcl::PointCloud<PointT> &cloud);
-
+template <typename PointT>
+V4R_EXPORTS void setCloudPose(const Eigen::Matrix4f &trans, pcl::PointCloud<PointT> &cloud);
 }
 
-namespace pcl   /// NOTE: THIS NAMESPACE IS AN EXCEPTION
+namespace pcl  /// NOTE: THIS NAMESPACE IS AN EXCEPTION
 {
 
-/** \brief Extract the indices of a given point cloud as a new point cloud (instead of int types, this function uses a size_t vector)
+/** \brief Extract the indices of a given point cloud as a new point cloud (instead of int types, this function uses a
+ * size_t vector)
   * \param[in] cloud_in the input point cloud dataset
   * \param[in] indices the vector of indices representing the points to be copied from \a cloud_in
   * \param[out] cloud_out the resultant output point cloud dataset
   * \note Assumes unique indices.
   * \ingroup common
   */
-template <typename PointT> V4R_EXPORTS void
-copyPointCloud (const pcl::PointCloud<PointT> &cloud_in,
-                const std::vector<size_t> &indices,
-                pcl::PointCloud<PointT> &cloud_out);
+template <typename PointT>
+V4R_EXPORTS void copyPointCloud(const pcl::PointCloud<PointT> &cloud_in, const std::vector<size_t> &indices,
+                                pcl::PointCloud<PointT> &cloud_out);
 
-/** \brief Extract the indices of a given point cloud as a new point cloud (instead of int types, this function uses a size_t vector)
+/** \brief Extract the indices of a given point cloud as a new point cloud (instead of int types, this function uses a
+ * size_t vector)
   * \param[in] cloud_in the input point cloud dataset
   * \param[in] indices the vector of indices representing the points to be copied from \a cloud_in
   * \param[out] cloud_out the resultant output point cloud dataset
   * \note Assumes unique indices.
   * \ingroup common
   */
-template <typename PointT> V4R_EXPORTS void
-copyPointCloud (const pcl::PointCloud<PointT> &cloud_in,
-                const std::vector<size_t, Eigen::aligned_allocator<size_t> > &indices,
-                pcl::PointCloud<PointT> &cloud_out);
+template <typename PointT>
+V4R_EXPORTS void copyPointCloud(const pcl::PointCloud<PointT> &cloud_in,
+                                const std::vector<size_t, Eigen::aligned_allocator<size_t>> &indices,
+                                pcl::PointCloud<PointT> &cloud_out);
 
-template <typename PointT> V4R_EXPORTS void
-copyPointCloud (const pcl::PointCloud<PointT> &cloud_in,
-                     const std::vector<bool> &mask,
-                     pcl::PointCloud<PointT> &cloud_out);
+template <typename PointT>
+V4R_EXPORTS void copyPointCloud(const pcl::PointCloud<PointT> &cloud_in, const std::vector<bool> &mask,
+                                pcl::PointCloud<PointT> &cloud_out);
 
-template <typename PointT> V4R_EXPORTS void
-copyPointCloud (const pcl::PointCloud<PointT> &cloud_in,
-                     const boost::dynamic_bitset<> &mask,
-                     pcl::PointCloud<PointT> &cloud_out);
+template <typename PointT>
+V4R_EXPORTS void copyPointCloud(const pcl::PointCloud<PointT> &cloud_in, const boost::dynamic_bitset<> &mask,
+                                pcl::PointCloud<PointT> &cloud_out);
 }

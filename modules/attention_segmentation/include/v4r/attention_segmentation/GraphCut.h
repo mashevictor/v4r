@@ -37,7 +37,6 @@
 **
 ****************************************************************************/
 
-
 /**
  * @file GraphCut.h
  * @author Andreas Richtsfeld
@@ -49,84 +48,80 @@
 #ifndef GC_GRAPHCUT_H
 #define GC_GRAPHCUT_H
 
+#include <math.h>
+#include <stdio.h>
+#include <algorithm>
+#include <cstdlib>
 #include <set>
 #include <vector>
-#include <stdio.h>
-#include <cstdlib>
-#include <math.h>
-#include <algorithm>
 
-#include "Graph.h"
 #include "Edge.h"
+#include "Graph.h"
 #include "disjoint-set.h"
 
 #include "v4r/attention_segmentation//Relation.h"
 #include "v4r/attention_segmentation//SurfaceModel.h"
 
-namespace gc
-{
+namespace gc {
 
 // THRESHOLD_CONSTANT:
 // CAREFULL: Float value!!!
-#define THRESHOLD_CONSTANT 0.5    /// good value 0.5 
-#define MIN_SIZE 1                /// minimum size of element-sets
+#define THRESHOLD_CONSTANT 0.5  /// good value 0.5
+#define MIN_SIZE 1              /// minimum size of element-sets
 
-#define THRESHOLD(size, c) (c/size)
+#define THRESHOLD(size, c) (c / size)
 
 /**
  * @brief Class GraphCut
  */
-class GraphCut
-{
-public:
-  
-private:
+class GraphCut {
+ public:
+ private:
   bool print;
-  bool createAllRelations;                          ///< create all combinatorial combinations of relations (if graph is not fully connected)
+  bool createAllRelations;  ///< create all combinatorial combinations of relations (if graph is not fully connected)
 
-  bool initialized;                                 ///< flag to process
-  bool processed;                                   ///< flag to get results
-  unsigned num_edges;                               ///< Number of edges
+  bool initialized;    ///< flag to process
+  bool processed;      ///< flag to get results
+  unsigned num_edges;  ///< Number of edges
   std::vector<int> surfaces_reindex2;
 
   bool have_surfaces;
-  std::vector<v4r::SurfaceModel::Ptr> surfaces; ///< Surfaces
-  
+  std::vector<v4r::SurfaceModel::Ptr> surfaces;  ///< Surfaces
+
   bool have_relations;
   std::vector<v4r::Relation> relations;
-  
-  gc::Edge *edges;                                  ///< Edges between the nodes, representing a probability
-  universe *u;                                      ///< universe to cut graph
-  
+
+  gc::Edge *edges;  ///< Edges between the nodes, representing a probability
+  universe *u;      ///< universe to cut graph
+
   std::string ClassName;
-  
-  public:
+
+ public:
   GraphCut();
   ~GraphCut();
-  
+
   /** Initialize the graph cut algorithm with number of nodes and with all available relations **/
   bool init();
 
   /** Process graph cut **/
   void process();
   void process2();
-  
+
   /** Print the results of the graph cut **/
-  void printResults(bool _printResults) {print = _printResults;}
-  
+  void printResults(bool _printResults) {
+    print = _printResults;
+  }
+
   void setSurfaces(const std::vector<v4r::SurfaceModel::Ptr> _surfaces);
   void setRelations(std::vector<v4r::Relation> _relations);
-  
+
   /** Return modified surfaces **/
   inline std::vector<v4r::SurfaceModel::Ptr> getSurfaces();
 };
 
-inline std::vector<v4r::SurfaceModel::Ptr> GraphCut::getSurfaces()
-{
+inline std::vector<v4r::SurfaceModel::Ptr> GraphCut::getSurfaces() {
   return surfaces;
 }
-
 }
 
 #endif
-

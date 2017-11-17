@@ -37,7 +37,6 @@
 **
 ****************************************************************************/
 
-
 /**
  * @file segmenter.h
  * @author Ekaterina Potapova
@@ -46,41 +45,38 @@
  * @brief Library to call segmentation from outside
  */
 
-
 #ifndef SEGMENTATION_MODULES
 #define SEGMENTATION_MODULES
 
-#include <stdio.h>      /* printf, scanf, puts, NULL */
-#include <stdlib.h>     /* srand, rand */
-#include <time.h>       /* time */
+#include <stdio.h>  /* printf, scanf, puts, NULL */
+#include <stdlib.h> /* srand, rand */
+#include <time.h>   /* time */
 #include <fstream>
 
 #include <pcl/io/pcd_io.h>
 
-#include <boost/filesystem/fstream.hpp>
 #include <boost/filesystem.hpp>
+#include <boost/filesystem/fstream.hpp>
 
 #include <v4r/core/macros.h>
 
+#include "v4r/attention_segmentation/ClusterNormalsToPlanes.h"
 #include "v4r/attention_segmentation/PCLUtils.h"
 #include "v4r/attention_segmentation/SurfaceModel.h"
-#include "v4r/attention_segmentation/ZAdaptiveNormals.h"
-#include "v4r/attention_segmentation/ClusterNormalsToPlanes.h"
 #include "v4r/attention_segmentation/SurfaceModeling.h"
+#include "v4r/attention_segmentation/ZAdaptiveNormals.h"
 
 #include "v4r/attention_segmentation/AddGroundTruth.h"
-#include "v4r/attention_segmentation/StructuralRelations.h"
 #include "v4r/attention_segmentation/SVMFileCreator.h"
 #include "v4r/attention_segmentation/SVMPredictorSingle.h"
+#include "v4r/attention_segmentation/StructuralRelations.h"
 
-#include "v4r/attention_segmentation/GraphCut.h"
 #include "v4r/attention_segmentation/EPUtils.h"
+#include "v4r/attention_segmentation/GraphCut.h"
 
-namespace v4r
-{
+namespace v4r {
 
 struct TimeEstimates {
-
   unsigned long long time_normalsCalculation;
   unsigned long long time_patchesCalculation;
   unsigned long long time_patchImageCalculation;
@@ -99,55 +95,51 @@ struct TimeEstimates {
 
   unsigned long long time_total;
 };
-  
+
 /**
  * @class Segmenter
  */
-class V4R_EXPORTS Segmenter
-{
-private:
-  
-  pcl::PointCloud<pcl::PointXYZRGB>::Ptr pcl_cloud;                 ///< original pcl point cloud
-  pcl::PointCloud<pcl::PointXYZRGBL>::Ptr pcl_cloud_l;              ///< labeled pcl point cloud
+class V4R_EXPORTS Segmenter {
+ private:
+  pcl::PointCloud<pcl::PointXYZRGB>::Ptr pcl_cloud;     ///< original pcl point cloud
+  pcl::PointCloud<pcl::PointXYZRGBL>::Ptr pcl_cloud_l;  ///< labeled pcl point cloud
   pcl::PointCloud<pcl::Normal>::Ptr normals;
   v4r::ClusterNormalsToPlanes::Ptr clusterNormals;
   std::vector<v4r::SurfaceModel::Ptr> surfaces;
   v4r::SurfaceModeling::Ptr surfModeling;
-  std::map<v4r::borderIdentification,std::vector<v4r::neighboringPair> > ngbr2D_map;
-  std::map<v4r::borderIdentification,std::vector<v4r::neighboringPair> > ngbr3D_map;
+  std::map<v4r::borderIdentification, std::vector<v4r::neighboringPair>> ngbr2D_map;
+  std::map<v4r::borderIdentification, std::vector<v4r::neighboringPair>> ngbr3D_map;
   std::vector<v4r::Relation> validRelations;
   v4r::StructuralRelations structuralRelations;
   svm::SVMPredictorSingle svmPredictorSingle;
   gc::GraphCut graphCut;
   std::vector<cv::Mat> saliencyMaps;
-  
+
   std::vector<cv::Mat> masks;
-  std::vector<std::vector<int> > segmentedObjectsIndices;
-  
+  std::vector<std::vector<int>> segmentedObjectsIndices;
+
   v4r::View view;
-  
+
   bool have_cloud;
   bool have_cloud_l;
-  //bool have_normals;
+  // bool have_normals;
   bool have_saliencyMaps;
 
   bool use_planes;
 
   std::string model_file_name, scaling_file_name;
-  
+
   std::string ClassName;
 
   TimeEstimates timeEstimates;
-  
-  //only for training
+
+  // only for training
   v4r::AddGroundTruth addGroundTruth;
   svm::SVMFileCreator svmFileCreator;
   std::string train_ST_file_name, train_AS_file_name;
 
-public:
-
-private:
-  
+ public:
+ private:
   void calculatePatches();
   void calculateNormals();
   void initModelSurfaces();
@@ -158,22 +150,22 @@ private:
   bool checkSegmentation(cv::Mat &mask, int originalIndex, int salMapNumber);
   int attentionSegment(cv::Mat &object_mask, int originalIndex, int salMapNumber);
   void createMasks();
-  
-public:
+
+ public:
   Segmenter();
   virtual ~Segmenter();
-  
+
   /** Run the pre-segmenter **/
   void segment();
   void attentionSegment();
-  //void attentionSegment(int &objNumber);
-  
+  // void attentionSegment(int &objNumber);
+
   void attentionSegmentInit();
   bool attentionSegmentNext();
-  
-  //only for training
+
+  // only for training
   void createTrainFile();
-  
+
   void setPointCloud(pcl::PointCloud<pcl::PointXYZRGB>::Ptr _pcl_cloud);
   void setPointCloud(pcl::PointCloud<pcl::PointXYZRGBL>::Ptr _pcl_cloud_l);
   void setSaliencyMaps(std::vector<cv::Mat> _saliencyMaps);
@@ -182,64 +174,53 @@ public:
 
   inline void setModelFilename(std::string _model_file_name);
   inline void setScaling(std::string _scaling_file_name);
-  
+
   inline std::vector<v4r::SurfaceModel::Ptr> getSurfaces();
   inline std::vector<cv::Mat> getMasks();
-  inline std::vector<std::vector<int> > getSegmentedObjectsIndices();
+  inline std::vector<std::vector<int>> getSegmentedObjectsIndices();
   inline TimeEstimates getTimeEstimates();
-  
-  //only for training
+
+  // only for training
   inline void setTrainSTFilename(std::string _train_ST_file_name);
   inline void setTrainASFilename(std::string _train_AS_file_name);
-
 };
 
-inline void Segmenter::setUsePlanesNotNurbs(bool _use_planes)
-{
+inline void Segmenter::setUsePlanesNotNurbs(bool _use_planes) {
   use_planes = _use_planes;
 }
 
-inline void Segmenter::setModelFilename(std::string _model_file_name)
-{
+inline void Segmenter::setModelFilename(std::string _model_file_name) {
   model_file_name = _model_file_name;
-
 }
 
-inline void Segmenter::setTrainSTFilename(std::string _train_ST_file_name)
-{
+inline void Segmenter::setTrainSTFilename(std::string _train_ST_file_name) {
   train_ST_file_name = _train_ST_file_name;
 }
 
-inline void Segmenter::setTrainASFilename(std::string _train_AS_file_name)
-{
+inline void Segmenter::setTrainASFilename(std::string _train_AS_file_name) {
   train_AS_file_name = _train_AS_file_name;
 }
 
-inline void Segmenter::setScaling(std::string _scaling_file_name)
-{
+inline void Segmenter::setScaling(std::string _scaling_file_name) {
   scaling_file_name = _scaling_file_name;
 }
 
-inline std::vector<v4r::SurfaceModel::Ptr> Segmenter::getSurfaces()
-{
-  return(surfaces);
+inline std::vector<v4r::SurfaceModel::Ptr> Segmenter::getSurfaces() {
+  return (surfaces);
 }
 
-inline std::vector<cv::Mat> Segmenter::getMasks()
-{
-  return(masks);
+inline std::vector<cv::Mat> Segmenter::getMasks() {
+  return (masks);
 }
 
-inline std::vector<std::vector<int> > Segmenter::getSegmentedObjectsIndices()
-{
-  return(segmentedObjectsIndices);
+inline std::vector<std::vector<int>> Segmenter::getSegmentedObjectsIndices() {
+  return (segmentedObjectsIndices);
 }
 
-inline TimeEstimates Segmenter::getTimeEstimates()
-{
+inline TimeEstimates Segmenter::getTimeEstimates() {
   return timeEstimates;
 }
 
-} //namespace segmentation
+}  // namespace segmentation
 
-#endif //SEGMENTATION_MODULES
+#endif  // SEGMENTATION_MODULES

@@ -37,8 +37,6 @@
 **
 ****************************************************************************/
 
-
-
 #ifndef EPUTILS_INCLUDE_HEADERS_HPP
 #define EPUTILS_INCLUDE_HEADERS_HPP
 
@@ -47,14 +45,14 @@
 #include "v4r/attention_segmentation/normalization.h"
 #include "v4r/attention_segmentation/utils.h"
 //#include "v4r/attention_segmentation/sphereHistogram.h"
-#include "v4r/attention_segmentation/math.h"
 #include "v4r/attention_segmentation/drawUtils.h"
+#include "v4r/attention_segmentation/math.h"
 //#include "v4r/attention_segmentation/debugUtils.h"
 #include "v4r/attention_segmentation/connectedComponents.h"
 #include "v4r/attention_segmentation/timeUtils.h"
 #ifndef NOT_USE_PCL
-#include "v4r/attention_segmentation/PCLPreprocessingXYZRC.h"
 #include "v4r/attention_segmentation/PCA.h"
+#include "v4r/attention_segmentation/PCLPreprocessingXYZRC.h"
 #endif
 
-#endif //EPUTILS_INCLUDE_HEADERS_HPP
+#endif  // EPUTILS_INCLUDE_HEADERS_HPP

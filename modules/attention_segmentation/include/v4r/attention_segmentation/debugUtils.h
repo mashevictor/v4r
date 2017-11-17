@@ -37,16 +37,13 @@
 **
 ****************************************************************************/
 
-
-
 #ifndef EPDEBUG_H
 #define EPDEBUG_H
 
 #include <v4r/core/macros.h>
 #include "v4r/attention_segmentation/eputils_headers.h"
 
-namespace v4r
-{
+namespace v4r {
 
 /**
  * show image for debug
@@ -62,15 +59,12 @@ V4R_EXPORTS void printMat(std::string name, cv::Mat &mat);
 V4R_EXPORTS void printParameter(std::string name, float value);
 
 // class to print
-class DebugPrints
-{
-public:
-
+class DebugPrints {
+ public:
   typedef boost::shared_ptr<DebugPrints> Ptr;
   typedef boost::shared_ptr<const DebugPrints> ConstPtr;
-  
-  typedef enum
-  {
+
+  typedef enum {
     NO_DEBUG_PRINT = 0,
     CRITICAL_PRINT = 1,
     LIGHT_TIME_PRINT = 2,
@@ -80,28 +74,28 @@ public:
   } DEBUG_TYPE;
 
   ~DebugPrints();
-  
+
   void setDebugType(int type);
   void print(const int type, const char *fmt, ...);
   void openFile(const char *fileName);
   void closeFile();
 
-  //static DebugPrints::Ptr getDebug();
+  // static DebugPrints::Ptr getDebug();
 
-public:
+ public:
   DebugPrints();
-  
+
   int DebugType;
   FILE *pFile;
   bool fileOpened;
 
   boost::mutex debug_mutex;
 
-  //static DebugPrints::Ptr debug;// = DebugPrints::Ptr(new DebugPrints());
+  // static DebugPrints::Ptr debug;// = DebugPrints::Ptr(new DebugPrints());
 };
 
-//DebugPrints debug;
+// DebugPrints debug;
 
-} //namespace v4r
+}  // namespace v4r
 
-#endif //EPDEBUG_H
+#endif  // EPDEBUG_H

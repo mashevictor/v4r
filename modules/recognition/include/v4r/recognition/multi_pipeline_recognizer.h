@@ -37,7 +37,6 @@
 **
 ****************************************************************************/
 
-
 /**
  * @file multi_pipeline_recognizer.h
  * @author Aitor Aldoma (aldoma@acin.tuwien.ac.at), Thomas Faeulhammer (faeulhammer@acin.tuwien.ac.at)
@@ -46,112 +45,95 @@
  *
  */
 
-
 #pragma once
 
-#include <v4r/recognition/recognition_pipeline.h>
 #include <omp.h>
+#include <v4r/recognition/recognition_pipeline.h>
 
-namespace v4r
-{
-template<typename PointT>
-class V4R_EXPORTS MultiRecognitionPipeline : public RecognitionPipeline<PointT>
-{
-private:
-    using RecognitionPipeline<PointT>::elapsed_time_;
-    using RecognitionPipeline<PointT>::scene_;
-    using RecognitionPipeline<PointT>::scene_normals_;
-    using RecognitionPipeline<PointT>::m_db_;
-    using RecognitionPipeline<PointT>::normal_estimator_;
-    using RecognitionPipeline<PointT>::obj_hypotheses_;
-    using RecognitionPipeline<PointT>::table_plane_;
-    using RecognitionPipeline<PointT>::table_plane_set_;
-    using RecognitionPipeline<PointT>::vis_param_;
+namespace v4r {
+template <typename PointT>
+class V4R_EXPORTS MultiRecognitionPipeline : public RecognitionPipeline<PointT> {
+ private:
+  using RecognitionPipeline<PointT>::elapsed_time_;
+  using RecognitionPipeline<PointT>::scene_;
+  using RecognitionPipeline<PointT>::scene_normals_;
+  using RecognitionPipeline<PointT>::m_db_;
+  using RecognitionPipeline<PointT>::normal_estimator_;
+  using RecognitionPipeline<PointT>::obj_hypotheses_;
+  using RecognitionPipeline<PointT>::table_plane_;
+  using RecognitionPipeline<PointT>::table_plane_set_;
+  using RecognitionPipeline<PointT>::vis_param_;
 
-    std::vector<typename RecognitionPipeline<PointT>::Ptr > recognition_pipelines_;
+  std::vector<typename RecognitionPipeline<PointT>::Ptr> recognition_pipelines_;
 
-    omp_lock_t rec_lock_;
+  omp_lock_t rec_lock_;
 
-    /**
-     * @brief recognize
-     */
-    void
-    do_recognize();
+  /**
+   * @brief recognize
+   */
+  void do_recognize();
 
-public:
-    MultiRecognitionPipeline() { }
+ public:
+  MultiRecognitionPipeline() {}
 
-    /**
-         * @brief initialize the recognizer (extract features, create FLANN,...)
-         * @param[in] path to model database. If training directory exists, will load trained model from disk; if not, computed features will be stored on disk (in each
-         * object model folder, a feature folder is created with data)
-         * @param[in] retrain if set, will re-compute features and store to disk, no matter if they already exist or not
-         */
-    void
-    initialize(const std::string &trained_dir = "", bool retrain = false);
+  /**
+       * @brief initialize the recognizer (extract features, create FLANN,...)
+       * @param[in] path to model database. If training directory exists, will load trained model from disk; if not,
+   * computed features will be stored on disk (in each
+       * object model folder, a feature folder is created with data)
+       * @param[in] retrain if set, will re-compute features and store to disk, no matter if they already exist or not
+       */
+  void initialize(const bf::path &trained_dir = "", bool retrain = false);
 
+  /**
+   * @brief oh_tmp
+   * @param rec recognition pipeline (local or global)
+   */
+  void addRecognitionPipeline(typename RecognitionPipeline<PointT>::Ptr &rec) {
+    recognition_pipelines_.push_back(rec);
+  }
 
-    /**
-     * @brief oh_tmp
-     * @param rec recognition pipeline (local or global)
-     */
-    void
-    addRecognitionPipeline(typename RecognitionPipeline<PointT>::Ptr & rec)
-    {
-        recognition_pipelines_.push_back(rec);
+  /**
+       * @brief needNormals
+       * @return true if normals are needed, false otherwise
+       */
+  bool needNormals() const {
+    for (size_t r_id = 0; r_id < recognition_pipelines_.size(); r_id++) {
+      if (recognition_pipelines_[r_id]->needNormals())
+        return true;
     }
+    return false;
+  }
 
+  /**
+   * @brief getFeatureType
+   * @return
+   */
+  size_t getFeatureType() const {
+    size_t feat_type = 0;
+    for (size_t r_id = 0; r_id < recognition_pipelines_.size(); r_id++)
+      feat_type += recognition_pipelines_[r_id]->getFeatureType();
 
-    /**
-         * @brief needNormals
-         * @return true if normals are needed, false otherwise
-         */
-    bool
-    needNormals() const
-    {
-        for(size_t r_id=0; r_id < recognition_pipelines_.size(); r_id++)
-        {
-            if(recognition_pipelines_[r_id]->needNormals())
-                return true;
-        }
-        return false;
-    }
+    return feat_type;
+  }
 
-    /**
-     * @brief getFeatureType
-     * @return
-     */
-    size_t
-    getFeatureType() const
-    {
-        size_t feat_type = 0;
-        for(size_t r_id=0; r_id < recognition_pipelines_.size(); r_id++)
-            feat_type += recognition_pipelines_[r_id]->getFeatureType();
+  /**
+   * @brief requiresSegmentation
+   * @return
+   */
+  bool requiresSegmentation() const {
+    bool ret_value = false;
+    for (size_t i = 0; (i < recognition_pipelines_.size()) && !ret_value; i++)
+      ret_value = recognition_pipelines_[i]->requiresSegmentation();
 
-        return feat_type;
-    }
+    return ret_value;
+  }
 
-    /**
-     * @brief requiresSegmentation
-     * @return
-     */
-    bool
-    requiresSegmentation() const
-    {
-        bool ret_value = false;
-        for(size_t i=0; (i < recognition_pipelines_.size()) && !ret_value; i++)
-            ret_value = recognition_pipelines_[i]->requiresSegmentation();
+  std::vector<typename RecognitionPipeline<PointT>::Ptr> getRecognitionPipelines() const {
+    return recognition_pipelines_;
+  }
 
-        return ret_value;
-    }
-
-    std::vector<typename RecognitionPipeline<PointT>::Ptr >
-    getRecognitionPipelines() const
-    {
-        return recognition_pipelines_;
-    }
-
-    typedef boost::shared_ptr< MultiRecognitionPipeline<PointT> > Ptr;
-    typedef boost::shared_ptr< MultiRecognitionPipeline<PointT> const> ConstPtr;
+  typedef boost::shared_ptr<MultiRecognitionPipeline<PointT>> Ptr;
+  typedef boost::shared_ptr<MultiRecognitionPipeline<PointT> const> ConstPtr;
 };
 }

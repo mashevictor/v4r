@@ -37,7 +37,6 @@
 **
 ****************************************************************************/
 
-
 /**
  * @file all_headers.h
  * @author Thomas Faeulhammer (faeulhammer@acin.tuwien.ac.at)
@@ -48,13 +47,13 @@
 
 #pragma once
 
-#include <v4r_config.h>
 #include <v4r/features/types.h>
+#include <v4r_config.h>
 
-#include <v4r/features/sift_local_estimator.h>
 #include <v4r/features/esf_estimator.h>
 #include <v4r/features/ourcvfh_estimator.h>
 #include <v4r/features/shot_local_estimator.h>
+#include <v4r/features/sift_local_estimator.h>
 //#include <v4r/features/shot_color_local_estimator.h>
 #ifdef HAVE_CAFFE
 #include <v4r/features/global_alexnet_cnn_estimator.h>

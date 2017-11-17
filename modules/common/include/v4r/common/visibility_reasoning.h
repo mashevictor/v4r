@@ -37,7 +37,6 @@
 **
 ****************************************************************************/
 
-
 /**
  * @file visibility_reasoning.h
  * @author Thomas Faeulhammer (faeulhammer@acin.tuwien.ac.at), Aitor Aldoma (aldoma@acin.tuwien.ac.at)
@@ -52,8 +51,7 @@
 #include <pcl/common/common.h>
 #include <v4r/core/macros.h>
 
-namespace v4r
-{
+namespace v4r {
 
 /**
  * visibility_reasoning.h
@@ -61,54 +59,57 @@ namespace v4r
  *  @date Mar 19, 2013
  *  @author Aitor Aldoma, Thomas Faeulhammer
  */
-    template<typename PointT>
-    class V4R_EXPORTS VisibilityReasoning
-    {
-      typedef typename pcl::PointCloud<PointT>::Ptr PointCloudPtr;
-      float focal_length_; float cx_; float cy_;
-      float tss_;
-      int fsv_used_;
-      public:
-        VisibilityReasoning(float fc, float cx, float cy)
-        {
-          focal_length_ = fc;
-          cx_ = cx;
-          cy_ = cy;
-          tss_ = 0.01f;
-          fsv_used_ = 0;
-        }
+template <typename PointT>
+class V4R_EXPORTS VisibilityReasoning {
+  typedef typename pcl::PointCloud<PointT>::Ptr PointCloudPtr;
+  float focal_length_;
+  float cx_;
+  float cy_;
+  float tss_;
+  int fsv_used_;
 
-        int getFSVUsedPoints()
-        {
-          return fsv_used_;
-        }
+ public:
+  VisibilityReasoning(float fc, float cx, float cy) {
+    focal_length_ = fc;
+    cx_ = cx;
+    cy_ = cy;
+    tss_ = 0.01f;
+    fsv_used_ = 0;
+  }
 
-        int
-        computeRangeDifferencesWhereObserved(const typename pcl::PointCloud<PointT>::ConstPtr & im1, const typename pcl::PointCloud<PointT>::ConstPtr & im2, std::vector<float> & range_diff);
+  int getFSVUsedPoints() {
+    return fsv_used_;
+  }
 
-        int
-        computeRangeDifferencesWhereObservedWithIndicesBack(const typename pcl::PointCloud<PointT>::ConstPtr & im1, const typename pcl::PointCloud<PointT>::ConstPtr & im2, std::vector<float> & range_diff, std::vector<int> & indices);
+  int computeRangeDifferencesWhereObserved(const typename pcl::PointCloud<PointT>::ConstPtr &im1,
+                                           const typename pcl::PointCloud<PointT>::ConstPtr &im2,
+                                           std::vector<float> &range_diff);
 
-        float computeFSV(const typename pcl::PointCloud<PointT>::ConstPtr &im1,
-                           const typename pcl::PointCloud<PointT>::ConstPtr &im2,
-                           Eigen::Matrix4f pose_2_to_1 = Eigen::Matrix4f::Identity());
+  int computeRangeDifferencesWhereObservedWithIndicesBack(const typename pcl::PointCloud<PointT>::ConstPtr &im1,
+                                                          const typename pcl::PointCloud<PointT>::ConstPtr &im2,
+                                                          std::vector<float> &range_diff, std::vector<int> &indices);
 
-        float computeFSVWithNormals(const typename pcl::PointCloud<PointT>::ConstPtr &im1,
-                                    const typename pcl::PointCloud<PointT>::ConstPtr &im2,
-                                    pcl::PointCloud<pcl::Normal>::Ptr & normals);
+  float computeFSV(const typename pcl::PointCloud<PointT>::ConstPtr &im1,
+                   const typename pcl::PointCloud<PointT>::ConstPtr &im2,
+                   Eigen::Matrix4f pose_2_to_1 = Eigen::Matrix4f::Identity());
 
-        float computeOSV(const typename pcl::PointCloud<PointT>::ConstPtr &im1,
-                           const typename pcl::PointCloud<PointT>::ConstPtr &im2,
-                           Eigen::Matrix4f pose_2_to_1 = Eigen::Matrix4f::Identity());
+  float computeFSVWithNormals(const typename pcl::PointCloud<PointT>::ConstPtr &im1,
+                              const typename pcl::PointCloud<PointT>::ConstPtr &im2,
+                              pcl::PointCloud<pcl::Normal>::Ptr &normals);
 
-        void setThresholdTSS(float t)
-        {
-          tss_ = t;
-        }
+  float computeOSV(const typename pcl::PointCloud<PointT>::ConstPtr &im1,
+                   const typename pcl::PointCloud<PointT>::ConstPtr &im2,
+                   Eigen::Matrix4f pose_2_to_1 = Eigen::Matrix4f::Identity());
 
-        float computeFocalLength(int width, int height, const typename pcl::PointCloud<PointT>::ConstPtr & cloud);
+  void setThresholdTSS(float t) {
+    tss_ = t;
+  }
 
-        static void computeRangeImage(int width, int height, float fl, const typename pcl::PointCloud<PointT>::ConstPtr & cloud, typename pcl::PointCloud<PointT>::Ptr & range_image);
-    };
+  float computeFocalLength(int width, int height, const typename pcl::PointCloud<PointT>::ConstPtr &cloud);
+
+  static void computeRangeImage(int width, int height, float fl,
+                                const typename pcl::PointCloud<PointT>::ConstPtr &cloud,
+                                typename pcl::PointCloud<PointT>::Ptr &range_image);
+};
 }
 #endif

@@ -37,14 +37,13 @@
 **
 ****************************************************************************/
 
-
 /**
  * @file main.cpp
  * @author Johann Prankl (prankl@acin.tuwien.ac.at)
  * @date 2017
  * @brief
  *
- */ 
+ */
 
 #include <v4r/features/FeatureDetector_KD_ORB.h>
 
@@ -52,34 +51,27 @@
 #define HAVE_OCV_2
 #endif
 
-
-
-namespace v4r 
-{
-
+namespace v4r {
 
 using namespace std;
-
 
 /************************************************************************************
  * Constructor/Destructor
  */
-FeatureDetector_KD_ORB::FeatureDetector_KD_ORB(const Parameter &_p)
- : FeatureDetector(KD_ORB), param(_p)
-{ 
-  //orb = new cv::ORB(10000, 1.2, 6, 13, 0, 2, cv::ORB::HARRIS_SCORE, 13); //31
-  //orb = new cv::ORB(1000, 1.44, 2, 17, 0, 2, cv::ORB::HARRIS_SCORE, 17);
+FeatureDetector_KD_ORB::FeatureDetector_KD_ORB(const Parameter &_p) : FeatureDetector(KD_ORB), param(_p) {
+// orb = new cv::ORB(10000, 1.2, 6, 13, 0, 2, cv::ORB::HARRIS_SCORE, 13); //31
+// orb = new cv::ORB(1000, 1.44, 2, 17, 0, 2, cv::ORB::HARRIS_SCORE, 17);
 
-  #ifdef HAVE_OCV_2
-  orb = new cv::ORB(param.nfeatures, param.scaleFactor, param.nlevels, param.patchSize, 0, 2, cv::ORB::HARRIS_SCORE, param.patchSize);
-  #else
-  orb = cv::ORB::create( param.nfeatures, param.scaleFactor, param.nlevels, 31, 0, 2, cv::ORB::HARRIS_SCORE, param.patchSize);
-  #endif
+#ifdef HAVE_OCV_2
+  orb = new cv::ORB(param.nfeatures, param.scaleFactor, param.nlevels, param.patchSize, 0, 2, cv::ORB::HARRIS_SCORE,
+                    param.patchSize);
+#else
+  orb = cv::ORB::create(param.nfeatures, param.scaleFactor, param.nlevels, 31, 0, 2, cv::ORB::HARRIS_SCORE,
+                        param.patchSize);
+#endif
 }
 
-FeatureDetector_KD_ORB::~FeatureDetector_KD_ORB()
-{
-}
+FeatureDetector_KD_ORB::~FeatureDetector_KD_ORB() {}
 
 /***************************************************************************************/
 
@@ -87,55 +79,44 @@ FeatureDetector_KD_ORB::~FeatureDetector_KD_ORB()
  * detect
  * descriptors is a cv::Mat_<unsigned char>
  */
-void FeatureDetector_KD_ORB::detect(const cv::Mat &image, std::vector<cv::KeyPoint> &keys, cv::Mat &descriptors)
-{
-  if( image.type() != CV_8U ) cv::cvtColor( image, im_gray, CV_RGB2GRAY );
-  else im_gray = image;  
+void FeatureDetector_KD_ORB::detect(const cv::Mat &image, std::vector<cv::KeyPoint> &keys, cv::Mat &descriptors) {
+  if (image.type() != CV_8U)
+    cv::cvtColor(image, im_gray, CV_RGB2GRAY);
+  else
+    im_gray = image;
 
-  #ifdef HAVE_OCV_2
+#ifdef HAVE_OCV_2
   (*orb)(im_gray, cv::Mat(), keys, descriptors);
-  #else
+#else
   orb->detectAndCompute(im_gray, cv::Mat(), keys, descriptors);
-  #endif
+#endif
 }
 
 /**
  * detect
  */
-void FeatureDetector_KD_ORB::detect(const cv::Mat &image, std::vector<cv::KeyPoint> &keys)
-{
-  if( image.type() != CV_8U ) cv::cvtColor( image, im_gray, CV_RGB2GRAY );
-  else im_gray = image;  
+void FeatureDetector_KD_ORB::detect(const cv::Mat &image, std::vector<cv::KeyPoint> &keys) {
+  if (image.type() != CV_8U)
+    cv::cvtColor(image, im_gray, CV_RGB2GRAY);
+  else
+    im_gray = image;
 
-  orb->detect(im_gray,keys);
+  orb->detect(im_gray, keys);
 }
 
 /**
  * detect
  */
-void FeatureDetector_KD_ORB::extract(const cv::Mat &image, std::vector<cv::KeyPoint> &keys, cv::Mat &descriptors)
-{
-  if( image.type() != CV_8U ) cv::cvtColor( image, im_gray, CV_RGB2GRAY );
-  else im_gray = image;  
+void FeatureDetector_KD_ORB::extract(const cv::Mat &image, std::vector<cv::KeyPoint> &keys, cv::Mat &descriptors) {
+  if (image.type() != CV_8U)
+    cv::cvtColor(image, im_gray, CV_RGB2GRAY);
+  else
+    im_gray = image;
 
-  #ifdef HAVE_OCV_2
+#ifdef HAVE_OCV_2
   (*orb)(im_gray, cv::Mat(), keys, descriptors, true);
-  #else
-  orb->detectAndCompute(im_gray,cv::Mat(),keys,descriptors,true);
-  #endif
-
+#else
+  orb->detectAndCompute(im_gray, cv::Mat(), keys, descriptors, true);
+#endif
 }
-
 }
-
-
-
-
-
-
-
-
-
-
-
-

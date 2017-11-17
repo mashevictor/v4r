@@ -37,32 +37,29 @@
 **
 ****************************************************************************/
 
-
-
 #ifndef NORMALIZATION_HPP
 #define NORMALIZATION_HPP
 
 #include <v4r/core/macros.h>
 #include "v4r/attention_segmentation/eputils_headers.h"
 
-namespace v4r
-{
+namespace v4r {
 
-enum NormalizationTypes
-{
-  NT_NONE        = 0,
+enum NormalizationTypes {
+  NT_NONE = 0,
   NT_NONMAX,
   NT_FRINTROP_NORM,
   NT_EMPTY,
   NT_MAX_DIVIDE,
   NT_NONE_REAL,
 };
-  
+
 V4R_EXPORTS void computeLocalMax(cv::Mat &image, int &numLocalMax, float &averageLocalMax, float threshold = 0);
 /**
  * normalizes image
  * */
-V4R_EXPORTS void normalize(cv::Mat &map, int normalization_type = NT_NONE, float newMaxValue = 1, float newMinValue = 0);
+V4R_EXPORTS void normalize(cv::Mat &map, int normalization_type = NT_NONE, float newMaxValue = 1,
+                           float newMinValue = 0);
 V4R_EXPORTS void normalizeNonMax(cv::Mat &map);
 V4R_EXPORTS void normalizeFrintrop(cv::Mat &map);
 V4R_EXPORTS void normalizeMin2Zero(cv::Mat &map);
@@ -71,6 +68,6 @@ V4R_EXPORTS void normalizeMin2Zero(cv::Mat &map);
  * */
 V4R_EXPORTS void normalizeMax2One(cv::Mat &map);
 
-} //namespace v4r
+}  // namespace v4r
 
-#endif //NORMALIZATION_HPP
+#endif  // NORMALIZATION_HPP

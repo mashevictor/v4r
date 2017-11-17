@@ -37,45 +37,40 @@
 **
 ****************************************************************************/
 
-
 /**
  * @file main.cpp
  * @author Johann Prankl (prankl@acin.tuwien.ac.at)
  * @date 2017
  * @brief
  *
- */ 
+ */
 
 #ifndef V4R_IM_GDESC_ORIENTATION_HH
 #define V4R_IM_GDESC_ORIENTATION_HH
 
-#include <iostream>
-#include <fstream>
 #include <float.h>
-#include <vector>
+#include <v4r/core/macros.h>
+#include <Eigen/Dense>
+#include <fstream>
+#include <iostream>
 #include <opencv2/core/core.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
-#include <Eigen/Dense>
 #include <stdexcept>
-#include <v4r/core/macros.h>
 #include <v4r/common/impl/SmartPtr.hpp>
+#include <vector>
 
-namespace v4r 
-{
+namespace v4r {
 
-class V4R_EXPORTS ImGDescOrientation
-{
-public:
-  class Parameter
-  {
-  public:
+class V4R_EXPORTS ImGDescOrientation {
+ public:
+  class Parameter {
+   public:
     bool smooth;
-    float sigma; //1.6
-    Parameter(bool _smooth=true, float _sigma=1.6)
-    : smooth(_smooth), sigma(_sigma) {}
+    float sigma;  // 1.6
+    Parameter(bool _smooth = true, float _sigma = 1.6) : smooth(_smooth), sigma(_sigma) {}
   };
 
-private:
+ private:
   Parameter param;
 
   cv::Mat_<unsigned char> im_smooth;
@@ -88,26 +83,19 @@ private:
   void ComputeAngle(const cv::Mat_<float> &weight, float &angle);
   void ComputeLTGaussCirc(const cv::Mat_<unsigned char> &im);
 
-
-public:
-
-  ImGDescOrientation(const Parameter &p=Parameter());
+ public:
+  ImGDescOrientation(const Parameter &p = Parameter());
   ~ImGDescOrientation();
 
   void compute(const cv::Mat_<unsigned char> &im, float &angle);
   void compute(const cv::Mat_<unsigned char> &im, const cv::Mat_<float> &weight, float &angle);
 
-  typedef SmartPtr< ::v4r::ImGDescOrientation> Ptr;
-  typedef SmartPtr< ::v4r::ImGDescOrientation const> ConstPtr;
+  typedef SmartPtr<::v4r::ImGDescOrientation> Ptr;
+  typedef SmartPtr<::v4r::ImGDescOrientation const> ConstPtr;
 };
-
-
 
 /*************************** INLINE METHODES **************************/
 
-
-
-} //--END--
+}  //--END--
 
 #endif
-

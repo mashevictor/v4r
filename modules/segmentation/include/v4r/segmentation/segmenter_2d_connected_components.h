@@ -37,7 +37,6 @@
 **
 ****************************************************************************/
 
-
 /**
  * @file segmenter_2d_connected_components.h
  * @author Thomas Faeulhammer (faeulhammer@acin.tuwien.ac.at)
@@ -51,54 +50,45 @@
 #include <v4r/core/macros.h>
 #include <v4r/segmentation/segmenter.h>
 
-namespace v4r
-{
+namespace v4r {
 
-class V4R_EXPORTS ConnectedComponentsSegmenterParameter : public SegmenterParameter
-{
-public:
-    using SegmenterParameter::min_cluster_size_;
-    using SegmenterParameter::max_cluster_size_;
-    using SegmenterParameter::distance_threshold_;
-    using SegmenterParameter::wsize_;
+class V4R_EXPORTS ConnectedComponentsSegmenterParameter : public SegmenterParameter {
+ public:
+  using SegmenterParameter::min_cluster_size_;
+  using SegmenterParameter::max_cluster_size_;
+  using SegmenterParameter::distance_threshold_;
+  using SegmenterParameter::wsize_;
 
-    ConnectedComponentsSegmenterParameter ()
-    {
-    }
+  ConnectedComponentsSegmenterParameter() {}
 };
-
 
 template <typename PointT>
-class V4R_EXPORTS ConnectedComponentsSegmenter: public Segmenter<PointT>
-{
-private:
-    using Segmenter<PointT>::normals_;
-    using Segmenter<PointT>::clusters_;
-    using Segmenter<PointT>::scene_;
+class V4R_EXPORTS ConnectedComponentsSegmenter : public Segmenter<PointT> {
+ private:
+  using Segmenter<PointT>::normals_;
+  using Segmenter<PointT>::clusters_;
+  using Segmenter<PointT>::scene_;
 
-    SegmenterParameter param_;
+  SegmenterParameter param_;
 
-    bool
-    check (const pcl::PointXYZI & p1, pcl::PointXYZI & p2) const
-    {
-        if ( p1.intensity != 0 && ( (p1.getVector3fMap () - p2.getVector3fMap ()).norm () <= param_.cluster_tolerance_) )
-        {
-                p2.intensity = p1.intensity;
-                return false;
-        }
-        return true; //new label
+  bool check(const pcl::PointXYZI &p1, pcl::PointXYZI &p2) const {
+    if (p1.intensity != 0 && ((p1.getVector3fMap() - p2.getVector3fMap()).norm() <= param_.cluster_tolerance_)) {
+      p2.intensity = p1.intensity;
+      return false;
     }
+    return true;  // new label
+  }
 
-public:
-    ConnectedComponentsSegmenter(const SegmenterParameter &p = SegmenterParameter() ) : param_(p) {  }
+ public:
+  ConnectedComponentsSegmenter(const SegmenterParameter &p = SegmenterParameter()) : param_(p) {}
 
-    void
-    segment();
+  void segment();
 
-    bool getRequiresNormals() { return true; }
+  bool getRequiresNormals() {
+    return true;
+  }
 
-    typedef boost::shared_ptr< ConnectedComponentsSegmenter<PointT> > Ptr;
-    typedef boost::shared_ptr< ConnectedComponentsSegmenter<PointT> const> ConstPtr;
+  typedef boost::shared_ptr<ConnectedComponentsSegmenter<PointT>> Ptr;
+  typedef boost::shared_ptr<ConnectedComponentsSegmenter<PointT> const> ConstPtr;
 };
-
 }

@@ -37,7 +37,6 @@
 **
 ****************************************************************************/
 
-
 /**
  * @file multiview_object_recognizer_change_detection.h
  * @author Martin Velas (ivelas@fit.vutrb.cz), Thomas Faeulhammer (faeulhammer@acin.tuwien.ac.at)
@@ -49,82 +48,79 @@
 #ifndef V4R_MULTIVIEW_OBJECT_RECOGNIZER_CHANGE_DETECTION_H__
 #define V4R_MULTIVIEW_OBJECT_RECOGNIZER_CHANGE_DETECTION_H__
 
-#include <vector>
 #include <iostream>
-#include <string>
 #include <sstream>
+#include <string>
+#include <vector>
 
 #include <pcl/common/transforms.h>
 #include <pcl/point_cloud.h>
 #include <pcl/point_types.h>
 
-#include <v4r_config.h>
 #include <v4r/core/macros.h>
+#include <v4r/recognition/multi_pipeline_recognizer.h>
 #include <v4r/recognition/multiview_object_recognizer.h>
 #include <v4r/recognition/multiview_representation.h>
-#include <v4r/recognition/multi_pipeline_recognizer.h>
+#include <v4r_config.h>
 
-namespace v4r
-{
+namespace v4r {
 
-template<typename PointT>
-class V4R_EXPORTS MultiviewRecognizerWithChangeDetection : public MultiviewRecognizer<PointT>
-{
-public:
-    typedef Model<PointT> ModelT;
-    typedef boost::shared_ptr<ModelT> ModelTPtr;
-    typedef pcl::PointCloud<PointT> Cloud;
-    typedef typename Cloud::Ptr CloudPtr;
+template <typename PointT>
+class V4R_EXPORTS MultiviewRecognizerWithChangeDetection : public MultiviewRecognizer<PointT> {
+ public:
+  typedef Model<PointT> ModelT;
+  typedef boost::shared_ptr<ModelT> ModelTPtr;
+  typedef pcl::PointCloud<PointT> Cloud;
+  typedef typename Cloud::Ptr CloudPtr;
 
-protected:
-    using MultiviewRecognizer<PointT>::views_;
-    using MultiviewRecognizer<PointT>::id_;
+ protected:
+  using MultiviewRecognizer<PointT>::views_;
+  using MultiviewRecognizer<PointT>::id_;
 
-    std::map < size_t, typename pcl::PointCloud<PointT>::Ptr > removed_points_history_; ///< changes detected in previous observations
-    std::map < size_t, typename pcl::PointCloud<PointT>::Ptr > removed_points_cumulated_history_; ///< changes detected in previous observations (cumulated for reconstruction filtering)
+  std::map<size_t, typename pcl::PointCloud<PointT>::Ptr>
+      removed_points_history_;  ///< changes detected in previous observations
+  std::map<size_t, typename pcl::PointCloud<PointT>::Ptr> removed_points_cumulated_history_;  ///< changes detected in
+                                                                                              /// previous observations
+  ///(cumulated for
+  /// reconstruction
+  /// filtering)
 
-    CloudPtr changing_scene; ///< current status of dynamic scene
+  CloudPtr changing_scene;  ///< current status of dynamic scene
 
-public:
-    class Parameter: public MultiviewRecognizer<PointT>::Parameter {
-    public:
-        int min_points_for_hyp_removal_; ///< how many removed points must overlap hypothesis to be also considered removed
-        float tolerance_for_cloud_diff_; ///< tolerance for point cloud difference [2cm]
+ public:
+  class Parameter : public MultiviewRecognizer<PointT>::Parameter {
+   public:
+    int min_points_for_hyp_removal_;  ///< how many removed points must overlap hypothesis to be also considered removed
+    float tolerance_for_cloud_diff_;  ///< tolerance for point cloud difference [2cm]
 
-        Parameter(
-                int min_points_for_hyp_removal = 50,
-                float tolerance_for_cloud_diff = 0.02) :
-                    min_points_for_hyp_removal_(min_points_for_hyp_removal),
-                    tolerance_for_cloud_diff_(tolerance_for_cloud_diff) {
-        }
-    } param_;
+    Parameter(int min_points_for_hyp_removal = 50, float tolerance_for_cloud_diff = 0.02)
+    : min_points_for_hyp_removal_(min_points_for_hyp_removal), tolerance_for_cloud_diff_(tolerance_for_cloud_diff) {}
+  } param_;
 
-    MultiviewRecognizerWithChangeDetection(const Parameter &p = Parameter()) : MultiviewRecognizer<PointT>(p)
-    {}
+  MultiviewRecognizerWithChangeDetection(const Parameter &p = Parameter()) : MultiviewRecognizer<PointT>(p) {}
 
-    MultiviewRecognizerWithChangeDetection(int argc, char ** argv);
+  MultiviewRecognizerWithChangeDetection(int argc, char **argv);
 
-protected:
-    virtual void initHVFilters();
+ protected:
+  virtual void initHVFilters();
 
-    virtual void cleanupHVFilters();
+  virtual void cleanupHVFilters();
 
-    void findChangedPoints(Cloud observation_unposed, Eigen::Affine3f pose,
-            pcl::PointCloud<PointT> &removed_points, pcl::PointCloud<PointT> &added_points);
+  void findChangedPoints(Cloud observation_unposed, Eigen::Affine3f pose, pcl::PointCloud<PointT> &removed_points,
+                         pcl::PointCloud<PointT> &added_points);
 
-    virtual void reconstructionFiltering(CloudPtr observation,
-            pcl::PointCloud<pcl::Normal>::Ptr observation_normals, const Eigen::Matrix4f &absolute_pose, size_t view_id);
+  virtual void reconstructionFiltering(CloudPtr observation, pcl::PointCloud<pcl::Normal>::Ptr observation_normals,
+                                       const Eigen::Matrix4f &absolute_pose, size_t view_id);
 
-    void setNan(pcl::Normal &normal);
+  void setNan(pcl::Normal &normal);
 
-    void setNan(PointT &pt);
+  void setNan(PointT &pt);
 
-    virtual std::vector<bool> getHypothesisInViewsMask(ModelTPtr model, const Eigen::Matrix4f &pose, size_t origin_id);
+  virtual std::vector<bool> getHypothesisInViewsMask(ModelTPtr model, const Eigen::Matrix4f &pose, size_t origin_id);
 
-    template<typename K, typename V>
-    std::vector<K> getMapKeys(const std::map<K, V> &container);
+  template <typename K, typename V>
+  std::vector<K> getMapKeys(const std::map<K, V> &container);
 };
-
 }
 
 #endif

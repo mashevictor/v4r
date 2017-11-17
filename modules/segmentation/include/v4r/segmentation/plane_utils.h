@@ -37,7 +37,6 @@
 **
 ****************************************************************************/
 
-
 /**
  * @file plane_utils.h
  * @author Thomas Faeulhammer (faeulhammer@acin.tuwien.ac.at)
@@ -46,17 +45,15 @@
  *
  */
 
+#include <pcl/common/common.h>
+#include <v4r/common/camera.h>
+#include <v4r/core/macros.h>
 #include <boost/dynamic_bitset.hpp>
 #include <opencv2/opencv.hpp>
-#include <pcl/common/common.h>
-#include <v4r/core/macros.h>
-#include <v4r/common/camera.h>
 
 #pragma once
 
-namespace v4r
-{
-
+namespace v4r {
 
 /**
  * @brief dist2plane checks the minimum distance of a point to a plane \f$|a*x + b*y + c*z + d| \le threshold \f$
@@ -64,9 +61,8 @@ namespace v4r
  * @param plane defined as Vector (a,b,c,d)
  * @return distance to plane (positive if above plane, negative below)
  */
-inline float dist2plane(const Eigen::Vector3f& point, const Eigen::Vector4f &plane)
-{
-    return (point.dot(plane.head(3)) + plane(3)) / plane.head(3).norm();
+inline float dist2plane(const Eigen::Vector3f &point, const Eigen::Vector4f &plane) {
+  return (point.dot(plane.head(3)) + plane(3)) / plane.head(3).norm();
 }
 
 /**
@@ -75,18 +71,14 @@ inline float dist2plane(const Eigen::Vector3f& point, const Eigen::Vector4f &pla
  * @param plane plane equation \f$|a*x + b*y + c*z + d|
  * @return closest point on the plane
  */
-inline
-Eigen::Vector3f
-getClosestPointOnPlane(const Eigen::Vector3f &query_pt, const Eigen::Vector4f &plane)
-{
-    float dist = dist2plane(query_pt, plane);
-    Eigen::Vector3f plane_normal = plane.head(3);
-    plane_normal.normalize();
+inline Eigen::Vector3f getClosestPointOnPlane(const Eigen::Vector3f &query_pt, const Eigen::Vector4f &plane) {
+  float dist = dist2plane(query_pt, plane);
+  Eigen::Vector3f plane_normal = plane.head(3);
+  plane_normal.normalize();
 
-    Eigen::Vector3f closest_pt = query_pt - plane_normal * dist;
-    return closest_pt;
+  Eigen::Vector3f closest_pt = query_pt - plane_normal * dist;
+  return closest_pt;
 }
-
 
 /**
  * @brief DistanceBetweenPlanes (assumes planes are parallel)
@@ -94,17 +86,15 @@ getClosestPointOnPlane(const Eigen::Vector3f &query_pt, const Eigen::Vector4f &p
  * @param plane2
  * @return distance between two (parallel) planes
  */
-inline float DistanceBetweenPlanes(const Eigen::Vector4f &plane1, const Eigen::Vector4f &plane2)
-{
-    // a b and c must be equal
-    float norm1 = plane1.head(3).norm();
-    float norm2 = plane2.head(3).norm();
-    const Eigen::Vector4f plane1_normalized = plane1/norm1;
-    const Eigen::Vector4f plane2_normalized = plane2/norm2;
+inline float DistanceBetweenPlanes(const Eigen::Vector4f &plane1, const Eigen::Vector4f &plane2) {
+  // a b and c must be equal
+  float norm1 = plane1.head(3).norm();
+  float norm2 = plane2.head(3).norm();
+  const Eigen::Vector4f plane1_normalized = plane1 / norm1;
+  const Eigen::Vector4f plane2_normalized = plane2 / norm2;
 
-    return ( fabs(plane1_normalized(3) - plane2_normalized(3)) );
+  return (fabs(plane1_normalized(3) - plane2_normalized(3)));
 }
-
 
 /**
  * @brief CosAngleBetweenPlanes
@@ -112,30 +102,28 @@ inline float DistanceBetweenPlanes(const Eigen::Vector4f &plane1, const Eigen::V
  * @param plane2
  * @return cosinus between two planes
  */
-inline float CosAngleBetweenPlanes(const Eigen::Vector4f &plane1, const Eigen::Vector4f &plane2)
-{
-    Eigen::Vector3f normal1 = plane1.head(3);
-    Eigen::Vector3f normal2 = plane2.head(3);
-    normal1.normalize();
-    normal2.normalize();
+inline float CosAngleBetweenPlanes(const Eigen::Vector4f &plane1, const Eigen::Vector4f &plane2) {
+  Eigen::Vector3f normal1 = plane1.head(3);
+  Eigen::Vector3f normal2 = plane2.head(3);
+  normal1.normalize();
+  normal2.normalize();
 
-    return normal1.dot(normal2);
+  return normal1.dot(normal2);
 }
 
-
 /**
- * @brief is_inlier checks if a point (x,y,z) in 3D space if it lies on a plane within a certain threshold \f$|a*x + b*y + c*z + d| \le threshold \f$
+ * @brief is_inlier checks if a point (x,y,z) in 3D space if it lies on a plane within a certain threshold \f$|a*x + b*y
+ * + c*z + d| \le threshold \f$
  * @param point (x,y,z) in 3D space
  * @param plane defined as Vector (a,b,c,d)
  * @param threshold in meter
  * @return true if is on plane
  */
-inline bool is_inlier(const Eigen::Vector3f& point, const Eigen::Vector4f &plane, float threshold)
-{
-    Eigen::Vector3f normalized_normal = plane.head(3);
-    normalized_normal.normalize();
+inline bool is_inlier(const Eigen::Vector3f &point, const Eigen::Vector4f &plane, float threshold) {
+  Eigen::Vector3f normalized_normal = plane.head(3);
+  normalized_normal.normalize();
 
-    return fabs( dist2plane(point,plane) ) < threshold;
+  return fabs(dist2plane(point, plane)) < threshold;
 }
 
 /**
@@ -145,11 +133,9 @@ inline bool is_inlier(const Eigen::Vector3f& point, const Eigen::Vector4f &plane
  * @param threshold in meter
  * @return true if above plane
  */
-inline bool is_above_plane(const Eigen::Vector3f& point, const Eigen::Vector4f &plane, float threshold)
-{
-    return dist2plane(point,plane) > threshold;
+inline bool is_above_plane(const Eigen::Vector3f &point, const Eigen::Vector4f &plane, float threshold) {
+  return dist2plane(point, plane) > threshold;
 }
-
 
 /**
  * @brief checks for each point (x,y,z) in the cloud if its above a plane \f$a*x + b*y + c*z + d > threshold \f$
@@ -158,20 +144,18 @@ inline bool is_above_plane(const Eigen::Vector3f& point, const Eigen::Vector4f &
  * @param threshold in meter
  * @return all indices of the cloud fulfilling the equation
  */
-template<typename PointT>
-V4R_EXPORTS std::vector<int>
-get_above_plane_inliers(const pcl::PointCloud<PointT> &cloud, const Eigen::Vector4f &plane, float threshold)
-{
-    std::vector<int> inliers (cloud.points.size());
-    size_t kept=0;
-    for (size_t i = 0; i < cloud.points.size(); i++) {
-        if ( is_above_plane(cloud.points[i].getVector3fMap(), plane, threshold) )
-            inliers[ kept++ ] = i;
-    }
-    inliers.resize(kept);
-    return inliers;
+template <typename PointT>
+V4R_EXPORTS std::vector<int> get_above_plane_inliers(const pcl::PointCloud<PointT> &cloud, const Eigen::Vector4f &plane,
+                                                     float threshold) {
+  std::vector<int> inliers(cloud.points.size());
+  size_t kept = 0;
+  for (size_t i = 0; i < cloud.points.size(); i++) {
+    if (is_above_plane(cloud.points[i].getVector3fMap(), plane, threshold))
+      inliers[kept++] = i;
+  }
+  inliers.resize(kept);
+  return inliers;
 }
-
 
 /**
  * @brief checks for each point (x,y,z) in the cloud if its on a plane \f$|a*x + b*y + c*z + d| \le threshold \f$
@@ -180,19 +164,17 @@ get_above_plane_inliers(const pcl::PointCloud<PointT> &cloud, const Eigen::Vecto
  * @param threshold in meter
  * @return all indices of the cloud fulfilling the equation
  */
-template<typename PointT>
-V4R_EXPORTS
-std::vector<int>
-get_all_plane_inliers(const pcl::PointCloud<PointT> &cloud, const Eigen::Vector4f &plane, float threshold)
-{
-    std::vector<int> inliers (cloud.points.size());
-    size_t kept=0;
-    for (size_t i = 0; i < cloud.points.size(); i++) {
-        if ( is_inlier(cloud.points[i].getVector3fMap(), plane, threshold) )
-            inliers[ kept++ ] = i;
-    }
-    inliers.resize(kept);
-    return inliers;
+template <typename PointT>
+V4R_EXPORTS std::vector<int> get_all_plane_inliers(const pcl::PointCloud<PointT> &cloud, const Eigen::Vector4f &plane,
+                                                   float threshold) {
+  std::vector<int> inliers(cloud.points.size());
+  size_t kept = 0;
+  for (size_t i = 0; i < cloud.points.size(); i++) {
+    if (is_inlier(cloud.points[i].getVector3fMap(), plane, threshold))
+      inliers[kept++] = i;
+  }
+  inliers.resize(kept);
+  return inliers;
 }
 
 /**
@@ -200,12 +182,12 @@ get_all_plane_inliers(const pcl::PointCloud<PointT> &cloud, const Eigen::Vector4
  * @param cloud input cloud projected onto the table plane
  * @return convex hull cloud
  */
-template<typename PointT>
-typename pcl::PointCloud<PointT>::Ptr
-getConvexHullCloud(const typename pcl::PointCloud<PointT>::ConstPtr cloud);
+template <typename PointT>
+typename pcl::PointCloud<PointT>::Ptr getConvexHullCloud(const typename pcl::PointCloud<PointT>::ConstPtr cloud);
 
 /**
- * @brief get_largest_connected_plane_inliers finds the largest cluster of connected points that fulfill the plane equation
+ * @brief get_largest_connected_plane_inliers finds the largest cluster of connected points that fulfill the plane
+ * equation
  * (e.g. remove points also fulfilling the plane equation but belonging to the background)
  * @param[in] cloud input cloud
  * @param[in] plane defined as Vector (a,b,c,d) with a*x + b*y + c*z + d = 0
@@ -214,10 +196,11 @@ getConvexHullCloud(const typename pcl::PointCloud<PointT>::ConstPtr cloud);
  * @param[in] min_cluster_size minimum number of points neccessary to create a cluster
  * @return indices of the all points belonging to the largest connected component fulfilling the plane equation
  */
-template<typename PointT>
-V4R_EXPORTS
-std::vector<int>
-get_largest_connected_plane_inliers(const pcl::PointCloud<PointT> &cloud, const Eigen::Vector4f &plane, float threshold, float cluster_tolerance = 0.01f, int min_cluster_size = 200);
+template <typename PointT>
+V4R_EXPORTS std::vector<int> get_largest_connected_plane_inliers(const pcl::PointCloud<PointT> &cloud,
+                                                                 const Eigen::Vector4f &plane, float threshold,
+                                                                 float cluster_tolerance = 0.01f,
+                                                                 int min_cluster_size = 200);
 
 /**
  * @brief get_largest_connected_inliers finds the largest cluster of connected points among the indices
@@ -228,11 +211,10 @@ get_largest_connected_plane_inliers(const pcl::PointCloud<PointT> &cloud, const 
  * @param[in] min_cluster_size minimum number of points neccessary to create a cluster
  * @return indices of the all points belonging to the largest connected component fulfilling the plane equation
  */
-template<typename PointT>
-V4R_EXPORTS
-std::vector<int>
-get_largest_connected_inliers(const pcl::PointCloud<PointT> &cloud, const std::vector<int> &indices, float cluster_tolerance = 0.01f, int min_cluster_size = 200);
-
+template <typename PointT>
+V4R_EXPORTS std::vector<int> get_largest_connected_inliers(const pcl::PointCloud<PointT> &cloud,
+                                                           const std::vector<int> &indices,
+                                                           float cluster_tolerance = 0.01f, int min_cluster_size = 200);
 
 /**
  * @brief visualizePlane visualize plane inliers for a point cloud
@@ -241,10 +223,9 @@ get_largest_connected_inliers(const pcl::PointCloud<PointT> &cloud, const std::v
  * @param inlier_threshold
  * @param window_title
  */
-template<typename PointT>
-V4R_EXPORTS
-void
-visualizePlane(const typename pcl::PointCloud<PointT>::ConstPtr &cloud, const Eigen::Vector4f &plane, float inlier_threshold = 0.01f, const std::string &window_title = "plane inliers" );
+template <typename PointT>
+V4R_EXPORTS void visualizePlane(const typename pcl::PointCloud<PointT>::ConstPtr &cloud, const Eigen::Vector4f &plane,
+                                float inlier_threshold = 0.01f, const std::string &window_title = "plane inliers");
 
 /**
  * @brief visualizePlanes visualize plane inliers for multiple planes for a point cloud
@@ -253,9 +234,8 @@ visualizePlane(const typename pcl::PointCloud<PointT>::ConstPtr &cloud, const Ei
  * @param inlier_threshold
  * @param window_title
  */
-template<typename PointT>
-V4R_EXPORTS
-void
-visualizePlanes(const typename pcl::PointCloud<PointT>::ConstPtr &cloud, const std::vector<Eigen::Vector4f, Eigen::aligned_allocator<Eigen::Vector4f> > &planes, float inlier_threshold = 0.01f, const std::string &window_title = "plane inliers" );
-
+template <typename PointT>
+V4R_EXPORTS void visualizePlanes(const typename pcl::PointCloud<PointT>::ConstPtr &cloud,
+                                 const std::vector<Eigen::Vector4f, Eigen::aligned_allocator<Eigen::Vector4f>> &planes,
+                                 float inlier_threshold = 0.01f, const std::string &window_title = "plane inliers");
 }

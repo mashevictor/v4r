@@ -37,7 +37,6 @@
 **
 ****************************************************************************/
 
-
 /**
  * @file IMKRecognizer_serialization.h
  * @author Johann Prankl (prankl@acin.tuwien.ac.at)
@@ -49,39 +48,35 @@
 #ifndef KEYPOINT_OBJECT_RECOGNIZER_BOOST_SERIALIZATION
 #define KEYPOINT_OBJECT_RECOGNIZER_BOOST_SERIALIZATION
 
-#include <Eigen/Sparse>
+#include <v4r/recognition/IMKView.h>
 #include <Eigen/Dense>
+#include <Eigen/Sparse>
+#include <boost/serialization/base_object.hpp>
 #include <boost/serialization/split_free.hpp>
 #include <boost/serialization/vector.hpp>
-#include <boost/serialization/base_object.hpp>
-#include <v4r/keypoints/impl/pair_serialization.hpp>
 #include <v4r/keypoints/impl/eigen_boost_serialization.hpp>
 #include <v4r/keypoints/impl/opencv_serialization.hpp>
+#include <v4r/keypoints/impl/pair_serialization.hpp>
 #include <v4r/keypoints/impl/triple_serialization.hpp>
-#include <v4r/recognition/IMKView.h>
-
-
- 
 
 /** View serialization **/
-namespace boost{namespace serialization{
+namespace boost {
+namespace serialization {
 
-  template<class Archive>
-  void serialize(Archive & ar, v4r::IMKView &view, const unsigned int version)
-  {
-      (void)version;
-    ar & view.object_id;
-    ar & view.points;
-    ar & view.keys;
-    ar & view.cloud.type;
-    ar & view.cloud.rows;
-    ar & view.cloud.cols;
-    ar & view.cloud.data;
-    ar & view.weight_mask;
-    ar & view.conf_desc;
-  }
-
-}}
-
+template <class Archive>
+void serialize(Archive &ar, v4r::IMKView &view, const unsigned int version) {
+  (void)version;
+  ar &view.object_id;
+  ar &view.points;
+  ar &view.keys;
+  ar &view.cloud.type;
+  ar &view.cloud.rows;
+  ar &view.cloud.cols;
+  ar &view.cloud.data;
+  ar &view.weight_mask;
+  ar &view.conf_desc;
+}
+}
+}
 
 #endif

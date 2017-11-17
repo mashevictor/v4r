@@ -37,7 +37,6 @@
 **
 ****************************************************************************/
 
-
 /**
  * @file BoundaryRelationsBase.h
  * @author Potapova
@@ -52,19 +51,13 @@
 #include <v4r/core/macros.h>
 #include "v4r/attention_segmentation/BoundaryRelationsBase.h"
 
-namespace v4r
-{
+namespace v4r {
 
-class V4R_EXPORTS BoundaryRelationsMeanDepth : public BoundaryRelationsBase
-{
-public:
-
-protected:
-
-private:
-
-public:
-
+class V4R_EXPORTS BoundaryRelationsMeanDepth : public BoundaryRelationsBase {
+ public:
+ protected:
+ private:
+ public:
   typedef boost::shared_ptr<BoundaryRelationsMeanDepth> Ptr;
 
   BoundaryRelationsMeanDepth();
@@ -74,7 +67,6 @@ public:
   virtual v4r::meanVal compute();
 };
 
-} //namespace v4r
+}  // namespace v4r
 
-#endif //BOUNDARY_RELATIONS_MEANDEPTH_H
-
+#endif  // BOUNDARY_RELATIONS_MEANDEPTH_H

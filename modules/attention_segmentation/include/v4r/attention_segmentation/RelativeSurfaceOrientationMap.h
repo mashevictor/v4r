@@ -37,20 +37,16 @@
 **
 ****************************************************************************/
 
-
-
 #ifndef RELATIVE_SURFACE_ORIENATION_HPP
 #define RELATIVE_SURFACE_ORIENATION_HPP
 
 #include <v4r/core/macros.h>
 #include "v4r/attention_segmentation/BaseMap.h"
 
-namespace v4r
-{
+namespace v4r {
 
-enum OrientationTypes
-{
-  AM_VERTICAL      = 0,
+enum OrientationTypes {
+  AM_VERTICAL = 0,
   AM_HORIZONTAL,
 };
 
@@ -58,50 +54,50 @@ enum OrientationTypes
  * class for relative surface orientation saliency map
  * */
 
-class V4R_EXPORTS RelativeSurfaceOrientationMap: public BaseMap
-{
-public:
+class V4R_EXPORTS RelativeSurfaceOrientationMap : public BaseMap {
+ public:
   RelativeSurfaceOrientationMap();
   ~RelativeSurfaceOrientationMap();
-  
+
   void setOrientationNormal(pcl::Normal orientation_normal_);
   bool getOrientationNormal(pcl::Normal &orientation_normal_);
-  
+
   void setOrientationType(int orientationType_);
   int getOrientationType();
-  
+
   void setNormalThreshold(float normal_threshold_);
   float getNormalThreshold();
-  
+
   /**
    * calculates single surface height map
    * */
-  
+
   virtual int calculate();
-  
+
   virtual void reset();
   virtual void print();
-  
-private:
-  pcl::Normal        orientation_normal;
-  int                orientationType;
-  float              normal_threshold;
-  
-  bool               haveOrientationNormal;
-  
+
+ private:
+  pcl::Normal orientation_normal;
+  int orientationType;
+  float normal_threshold;
+
+  bool haveOrientationNormal;
+
   float getOrientationType(int orientationType_);
-  void orientationMap(pcl::PointCloud<pcl::Normal>::Ptr normals_cur, pcl::PointIndices::Ptr indices_cur, int image_width, int image_height, 
-		      float a, float b, float c, float orientationCoefficient, cv::Mat &map_cur);
-  
-protected:
+  void orientationMap(pcl::PointCloud<pcl::Normal>::Ptr normals_cur, pcl::PointIndices::Ptr indices_cur,
+                      int image_width, int image_height, float a, float b, float c, float orientationCoefficient,
+                      cv::Mat &map_cur);
+
+ protected:
   virtual int checkParameters();
   virtual int calculatePyramidSimple();
   virtual int calculatePyramidItti();
   virtual int calculatePyramidFrintrop();
-  
+
   virtual int combinePyramid(BasePyramid::Ptr pyramid);
 };
 
-} // namespace v4r
+}  // namespace v4r
 
-#endif //RELATIVE_SURFACE_ORIENATION_HPP
+#endif  // RELATIVE_SURFACE_ORIENATION_HPP

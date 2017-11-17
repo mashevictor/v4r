@@ -1,11 +1,11 @@
 #ifndef SVM_TRAIN_MODEL_H
 #define SVM_TRAIN_MODEL_H
 
+#include <ctype.h>
+#include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <ctype.h>
-#include <errno.h>
 #include <string>
 /****************************************************************************
 **
@@ -46,7 +46,6 @@
 **
 ****************************************************************************/
 
-
 /**
  * @file SVMTrainModel.h
  * @author Andreas Richtsfeld
@@ -55,25 +54,19 @@
  * @brief Trains svm.
  */
 
-#include <vector>
-#include <cstring>
 #include <v4r/core/macros.h>
+#include <cstring>
+#include <vector>
 #include "v4r/attention_segmentation/svm.h"
 
-namespace svm
-{
-  
-  
-/**
- * @brief Class SVMTrainModel: 
- */
-class V4R_EXPORTS SVMTrainModel
-{
- 
-public:
-  
-private:
+namespace svm {
 
+/**
+ * @brief Class SVMTrainModel:
+ */
+class V4R_EXPORTS SVMTrainModel {
+ public:
+ private:
   struct svm_parameter param;  // set by parse_command_line
   struct svm_problem prob;     // set by read_problem
   struct svm_model *model;
@@ -86,11 +79,11 @@ private:
 
   bool have_input_file_name;
   bool have_model_file_name;
-  
-public:
-  SVMTrainModel(); 
-  ~SVMTrainModel() {};
-  
+
+ public:
+  SVMTrainModel();
+  ~SVMTrainModel(){};
+
   void setSVMType(int _svm_type);
   void setKernelType(int _kernel_type);
   void setDegree(int _degree);
@@ -110,12 +103,10 @@ public:
   void setNoPrint(bool _no_print);
   int train(double &RecRate, std::vector<int> &ConfusionTable);
 
-private:
+ private:
   void readProblem(const char *filename);
   void do_cross_validation(double &RecRate, std::vector<int> &ConfusionTable);
-  
 };
-
 }
 
-#endif //SVM_TRAIN_MODEL_H
+#endif  // SVM_TRAIN_MODEL_H

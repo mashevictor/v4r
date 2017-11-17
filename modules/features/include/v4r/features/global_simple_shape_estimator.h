@@ -37,7 +37,6 @@
 **
 ****************************************************************************/
 
-
 /**
  * @file global_simple_shape_estimator.h
  * @author Thomas Faeulhammer (faeulhammer@acin.tuwien.ac.at)
@@ -54,33 +53,31 @@
 
 #include <glog/logging.h>
 
-namespace v4r
-{
+namespace v4r {
 /**
  * @brief The SimpleShapeEstimator class implements a simple global description
  * in terms of elongation of the point cloud along the principal components
  * @author Thomas Faeulhammer
  */
-template<typename PointT>
-class V4R_EXPORTS SimpleShapeEstimator : public GlobalEstimator<PointT>
-{
-private:
-    using GlobalEstimator<PointT>::indices_;
-    using GlobalEstimator<PointT>::cloud_;
-    using GlobalEstimator<PointT>::descr_name_;
-    using GlobalEstimator<PointT>::descr_type_;
-    using GlobalEstimator<PointT>::feature_dimensions_;
+template <typename PointT>
+class V4R_EXPORTS SimpleShapeEstimator : public GlobalEstimator<PointT> {
+ private:
+  using GlobalEstimator<PointT>::indices_;
+  using GlobalEstimator<PointT>::cloud_;
+  using GlobalEstimator<PointT>::descr_name_;
+  using GlobalEstimator<PointT>::descr_type_;
+  using GlobalEstimator<PointT>::feature_dimensions_;
 
-public:
-    SimpleShapeEstimator()
-        : GlobalEstimator<PointT>("simple_shape", FeatureType::SIMPLE_SHAPE, 3)
-    {}
+ public:
+  SimpleShapeEstimator() : GlobalEstimator<PointT>("simple_shape", FeatureType::SIMPLE_SHAPE, 3) {}
 
-    bool compute (Eigen::MatrixXf &signature);
+  bool compute(Eigen::MatrixXf &signature);
 
-    bool needNormals() const { return false; }
+  bool needNormals() const {
+    return false;
+  }
 
-    typedef boost::shared_ptr< SimpleShapeEstimator<PointT> > Ptr;
-    typedef boost::shared_ptr< SimpleShapeEstimator<PointT> const> ConstPtr;
+  typedef boost::shared_ptr<SimpleShapeEstimator<PointT>> Ptr;
+  typedef boost::shared_ptr<SimpleShapeEstimator<PointT> const> ConstPtr;
 };
 }

@@ -37,30 +37,27 @@
 **
 ****************************************************************************/
 
-
 /**
  * @file main.cpp
  * @author Johann Prankl (prankl@acin.tuwien.ac.at)
  * @date 2017
  * @brief
  *
- */ 
+ */
 
 #ifndef _TG5_CAMERA_H_
 #define _TG5_CAMERA_H_
 
 #include <glm/glm.hpp>
 
-namespace tg{
+namespace tg {
 
-class Camera
-{
-
-private:
+class Camera {
+ private:
   glm::mat4 m_extrinsic;
   glm::mat4 m_intrinsic;
 
-public:
+ public:
   Camera();
 
   void Print();
@@ -72,8 +69,7 @@ public:
   glm::vec3 GetSideward() const;
   glm::vec3 GetUpward() const;
 
-  void SetPerspective(float fx, float fy, float cx, float cy,
-                      float width, float height, float near, float far);
+  void SetPerspective(float fx, float fy, float cx, float cy, float width, float height, float near, float far);
 
   void SetOrtho(float width, float height, float near, float far);
 
@@ -88,8 +84,6 @@ public:
 
   void Activate() const;
 };
-
-
 }
 
 #endif

@@ -37,7 +37,6 @@
 **
 ****************************************************************************/
 
-
 /**
  * @file mainwindow.h
  * @author Johann Prankl (prankl@acin.tuwien.ac.at), Aitor Aldoma (aldoma@acin.tuwien.ac.at)
@@ -46,28 +45,26 @@
  *
  */
 
-
-
 #ifndef _GRAB_PCD_QT_MAINWINDOW_H_
 #define _GRAB_PCD_QT_MAINWINDOW_H_
 
 #ifndef Q_MOC_RUN
-#include <QMainWindow>
 #include <QInputDialog>
+#include <QMainWindow>
+#include "BundleAdjustment.h"
+#include "MultiSession.h"
+#include "ObjectSegmentation.h"
+#include "StoreTrackingModel.h"
 #include "glviewer.h"
 #include "params.h"
 #include "sensor.h"
-#include "ObjectSegmentation.h"
-#include "StoreTrackingModel.h"
-#include "BundleAdjustment.h"
-#include "MultiSession.h"
 
 #undef Success
+#include <pcl/io/pcd_io.h>
+#include <pcl/octree/octree.h>
+#include <pcl/octree/octree_pointcloud_voxelcentroid.h>
 #include <pcl/point_cloud.h>
 #include <pcl/point_types.h>
-#include <pcl/io/pcd_io.h>
-#include <pcl/octree/octree_pointcloud_voxelcentroid.h>
-#include <pcl/octree/octree.h>
 #include "OctreeVoxelCentroidContainerXYZRGB.hpp"
 #endif
 
@@ -75,18 +72,17 @@ namespace Ui {
 class MainWindow;
 }
 
-class MainWindow : public QMainWindow
-{
+class MainWindow : public QMainWindow {
   Q_OBJECT
-  
-public:
-  explicit MainWindow(QWidget *parent = 0);
+
+ public:
+  explicit MainWindow(QWidget* parent = 0);
   ~MainWindow();
 
-signals:
+ signals:
   void set_image(int idx);
 
-private slots:
+ private slots:
 
   void on_actionPreferences_triggered();
   void on_actionExit_triggered();
@@ -127,15 +123,15 @@ private slots:
 
   void on_SessionOptimize_clicked();
 
-public slots:
-  void printStatus(const std::string &_txt);
+ public slots:
+  void printStatus(const std::string& _txt);
 
-private:
-//  void make_extension(std::string& filename, std::string ext);
+ private:
+  //  void make_extension(std::string& filename, std::string ext);
 
-  Ui::MainWindow *m_ui;
-  GLViewer *m_glviewer;
-  GLGraphicsView *m_glview;
+  Ui::MainWindow* m_ui;
+  GLViewer* m_glviewer;
+  GLGraphicsView* m_glview;
   Params* m_params;
   Sensor* m_sensor;
   ObjectSegmentation* m_segmentation;
@@ -155,8 +151,6 @@ private:
   void activateTrackingButtons();
   void activateModellingButtons();
   void setStartVis();
-
 };
 
-
-#endif // MAINWINDOW_H
+#endif  // MAINWINDOW_H

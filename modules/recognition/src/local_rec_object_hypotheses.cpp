@@ -1,20 +1,17 @@
 #include <v4r/recognition/local_rec_object_hypotheses.h>
 
-namespace v4r
-{
+namespace v4r {
 template <typename PointT>
-void
-LocalObjectHypothesis<PointT>::visualize(const pcl::PointCloud<pcl::PointXYZRGB> & scene,
-                                    const pcl::PointCloud<pcl::PointXYZRGB> & scene_kp) const
-{
-    (void)scene;
-    (void)scene_kp;
-    std::cerr << "This function is not implemented for this point cloud type!" << std::endl;
+void LocalObjectHypothesis<PointT>::visualize(const pcl::PointCloud<pcl::PointXYZRGB>& scene,
+                                              const pcl::PointCloud<pcl::PointXYZRGB>& scene_kp) const {
+  (void)scene;
+  (void)scene_kp;
+  std::cerr << "This function is not implemented for this point cloud type!" << std::endl;
 }
 
-//template <>
-//void
-//LocalObjectHypothesis<pcl::PointXYZRGB>::visualize(const pcl::PointCloud<pcl::PointXYZRGB> & scene,
+// template <>
+// void
+// LocalObjectHypothesis<pcl::PointXYZRGB>::visualize(const pcl::PointCloud<pcl::PointXYZRGB> & scene,
 //                                              const pcl::PointCloud<pcl::PointXYZRGB> & scene_kp) const
 //{
 //    if(!vis_)
@@ -28,7 +25,8 @@ LocalObjectHypothesis<PointT>::visualize(const pcl::PointCloud<pcl::PointXYZRGB>
 //    pcl::PointCloud<pcl::PointXYZRGB>::Ptr model_aligned ( new pcl::PointCloud<pcl::PointXYZRGB>() );
 //    pcl::copyPointCloud(*model_cloud, *model_aligned);
 //    vis_->addPointCloud(model_aligned, "model_aligned");
-////    vis_->addPointCloudNormals<pcl::PointXYZRGB, pcl::Normal> (model_->keypoints_, model_->kp_normals_, 10, 0.05, "normals_model");
+////    vis_->addPointCloudNormals<pcl::PointXYZRGB, pcl::Normal> (model_->keypoints_, model_->kp_normals_, 10, 0.05,
+///"normals_model");
 
 //    pcl::PointCloud<pcl::PointXYZRGB>::Ptr kp_colored_scene ( new pcl::PointCloud<pcl::PointXYZRGB>() );
 //    pcl::PointCloud<pcl::PointXYZRGB>::Ptr kp_colored_model ( new pcl::PointCloud<pcl::PointXYZRGB>() );
@@ -40,7 +38,8 @@ LocalObjectHypothesis<PointT>::visualize(const pcl::PointCloud<pcl::PointXYZRGB>
 
 //    for(size_t j=0; j<5; j++)
 //    {
-//        for (size_t i=(size_t)((j/5.f)*model_scene_corresp_->size()); i<(size_t)(((j+1.f)/5.f)*model_scene_corresp_->size()); i++)
+//        for (size_t i=(size_t)((j/5.f)*model_scene_corresp_->size());
+//        i<(size_t)(((j+1.f)/5.f)*model_scene_corresp_->size()); i++)
 //        {
 ////            const pcl::Correspondence &c = model_scene_corresp_->at(i);
 ////            pcl::PointXYZRGB kp_m = model_->keypoints_->points[c.index_query];
@@ -66,6 +65,4 @@ LocalObjectHypothesis<PointT>::visualize(const pcl::PointCloud<pcl::PointXYZRGB>
 
 template class V4R_EXPORTS LocalObjectHypothesis<pcl::PointXYZRGB>;
 template class V4R_EXPORTS LocalObjectHypothesis<pcl::PointXYZ>;
-
 }
-

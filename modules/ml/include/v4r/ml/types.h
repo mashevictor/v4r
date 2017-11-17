@@ -37,7 +37,6 @@
 **
 ****************************************************************************/
 
-
 /**
  * @file types.h
  * @author Thomas Faeulhammer (faeulhammer@acin.tuwien.ac.at)
@@ -48,13 +47,11 @@
 
 #pragma once
 
-namespace v4r
-{
-        enum ClassifierType
-        {
-            KNN = 0x01, // 00000001
-            SVM = 0x02, // 00000010
-            CNN  = 0x04 // 00000100
-//            RandomForest  = 0x08 // 00001000
-        };
+namespace v4r {
+enum ClassifierType {
+  KNN = 0x01,  // 00000001
+  SVM = 0x02,  // 00000010
+  CNN = 0x04   // 00000100
+               //            RandomForest  = 0x08 // 00001000
+};
 }

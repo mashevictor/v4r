@@ -1,7 +1,7 @@
 /**
  * $Id$
  *
- *  Copyright (C) 2012  
+ *  Copyright (C) 2012
  *    Andreas Richtsfeld, Johann Prankl, Thomas Mörwald
  *    Automation and Control Institute
  *    Vienna University of Technology
@@ -26,41 +26,36 @@
 #ifndef KP_ZADAPTIVE_NORMALS_HH
 #define KP_ZADAPTIVE_NORMALS_HH
 
-
 #include <iostream>
 #include <stdexcept>
 #ifdef _OPENMP
 #include <omp.h>
 #endif
 #include <math.h>
-#include <Eigen/Dense>
 #include <v4r/core/macros.h>
+#include <Eigen/Dense>
 #include <v4r/common/impl/DataMatrix2D.hpp>
 #include <v4r/common/impl/SmartPtr.hpp>
 
-
-namespace v4r
-{
+namespace v4r {
 /**
  * Surface normals estimation
  */
-class V4R_EXPORTS ZAdaptiveNormals
-{
-public:
-  class Parameter
-  {
-    public:
-      double radius;            // euclidean inlier radius
-      int kernel;               // kernel radius [px]
-      bool adaptive;            // Activate z-adaptive normals calcualation
-      float kappa;              // gradient
-      float d;                  // constant
-      float kernel_radius[8];   // Kernel radius for each 0.5 meter intervall (0-4m)
-      Parameter(double _radius=0.02, int _kernel=5, bool _adaptive=false, float _kappa=0.005125, float _d = 0.0)
-       : radius(_radius), kernel(_kernel), adaptive(_adaptive), kappa(_kappa), d(_d) {}
+class V4R_EXPORTS ZAdaptiveNormals {
+ public:
+  class Parameter {
+   public:
+    double radius;           // euclidean inlier radius
+    int kernel;              // kernel radius [px]
+    bool adaptive;           // Activate z-adaptive normals calcualation
+    float kappa;             // gradient
+    float d;                 // constant
+    float kernel_radius[8];  // Kernel radius for each 0.5 meter intervall (0-4m)
+    Parameter(double _radius = 0.02, int _kernel = 5, bool _adaptive = false, float _kappa = 0.005125, float _d = 0.0)
+    : radius(_radius), kernel(_kernel), adaptive(_adaptive), kappa(_kappa), d(_d) {}
   };
 
-private:
+ private:
   Parameter param;
 
   static float NaN;
@@ -68,62 +63,47 @@ private:
 
   float sqr_radius;
 
-  void computeCovarianceMatrix (const v4r::DataMatrix2D<Eigen::Vector3f> &cloud,
-        const std::vector<int> &indices, const Eigen::Vector3f &mean, Eigen::Matrix3f &cov);
-  void estimateNormals(const v4r::DataMatrix2D<Eigen::Vector3f> &cloud,
-        v4r::DataMatrix2D<Eigen::Vector3f> &normals);
-  void getIndices(const v4r::DataMatrix2D<Eigen::Vector3f> &cloud, int u, int v, int kernel,
-        std::vector<int> &indices);
+  void computeCovarianceMatrix(const v4r::DataMatrix2D<Eigen::Vector3f> &cloud, const std::vector<int> &indices,
+                               const Eigen::Vector3f &mean, Eigen::Matrix3f &cov);
+  void estimateNormals(const v4r::DataMatrix2D<Eigen::Vector3f> &cloud, v4r::DataMatrix2D<Eigen::Vector3f> &normals);
+  void getIndices(const v4r::DataMatrix2D<Eigen::Vector3f> &cloud, int u, int v, int kernel, std::vector<int> &indices);
   float computeNormal(const v4r::DataMatrix2D<Eigen::Vector3f> &cloud, std::vector<int> &indices,
-        Eigen::Matrix3f &eigen_vectors);
-  void estimateNormals(const v4r::DataMatrix2D<Eigen::Vector3f> &cloud,
-        const std::vector<int> &normals_indices, std::vector<Eigen::Vector3f> &normals);
-
+                      Eigen::Matrix3f &eigen_vectors);
+  void estimateNormals(const v4r::DataMatrix2D<Eigen::Vector3f> &cloud, const std::vector<int> &normals_indices,
+                       std::vector<Eigen::Vector3f> &normals);
 
   inline int getIdx(short x, short y);
   inline short X(int idx);
   inline short Y(int idx);
 
-
-
-public:
+ public:
   ZAdaptiveNormals(const Parameter &p = Parameter());
   ~ZAdaptiveNormals();
 
   void setParameter(const Parameter &p);
 
-  void compute(const v4r::DataMatrix2D<Eigen::Vector3f> &cloud,
-          v4r::DataMatrix2D<Eigen::Vector3f> &normals);
+  void compute(const v4r::DataMatrix2D<Eigen::Vector3f> &cloud, v4r::DataMatrix2D<Eigen::Vector3f> &normals);
 
   void compute(const v4r::DataMatrix2D<Eigen::Vector3f> &cloud, const std::vector<int> &indices,
-          std::vector<Eigen::Vector3f> &normals);
+               std::vector<Eigen::Vector3f> &normals);
 
-  typedef SmartPtr< ::v4r::ZAdaptiveNormals> Ptr;
-  typedef SmartPtr< ::v4r::ZAdaptiveNormals const> ConstPtr;
+  typedef SmartPtr<::v4r::ZAdaptiveNormals> Ptr;
+  typedef SmartPtr<::v4r::ZAdaptiveNormals const> ConstPtr;
 };
-
-
-
 
 /*********************** INLINE METHODES **************************/
 
-inline int ZAdaptiveNormals::getIdx(short x, short y)
-{
-  return y*width+x;
+inline int ZAdaptiveNormals::getIdx(short x, short y) {
+  return y * width + x;
 }
 
-inline short ZAdaptiveNormals::X(int idx)
-{
-  return idx%width;
+inline short ZAdaptiveNormals::X(int idx) {
+  return idx % width;
 }
 
-inline short ZAdaptiveNormals::Y(int idx)
-{
-  return idx/width;
+inline short ZAdaptiveNormals::Y(int idx) {
+  return idx / width;
 }
-
-
 }
 
 #endif
-

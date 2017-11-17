@@ -1,6 +1,6 @@
 /**
  * $Id$
- * 
+ *
  * Software License Agreement (GNU General Public License)
  *
  *  Copyright (C) 2015:
@@ -33,31 +33,31 @@
 #ifndef KP_TRIPLE_SERI_HPP
 #define KP_TRIPLE_SERI_HPP
 
-
-#include <opencv2/opencv.hpp>
 #include <boost/serialization/split_free.hpp>
 #include <boost/serialization/vector.hpp>
+#include <opencv2/opencv.hpp>
 
 #include "triple.hpp"
 
-//A makro to get rid of the unused warning
+// A makro to get rid of the unused warning
 #ifndef UNUSED
-#define UNUSED(expr) do { (void)(expr); } while (0)
+#define UNUSED(expr) \
+  do {               \
+    (void)(expr);    \
+  } while (0)
 #endif
 
 namespace boost {
-    namespace serialization {
+namespace serialization {
 
-    template<class Archive, typename F, typename S, typename T>
-    void serialize(Archive & ar, v4r::triple<F,S,T> &t, const unsigned int version)
-    {
-      UNUSED(version);
-      ar & t.first;
-      ar & t.second;
-      ar & t.third;
-    }
-
-  }
+template <class Archive, typename F, typename S, typename T>
+void serialize(Archive &ar, v4r::triple<F, S, T> &t, const unsigned int version) {
+  UNUSED(version);
+  ar &t.first;
+  ar &t.second;
+  ar &t.third;
+}
+}
 }
 
 #endif

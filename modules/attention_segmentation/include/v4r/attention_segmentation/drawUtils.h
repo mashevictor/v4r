@@ -37,23 +37,20 @@
 **
 ****************************************************************************/
 
-
-
 #ifndef EPDRAWUTILS_H
 #define EPDRAWUTILS_H
 
 #include <v4r/core/macros.h>
-#include "v4r/attention_segmentation/eputils_headers.h"
 #include "v4r/attention_segmentation/connectedComponents.h"
+#include "v4r/attention_segmentation/eputils_headers.h"
 
-namespace v4r
-{
+namespace v4r {
 
 /**
  * draw one segmentation masks
  * */
 V4R_EXPORTS void drawSegmentationMask(cv::Mat &image, cv::Mat mask, cv::Scalar color, int line_width = 2);
-  
+
 /**
  * draw a banch of segmentation masks
  * */
@@ -63,24 +60,26 @@ V4R_EXPORTS void drawSegmentationMasks(cv::Mat &image, std::vector<cv::Mat> &mas
  * draw a segmentation masks and attetnion points
  * */
 V4R_EXPORTS void drawSegmentationResults(cv::Mat &image, std::vector<cv::Point> &attentionPoints,
-                             std::vector<std::vector<cv::Point> > &contours, bool drawAttentionPoints = true,
-                             bool drawSegmentationResults = true, bool drawLines = false, unsigned int num = -1);
+                                         std::vector<std::vector<cv::Point>> &contours, bool drawAttentionPoints = true,
+                                         bool drawSegmentationResults = true, bool drawLines = false,
+                                         unsigned int num = -1);
 
 /**
  * draws segmentation and attention results
  * */
 V4R_EXPORTS void drawSegmentationResults(cv::Mat &image, std::vector<cv::Point> &attentionPoints,
-                             std::vector<cv::Mat> &binMasks, std::vector<std::vector<cv::Point> > &contours,
-                             bool drawAttentionPoints, bool drawSegmentationResults);
-V4R_EXPORTS void drawSegmentationResults(cv::Mat &image, cv::Point p1, cv::Mat &masks, bool drawAttentionPoints, bool drawSegmentationResults, int num);
+                                         std::vector<cv::Mat> &binMasks, std::vector<std::vector<cv::Point>> &contours,
+                                         bool drawAttentionPoints, bool drawSegmentationResults);
+V4R_EXPORTS void drawSegmentationResults(cv::Mat &image, cv::Point p1, cv::Mat &masks, bool drawAttentionPoints,
+                                         bool drawSegmentationResults, int num);
 
-//revision
+// revision
 /**
  * draws attention points
  * */
 V4R_EXPORTS void drawAttentionPoints(cv::Mat &image, std::vector<cv::Point> &attentionPoints,
-                         unsigned int maxNumber = 0, bool connect_points = false);
-//end revision
+                                     unsigned int maxNumber = 0, bool connect_points = false);
+// end revision
 
 /**
  * draws path through the map
@@ -92,6 +91,6 @@ V4R_EXPORTS void drawPath(cv::Mat &image, std::vector<cv::Point> &path, cv::Mat 
  */
 V4R_EXPORTS void drawLine(cv::Mat &image, std::vector<cv::Point> points, cv::Scalar color = cv::Scalar(0));
 
-} //namespace v4r
+}  // namespace v4r
 
-#endif //EPDRAWUTILS_H
+#endif  // EPDRAWUTILS_H

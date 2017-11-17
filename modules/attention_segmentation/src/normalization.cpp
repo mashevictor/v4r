@@ -37,150 +37,114 @@
 **
 ****************************************************************************/
 
-
-
 #include "v4r/attention_segmentation/normalization.h"
 
-namespace v4r
-{
+namespace v4r {
 
-void computeLocalMax(cv::Mat &image, int &numLocalMax, float &averageLocalMax, float threshold)
-{
+void computeLocalMax(cv::Mat &image, int &numLocalMax, float &averageLocalMax, float threshold) {
   averageLocalMax = 0;
   numLocalMax = 0;
 
-  for (int r = 0; r < image.rows; ++r)
-  {
-    for (int c = 0; c < image.rows; ++c)
-    {
-      if (c-1 >= 0)
-      {
-        if (image.at<float>(r,c-1) >= image.at<float>(r,c))
-        {
+  for (int r = 0; r < image.rows; ++r) {
+    for (int c = 0; c < image.rows; ++c) {
+      if (c - 1 >= 0) {
+        if (image.at<float>(r, c - 1) >= image.at<float>(r, c)) {
           continue;
         }
-        if (r-1 >=0)
-        {
-          if (image.at<float>(r-1,c-1) >= image.at<float>(r,c))
-          {
+        if (r - 1 >= 0) {
+          if (image.at<float>(r - 1, c - 1) >= image.at<float>(r, c)) {
             continue;
           }
         }
-        if (r+1 < image.rows)
-        {
-          if (image.at<float>(r+1,c-1) >= image.at<float>(r,c))
-          {
+        if (r + 1 < image.rows) {
+          if (image.at<float>(r + 1, c - 1) >= image.at<float>(r, c)) {
             continue;
           }
         }
       }
-      if (c+1 < image.cols)
-      {
-        if (image.at<float>(r,c+1) >= image.at<float>(r,c))
-        {
+      if (c + 1 < image.cols) {
+        if (image.at<float>(r, c + 1) >= image.at<float>(r, c)) {
           continue;
         }
-        if (r-1 >= 0)
-        {
-          if (image.at<float>(r-1,c+1) >= image.at<float>(r,c))
-          {
+        if (r - 1 >= 0) {
+          if (image.at<float>(r - 1, c + 1) >= image.at<float>(r, c)) {
             continue;
           }
         }
-        if (r+1 < image.rows)
-        {
-          if (image.at<float>(r+1,c+1) >= image.at<float>(r,c))
-          {
+        if (r + 1 < image.rows) {
+          if (image.at<float>(r + 1, c + 1) >= image.at<float>(r, c)) {
             continue;
           }
         }
       }
-      if (r-1 >= 0)
-      {
-        if (image.at<float>(r-1,c) >= image.at<float>(r,c))
-        {
+      if (r - 1 >= 0) {
+        if (image.at<float>(r - 1, c) >= image.at<float>(r, c)) {
           continue;
         }
       }
-      if (r+1 < image.rows)
-      {
-        if (image.at<float>(r+1,c) >= image.at<float>(r,c))
-        {
+      if (r + 1 < image.rows) {
+        if (image.at<float>(r + 1, c) >= image.at<float>(r, c)) {
           continue;
         }
       }
 
-      if(image.at<float>(r,c) > threshold)
-      {
-        averageLocalMax += image.at<float>(r,c);
-        numLocalMax +=1;
+      if (image.at<float>(r, c) > threshold) {
+        averageLocalMax += image.at<float>(r, c);
+        numLocalMax += 1;
       }
-    
     }
   }
-  
-  if (numLocalMax > 0)
-  {
+
+  if (numLocalMax > 0) {
     averageLocalMax /= numLocalMax;
   }
-  
 }
 
-void normalizeNonMax(cv::Mat &map)
-{
-  cv::normalize(map,map,0,1,cv::NORM_MINMAX);
-  //normalizeMin2Zero(map);
+void normalizeNonMax(cv::Mat &map) {
+  cv::normalize(map, map, 0, 1, cv::NORM_MINMAX);
+  // normalizeMin2Zero(map);
   int numLocalMax;
   float averageLocalMax;
-  computeLocalMax(map,numLocalMax,averageLocalMax);
-  float multiplier = (1-averageLocalMax)*(1-averageLocalMax);
+  computeLocalMax(map, numLocalMax, averageLocalMax);
+  float multiplier = (1 - averageLocalMax) * (1 - averageLocalMax);
   map = multiplier * map;
-  //normalizeMax2One(map);
+  // normalizeMax2One(map);
 }
 
-void normalizeFrintrop(cv::Mat &map)
-{
+void normalizeFrintrop(cv::Mat &map) {
   double maxValue, minValue;
-  cv::minMaxLoc(map,&minValue,&maxValue);
+  cv::minMaxLoc(map, &minValue, &maxValue);
   int numLocalMax;
   float averageLocalMax;
-  computeLocalMax(map,numLocalMax,averageLocalMax,0.5*maxValue);
-  if(numLocalMax > 0)
+  computeLocalMax(map, numLocalMax, averageLocalMax, 0.5 * maxValue);
+  if (numLocalMax > 0)
     map = map / sqrt((float)numLocalMax);
 }
 
-void normalizeMin2Zero(cv::Mat &map)
-{
-  if((map.rows <= 0) || (map.cols <= 0))
+void normalizeMin2Zero(cv::Mat &map) {
+  if ((map.rows <= 0) || (map.cols <= 0))
     return;
-  
-  float min = map.at<float>(0,0);
+
+  float min = map.at<float>(0, 0);
   float max = min;
-  
-  for(int r = 0; r < map.rows; ++r)
-  {
-    for(int c = 0; c < map.cols; ++c)
-    {
-      float value = map.at<float>(r,c);
-      if(value > max)
-      {
-	max = value;
+
+  for (int r = 0; r < map.rows; ++r) {
+    for (int c = 0; c < map.cols; ++c) {
+      float value = map.at<float>(r, c);
+      if (value > max) {
+        max = value;
       }
-      if((value > 0) && (value < min))
-      {
-	min = value;
+      if ((value > 0) && (value < min)) {
+        min = value;
       }
     }
   }
 
-  for(int r = 0; r < map.rows; ++r)
-  {
-    for(int c = 0; c < map.cols; ++c)
-    {
-      float value = map.at<float>(r,c);
-      if(value > 0)
-      {
-        map.at<float>(r,c) = (value - min)/(max-min);
+  for (int r = 0; r < map.rows; ++r) {
+    for (int c = 0; c < map.cols; ++c) {
+      float value = map.at<float>(r, c);
+      if (value > 0) {
+        map.at<float>(r, c) = (value - min) / (max - min);
       }
     }
   }
@@ -188,22 +152,18 @@ void normalizeMin2Zero(cv::Mat &map)
   return;
 }
 
-void normalizeMax2One(cv::Mat &map)
-{
+void normalizeMax2One(cv::Mat &map) {
   double minVal, maxVal;
-  cv::minMaxLoc(map,&minVal,&maxVal);
-  if(maxVal > 0)
-  {
+  cv::minMaxLoc(map, &minVal, &maxVal);
+  if (maxVal > 0) {
     map = map / maxVal;
   }
 }
 
-void normalize(cv::Mat &map, int normalization_type, float newMaxValue, float newMinValue)
-{
-  switch(normalization_type)
-  {
+void normalize(cv::Mat &map, int normalization_type, float newMaxValue, float newMinValue) {
+  switch (normalization_type) {
     case NT_NONE:
-      cv::normalize(map,map,newMinValue,newMaxValue,cv::NORM_MINMAX);
+      cv::normalize(map, map, newMinValue, newMaxValue, cv::NORM_MINMAX);
       return;
     case NT_NONMAX:
       normalizeNonMax(map);
@@ -220,9 +180,9 @@ void normalize(cv::Mat &map, int normalization_type, float newMaxValue, float ne
       normalizeMax2One(map);
       return;
     default:
-      cv::normalize(map,map,0,1,cv::NORM_MINMAX);
+      cv::normalize(map, map, 0, 1, cv::NORM_MINMAX);
       return;
   }
 }
 
-} // namespace v4r 
+}  // namespace v4r

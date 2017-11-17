@@ -1,5 +1,5 @@
 /**
- *  Copyright (C) 2012  
+ *  Copyright (C) 2012
  *    Ekaterina Potapova
  *    Automation and Control Institute
  *    Vienna University of Technology
@@ -21,7 +21,6 @@
  *  along with this program.  If not, see http://www.gnu.org/licenses/
  */
 
-
 #include <opencv2/opencv.hpp>
 
 #include "v4r/attention_segmentation/AttentionModule.h"
@@ -29,22 +28,19 @@
 
 // This program shows the use of Surface Curvature Saliency Map on one image
 
-int main(int argc, char** argv)
-{
-  if(argc != 3)
-  {
+int main(int argc, char** argv) {
+  if (argc != 3) {
     std::cerr << "Usage: image cloud" << std::endl;
-    return(0);
+    return (0);
   }
 
   // read image
   std::string image_name(argv[1]);
-  cv::Mat image = cv::imread(image_name,-1);
+  cv::Mat image = cv::imread(image_name, -1);
 
   pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud(new pcl::PointCloud<pcl::PointXYZRGB>());
   std::string cloud_name(argv[2]);
-  if (pcl::io::loadPCDFile<pcl::PointXYZRGB> (cloud_name,*cloud) == -1)
-  {
+  if (pcl::io::loadPCDFile<pcl::PointXYZRGB>(cloud_name, *cloud) == -1) {
     printf("[ERROR]: Couldn't read point cloud.\n");
     return -1;
   }
@@ -56,23 +52,21 @@ int main(int argc, char** argv)
 
   // create filtered point cloud
   pcl::PointIndices::Ptr indices(new pcl::PointIndices());
-  if(!pclAddOns::FilterPointCloud<pcl::PointXYZRGB>(cloud,indices))
-    return(pclAddOns::FILTER);
+  if (!pclAddOns::FilterPointCloud<pcl::PointXYZRGB>(cloud, indices))
+    return (pclAddOns::FILTER);
 
   // segment plane
   pcl::PointIndices::Ptr plane_indices(new pcl::PointIndices());
   pcl::PointIndices::Ptr objects_indices(new pcl::PointIndices());
   pcl::ModelCoefficients::Ptr coefficients(new pcl::ModelCoefficients());
-  if(!pclAddOns::SegmentPlane<pcl::PointXYZRGB>(cloud,indices,plane_indices,objects_indices,coefficients))
-  {
-    return(pclAddOns::SEGMENT);
+  if (!pclAddOns::SegmentPlane<pcl::PointXYZRGB>(cloud, indices, plane_indices, objects_indices, coefficients)) {
+    return (pclAddOns::SEGMENT);
   }
-  
-  //calculate point cloud normals
+
+  // calculate point cloud normals
   pcl::PointCloud<pcl::Normal>::Ptr normals(new pcl::PointCloud<pcl::Normal>());
-  if(!pclAddOns::ComputePointNormals<pcl::PointXYZRGB>(cloud,objects_indices,normals))
-  {
-    return(pclAddOns::NORMALS);
+  if (!pclAddOns::ComputePointNormals<pcl::PointXYZRGB>(cloud, objects_indices, normals)) {
+    return (pclAddOns::NORMALS);
   }
 
   surfaceCurvatureMap.setCloud(cloud);
@@ -85,15 +79,12 @@ int main(int argc, char** argv)
   surfaceCurvatureMap.setCurvatureType(v4r::AM_FLAT);
   surfaceCurvatureMap.calculate();
 
-  if(surfaceCurvatureMap.getMap(map))
-  {
+  if (surfaceCurvatureMap.getMap(map)) {
     printf("[INFO]: Computation completed.\n");
-    cv::imshow("Surface Curvature Map FLAT",map);
+    cv::imshow("Surface Curvature Map FLAT", map);
     printf("[INFO]: Press any key to continue.\n");
     cv::waitKey();
-  }
-  else
-  {
+  } else {
     printf("[ERROR]: Computation failed.\n");
   }
 
@@ -101,17 +92,14 @@ int main(int argc, char** argv)
   surfaceCurvatureMap.setCurvatureType(v4r::AM_CONVEX);
   surfaceCurvatureMap.calculate();
 
-  if(surfaceCurvatureMap.getMap(map))
-  {
+  if (surfaceCurvatureMap.getMap(map)) {
     printf("[INFO]: Computation completed.\n");
-    cv::imshow("Surface Curvature Map CONVEX",map);
+    cv::imshow("Surface Curvature Map CONVEX", map);
     printf("[INFO]: Press any key to continue.\n");
     cv::waitKey();
-  }
-  else
-  {
+  } else {
     printf("[ERROR]: Computation failed.\n");
   }
-  
-  return(0);
+
+  return (0);
 }

@@ -37,27 +37,23 @@
 **
 ****************************************************************************/
 
-
-
 #ifndef SYMMETRY3D_MAP_HPP
 #define SYMMETRY3D_MAP_HPP
 
 #include <v4r/core/macros.h>
 #include "v4r/attention_segmentation/BaseMap.h"
 
-namespace v4r
-{
+namespace v4r {
 
 struct MiddlePoint {
-    int num;
-    float distance;
-    pcl::Normal normal;
-    pcl::PointXYZ point;
-    MiddlePoint();
-  };
-  
-MiddlePoint::MiddlePoint()
-{
+  int num;
+  float distance;
+  pcl::Normal normal;
+  pcl::PointXYZ point;
+  MiddlePoint();
+};
+
+MiddlePoint::MiddlePoint() {
   num = 0;
   distance = 0;
   normal.normal[0] = 0;
@@ -67,37 +63,38 @@ MiddlePoint::MiddlePoint()
   point.y = 0;
   point.z = 0;
 }
-  
-class V4R_EXPORTS Symmetry3DMap: public BaseMap
-{
-private:
+
+class V4R_EXPORTS Symmetry3DMap : public BaseMap {
+ private:
   int R;
-  
-  void createLookUpMap(pcl::PointIndices::Ptr indices_cur, unsigned int width_cur, unsigned int height_cur, cv::Mat &lookupMap);//
-  void symmetry3DMap(pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud_cur, pcl::PointCloud<pcl::Normal>::Ptr normals_cur, pcl::PointIndices::Ptr indices_cur, 
-		     int image_width, int image_height, int R_cur, cv::Mat &map_cur, int filter_size_);//
-  
-public:
-  Symmetry3DMap();//
-  ~Symmetry3DMap();//
-  
-  void setR(int R_);//
-  int getR();//
-  
+
+  void createLookUpMap(pcl::PointIndices::Ptr indices_cur, unsigned int width_cur, unsigned int height_cur,
+                       cv::Mat &lookupMap);  //
+  void symmetry3DMap(pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud_cur, pcl::PointCloud<pcl::Normal>::Ptr normals_cur,
+                     pcl::PointIndices::Ptr indices_cur, int image_width, int image_height, int R_cur, cv::Mat &map_cur,
+                     int filter_size_);  //
+
+ public:
+  Symmetry3DMap();   //
+  ~Symmetry3DMap();  //
+
+  void setR(int R_);  //
+  int getR();         //
+
   virtual int calculate();
-  
-  virtual void reset();//
-  virtual void print();//
-  
-protected:
-  virtual int checkParameters();//
+
+  virtual void reset();  //
+  virtual void print();  //
+
+ protected:
+  virtual int checkParameters();  //
   virtual int calculatePyramidSimple();
   virtual int calculatePyramidItti();
   virtual int calculatePyramidFrintrop();
-  
+
   virtual int combinePyramid(BasePyramid::Ptr pyramid);
 };
 
-} //namespace v4r
+}  // namespace v4r
 
-#endif //SYMMETRY3D_MAP_HPP
+#endif  // SYMMETRY3D_MAP_HPP

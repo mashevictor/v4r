@@ -1,0 +1,7 @@
+find_package(OpenGL)
+if(OPENGL_FOUND)
+  set(OPENGL_INCLUDE_DIRS "${OPENGL_INCLUDE_DIR}")
+  set(HAVE_OPENGL TRUE)
+else()
+  set(HAVE_OPENGL FALSE)
+endif()

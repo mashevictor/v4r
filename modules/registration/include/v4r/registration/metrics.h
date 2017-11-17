@@ -37,7 +37,6 @@
 **
 ****************************************************************************/
 
-
 /**
  * @file metrics.h
  * @author Aitor Aldoma (aldoma@acin.tuwien.ac.at), Thomas Faeulhammer (faeulhammer@acin.tuwien.ac.at)
@@ -46,18 +45,16 @@
  *
  */
 
-
 #ifndef V4R_REGISTRATION_METRICS_H__
 #define V4R_REGISTRATION_METRICS_H__
 
 #include <pcl/point_cloud.h>
 #include <pcl/point_types.h>
 
-#include <v4r_config.h>
 #include <v4r/core/macros.h>
+#include <v4r_config.h>
 
-namespace v4r
-{
+namespace v4r {
 
 /**
  * @brief This method computes a cost function for the pairwise alignment of two point clouds.
@@ -68,13 +65,11 @@ namespace v4r
  * @param[out] registration cost ( the lower the better the alignment - weight range [0, 0.75] )
  * @param[out] refined_transform refined homogenous transformation matrix aligning the two point clouds based on ICP
  */
-template<typename PointT> V4R_EXPORTS void
-calcEdgeWeightAndRefineTf (const typename pcl::PointCloud<PointT>::ConstPtr &cloud_src,
-                           const typename pcl::PointCloud<PointT>::ConstPtr &cloud_dst,
-                           const Eigen::Matrix4f &transform,
-                           float &registration_quality,
-                           Eigen::Matrix4f &refined_transform);
-
+template <typename PointT>
+V4R_EXPORTS void calcEdgeWeightAndRefineTf(const typename pcl::PointCloud<PointT>::ConstPtr &cloud_src,
+                                           const typename pcl::PointCloud<PointT>::ConstPtr &cloud_dst,
+                                           const Eigen::Matrix4f &transform, float &registration_quality,
+                                           Eigen::Matrix4f &refined_transform);
 
 /**
  * @brief This method computes a cost function for the pairwise alignment of two point clouds.
@@ -84,14 +79,11 @@ calcEdgeWeightAndRefineTf (const typename pcl::PointCloud<PointT>::ConstPtr &clo
  * @param[out] registration cost ( the lower the better the alignment - weight range [0, 0.75] )
  * @param[out] refined_transform refined homogenous transformation matrix aligning the two point clouds based on ICP
  */
-template<typename PointT> V4R_EXPORTS void
-calcEdgeWeightAndRefineTf  (const typename pcl::PointCloud<PointT>::ConstPtr &cloud_src,
-                            const typename pcl::PointCloud<PointT>::ConstPtr &cloud_dst,
-                            float &registration_quality,
-                            Eigen::Matrix4f &refined_transform)
-{
-     calcEdgeWeightAndRefineTf(cloud_src, cloud_dst, Eigen::Matrix4f::Identity(), registration_quality, refined_transform);
+template <typename PointT>
+V4R_EXPORTS void calcEdgeWeightAndRefineTf(const typename pcl::PointCloud<PointT>::ConstPtr &cloud_src,
+                                           const typename pcl::PointCloud<PointT>::ConstPtr &cloud_dst,
+                                           float &registration_quality, Eigen::Matrix4f &refined_transform) {
+  calcEdgeWeightAndRefineTf(cloud_src, cloud_dst, Eigen::Matrix4f::Identity(), registration_quality, refined_transform);
 }
-
 }
 #endif

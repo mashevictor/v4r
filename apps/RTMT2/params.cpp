@@ -37,14 +37,13 @@
 **
 ****************************************************************************/
 
-
 /**
  * @file main.cpp
  * @author Johann Prankl (prankl@acin.tuwien.ac.at)
  * @date 2017
  * @brief
  *
- */ 
+ */
 
 #ifndef Q_MOC_RUN
 #include "params.h"
@@ -52,8 +51,8 @@
 
 #include <opencv2/opencv.hpp>
 
-#include <vector>
 #include <fstream>
+#include <vector>
 
 #include <QFileDialog>
 #endif
@@ -61,46 +60,68 @@
 using namespace cv;
 using namespace std;
 
-Params::Params(QWidget *parent):
-  QDialog(parent),
-  ui(new Ui::Params)
-{
+Params::Params(QWidget *parent) : QDialog(parent), ui(new Ui::Params) {
   ui->setupUi(this);
 }
 
-Params::~Params()
-{
+Params::~Params() {
   delete ui;
 }
 
-bool Params::createPointCloud() {return ui->cb_store_cloud->isChecked();}
-bool Params::createViews() {return ui->cb_store_views->isChecked(); }
-bool Params::createMesh() {return ui->cb_store_mesh->isChecked(); }
-bool Params::createTexturedMesh() {return ui->cb_store_tex_mesh->isChecked(); }
-bool Params::createTrackingModel() {return ui->cb_store_tracker->isChecked(); }
-
-int Params::getTsfNbFramesBA() { return ui->nb_frames_ba->text().toInt(); }
-int Params::getTsfBatchSize() { return ui->nb_frames_temp_filt->text().toInt(); }
-double Params::getMinCamMotionKF() { return ui->min_cam_motion_kf->text().toFloat(); }
-double Params::getMinCamRotatationKF() { return ui->min_cam_rot_kf->text().toFloat(); }
-
-double Params::getVoxelGridSize(){ return ui->voxel_grid_size->text().toFloat(); }
-int Params::getPoissonDepth(){ return ui->poisson_depth->text().toFloat(); }
-int Params::getPoissonSamples(){ return ui->poisson_samples->text().toFloat(); }
-bool Params::filterLargestCluster() { return ui->filter_largest_cluster->isChecked(); }
-bool Params::useMultiviewICP() { return ui->multiview_icp->isChecked(); }
-bool Params::useNoiseModel() { return ui->use_nguyen_noise_model->isChecked(); }
-
-
-
-
-void Params::apply_params()
-{
-  emit set_roi_params(ui->roi_scale_xy->text().toFloat(), ui->roi_scale_height->text().toFloat(), ui->roi_offs->text().toFloat());
+bool Params::createPointCloud() {
+  return ui->cb_store_cloud->isChecked();
+}
+bool Params::createViews() {
+  return ui->cb_store_views->isChecked();
+}
+bool Params::createMesh() {
+  return ui->cb_store_mesh->isChecked();
+}
+bool Params::createTexturedMesh() {
+  return ui->cb_store_tex_mesh->isChecked();
+}
+bool Params::createTrackingModel() {
+  return ui->cb_store_tracker->isChecked();
 }
 
-void Params::apply_cam_params()
-{
+int Params::getTsfNbFramesBA() {
+  return ui->nb_frames_ba->text().toInt();
+}
+int Params::getTsfBatchSize() {
+  return ui->nb_frames_temp_filt->text().toInt();
+}
+double Params::getMinCamMotionKF() {
+  return ui->min_cam_motion_kf->text().toFloat();
+}
+double Params::getMinCamRotatationKF() {
+  return ui->min_cam_rot_kf->text().toFloat();
+}
+
+double Params::getVoxelGridSize() {
+  return ui->voxel_grid_size->text().toFloat();
+}
+int Params::getPoissonDepth() {
+  return ui->poisson_depth->text().toFloat();
+}
+int Params::getPoissonSamples() {
+  return ui->poisson_samples->text().toFloat();
+}
+bool Params::filterLargestCluster() {
+  return ui->filter_largest_cluster->isChecked();
+}
+bool Params::useMultiviewICP() {
+  return ui->multiview_icp->isChecked();
+}
+bool Params::useNoiseModel() {
+  return ui->use_nguyen_noise_model->isChecked();
+}
+
+void Params::apply_params() {
+  emit set_roi_params(ui->roi_scale_xy->text().toFloat(), ui->roi_scale_height->text().toFloat(),
+                      ui->roi_offs->text().toFloat());
+}
+
+void Params::apply_cam_params() {
   cam_params.f[0] = ui->fuRgbEdit->text().toFloat();
   cam_params.f[1] = ui->fvRgbEdit->text().toFloat();
   cam_params.c[0] = ui->cuRgbEdit->text().toFloat();
@@ -109,50 +130,40 @@ void Params::apply_cam_params()
   emit cam_params_changed(cam_params);
 }
 
-std::string Params::get_rgbd_path()
-{
+std::string Params::get_rgbd_path() {
   std::string path = ui->editRGBDPath->text().toStdString();
 
-  if(path.empty())
+  if (path.empty())
     path += ".";
 
   return (path);
 }
 
-void Params::set_object_name(const QString &txt)
-{
+void Params::set_object_name(const QString &txt) {
   ui->editModelName->setText(txt);
 }
 
-std::string Params::get_object_name()
-{
+std::string Params::get_object_name() {
   std::string path = ui->editModelName->text().toStdString();
 
-  if(path.empty())
+  if (path.empty())
     path = "objectmodel";
 
   return (path);
 }
 
-
-void Params::on_pushFindRGBDPath_pressed()
-{
+void Params::on_pushFindRGBDPath_pressed() {
   QString filename = QFileDialog::getExistingDirectory(this, tr("RGBD Path"), tr("./log"));
-  if(filename.size()!=0)
-  {
+  if (filename.size() != 0) {
     ui->editRGBDPath->setText(filename);
     emit rgbd_path_changed();
   }
 }
 
-
-
-void Params::on_okButton_clicked()
-{
+void Params::on_okButton_clicked() {
   apply_params();
 }
 
-void Params::on_applyButton_clicked()
-{
+void Params::on_applyButton_clicked() {
   apply_cam_params();
 }

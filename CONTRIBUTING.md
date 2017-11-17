@@ -63,7 +63,7 @@ After the report of a bug, a responsible person will be selected and informed to
 <a name="license"></a>
 ## License
 
-V4R is dual-licensed as GPLv3 and a commercial license (see [this](./LICENSE) for details). By conriburing to the V4R repository in any way such as by submitting patches, enhancements or new code modules, you agree to fully transfer the copyright to TU Wien, ACIN, V4R and license your work under the stated [Terms and Licenses](./LICENSE). The corpus of the license should be inserted as a C++ comment on top of each source file such as `.h`, `.hpp` and `.cpp` files:
+V4R is dual-licensed as GPLv3 and a commercial license (see [this](./LICENSE) for details). By contributing to the V4R repository in any way such as by submitting patches, enhancements or new code modules, you agree to fully transfer the copyright to TU Wien, ACIN, V4R and license your work under the stated [Terms and Licenses](./LICENSE). The corpus of the license should be inserted as a C++ comment on top of each source file such as `.h`, `.hpp` and `.cpp` files:
 
 ```cpp
 /****************************************************************************

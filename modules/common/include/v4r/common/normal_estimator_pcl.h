@@ -37,7 +37,6 @@
 **
 ****************************************************************************/
 
-
 /**
  * @file normal_estimator_pcl.h
  * @author Thomas Faeulhammer (faeulhammer@acin.tuwien.ac.at)
@@ -54,96 +53,75 @@
 
 namespace po = boost::program_options;
 
-namespace v4r
-{
+namespace v4r {
 
-class V4R_EXPORTS NormalEstimatorPCLParameter
-{
-public:
-    float radius_; ///< smoothings size.
-    bool use_omp_; ///< use depth depended smoothing
+class V4R_EXPORTS NormalEstimatorPCLParameter {
+ public:
+  float radius_;  ///< smoothings size.
+  bool use_omp_;  ///< use depth depended smoothing
 
-    NormalEstimatorPCLParameter (
-            float radius = 0.02f,
-            bool use_omp = true
-            )
-        :
-          radius_ ( radius ),
-          use_omp_ ( use_omp )
-    {}
+  NormalEstimatorPCLParameter(float radius = 0.02f, bool use_omp = true) : radius_(radius), use_omp_(use_omp) {}
 
+  /**
+*@brief init parameters
+*@param command_line_arguments (according to Boost program options library)
+*@return unused parameters (given parameters that were not used in this initialization call)
+*/
+  std::vector<std::string> init(int argc, char **argv) {
+    std::vector<std::string> arguments(argv + 1, argv + argc);
+    return init(arguments);
+  }
 
-    /**
- * @brief init parameters
- * @param command_line_arguments (according to Boost program options library)
- * @return unused parameters (given parameters that were not used in this initialization call)
- */
-    std::vector<std::string>
-    init(int argc, char **argv)
-    {
-        std::vector<std::string> arguments(argv + 1, argv + argc);
-        return init(arguments);
+  /**
+*@brief init parameters
+*@param command_line_arguments (according to Boost program options library)
+*@return unused parameters (given parameters that were not used in this initialization call)
+*/
+  std::vector<std::string> init(const std::vector<std::string> &command_line_arguments) {
+    po::options_description desc("Surface Normal Estimator Parameter\n=====================\n");
+    desc.add_options()("help,h", "produce help message")(
+        "normals_radius", po::value<float>(&radius_)->default_value(radius_), "support radius for computation")(
+        "normals_use_omp", po::value<bool>(&use_omp_)->default_value(use_omp_), "if true, uses openmp.");
+    po::variables_map vm;
+    po::parsed_options parsed =
+        po::command_line_parser(command_line_arguments).options(desc).allow_unregistered().run();
+    std::vector<std::string> to_pass_further = po::collect_unrecognized(parsed.options, po::include_positional);
+    po::store(parsed, vm);
+    if (vm.count("help")) {
+      std::cout << desc << std::endl;
+      to_pass_further.push_back("-h");
     }
-
-    /**
- * @brief init parameters
- * @param command_line_arguments (according to Boost program options library)
- * @return unused parameters (given parameters that were not used in this initialization call)
- */
-    std::vector<std::string>
-    init(const std::vector<std::string> &command_line_arguments)
-    {
-        po::options_description desc("Surface Normal Estimator Parameter\n=====================\n");
-        desc.add_options()
-                ("help,h", "produce help message")
-                ("normals_radius", po::value<float>(&radius_)->default_value(radius_), "support radius for computation")
-                ("normals_use_omp", po::value<bool>(&use_omp_)->default_value(use_omp_), "if true, uses openmp.")
-                ;
-        po::variables_map vm;
-        po::parsed_options parsed = po::command_line_parser(command_line_arguments).options(desc).allow_unregistered().run();
-        std::vector<std::string> to_pass_further = po::collect_unrecognized(parsed.options, po::include_positional);
-        po::store(parsed, vm);
-        if (vm.count("help")) { std::cout << desc << std::endl; to_pass_further.push_back("-h"); }
-        try { po::notify(vm); }
-        catch(std::exception& e) {  std::cerr << "Error: " << e.what() << std::endl << std::endl << desc << std::endl; }
-        return to_pass_further;
+    try {
+      po::notify(vm);
+    } catch (std::exception &e) {
+      std::cerr << "Error: " << e.what() << std::endl << std::endl << desc << std::endl;
     }
+    return to_pass_further;
+  }
 };
 
+template <typename PointT>
+class V4R_EXPORTS NormalEstimatorPCL : public NormalEstimator<PointT> {
+ public:
+  using NormalEstimator<PointT>::input_;
+  using NormalEstimator<PointT>::indices_;
+  using NormalEstimator<PointT>::normal_;
 
-template<typename PointT>
-class V4R_EXPORTS NormalEstimatorPCL : public NormalEstimator<PointT>
-{
-public:
-    using NormalEstimator<PointT>::input_;
-    using NormalEstimator<PointT>::indices_;
-    using NormalEstimator<PointT>::normal_;
+ private:
+  NormalEstimatorPCLParameter param_;
 
-private:
-    NormalEstimatorPCLParameter param_;
+ public:
+  NormalEstimatorPCL(const NormalEstimatorPCLParameter &p = NormalEstimatorPCLParameter()) : param_(p) {}
 
-public:
-    NormalEstimatorPCL(
-            const NormalEstimatorPCLParameter &p = NormalEstimatorPCLParameter()
-            )
-        : param_(p)
-    {
-    }
+  ~NormalEstimatorPCL() {}
 
-    ~NormalEstimatorPCL(){}
+  pcl::PointCloud<pcl::Normal>::Ptr compute();
 
-    pcl::PointCloud<pcl::Normal>::Ptr
-    compute ();
+  int getNormalEstimatorType() const {
+    return NormalEstimatorType::PCL_INTEGRAL_NORMAL;
+  }
 
-    int
-    getNormalEstimatorType() const
-    {
-        return NormalEstimatorType::PCL_INTEGRAL_NORMAL;
-    }
-
-    typedef boost::shared_ptr< NormalEstimatorPCL> Ptr;
-    typedef boost::shared_ptr< NormalEstimatorPCL const> ConstPtr;
+  typedef boost::shared_ptr<NormalEstimatorPCL> Ptr;
+  typedef boost::shared_ptr<NormalEstimatorPCL const> ConstPtr;
 };
-
 }
-

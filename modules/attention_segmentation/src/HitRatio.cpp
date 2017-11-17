@@ -37,170 +37,148 @@
 **
 ****************************************************************************/
 
-
-
 #include "v4r/attention_segmentation/HitRatio.h"
 #include <list>
 
 namespace EPEvaluation {
 
-void labeling2Mask(cv::Mat &mask, cv::Mat labeling, int maskNum)
-{
+void labeling2Mask(cv::Mat &mask, cv::Mat labeling, int maskNum) {
   assert(labeling.type() == CV_8UC1);
-  
-  mask = cv::Mat_<uchar>::zeros(labeling.rows,labeling.cols);
-  
-  for(int i = 0; i < labeling.rows; ++i)
-  {
-    for(int j = 0; j < labeling.cols; ++j)
-    {
-      if(labeling.at<uchar>(i,j) == maskNum)
-	mask.at<uchar>(i,j) = 1;
+
+  mask = cv::Mat_<uchar>::zeros(labeling.rows, labeling.cols);
+
+  for (int i = 0; i < labeling.rows; ++i) {
+    for (int j = 0; j < labeling.cols; ++j) {
+      if (labeling.at<uchar>(i, j) == maskNum)
+        mask.at<uchar>(i, j) = 1;
     }
   }
 }
 
-float hitRatio(std::vector<cv::Point> attentionPoints, cv::Mat labeling, std::vector<bool> &usedPoints)
-{
+float hitRatio(std::vector<cv::Point> attentionPoints, cv::Mat labeling, std::vector<bool> &usedPoints) {
   assert(labeling.type() == CV_8UC1);
-  
-  if(attentionPoints.size() <= 0)
-  {
-    return(0.0f);
+
+  if (attentionPoints.size() <= 0) {
+    return (0.0f);
   }
-  
+
   usedPoints.clear();
   usedPoints.resize(attentionPoints.size(), false);
-  
-  double maxVal=0;
-  cv::minMaxLoc(labeling,0,&maxVal,0,0);
-  
-  std::vector<bool> usedObjects(maxVal,false);
-  
+
+  double maxVal = 0;
+  cv::minMaxLoc(labeling, 0, &maxVal, 0, 0);
+
+  std::vector<bool> usedObjects(maxVal, false);
+
   float visitedObjects = 0;
-  
-  for(unsigned int i = 0; i < attentionPoints.size(); ++i)
-  {
+
+  for (unsigned int i = 0; i < attentionPoints.size(); ++i) {
     cv::Point p = attentionPoints.at(i);
-    uchar objNum = labeling.at<uchar>(p.y,p.x);
-    if(objNum == 0)
+    uchar objNum = labeling.at<uchar>(p.y, p.x);
+    if (objNum == 0)
       continue;
-    if(!(usedObjects.at(objNum-1)))
-    {
+    if (!(usedObjects.at(objNum - 1))) {
       usedPoints.at(i) = true;
-      usedObjects.at(objNum-1) = true;
+      usedObjects.at(objNum - 1) = true;
       visitedObjects = visitedObjects + 1;
     }
   }
-  
-  float HR = visitedObjects/attentionPoints.size();
-  
-  return(HR);
+
+  float HR = visitedObjects / attentionPoints.size();
+
+  return (HR);
 }
 
-void calculateAccumulatedHR(std::vector<bool> usedPoints, std::vector<int> &accumulatedHR)
-{
-  accumulatedHR.resize(usedPoints.size(),0);
-  
-  for(unsigned int i = 0; i < usedPoints.size(); ++i)
-  {
+void calculateAccumulatedHR(std::vector<bool> usedPoints, std::vector<int> &accumulatedHR) {
+  accumulatedHR.resize(usedPoints.size(), 0);
+
+  for (unsigned int i = 0; i < usedPoints.size(); ++i) {
     int before = 0;
-    if(i > 0)
-      before = accumulatedHR.at(i-1);
-    
-    if(usedPoints.at(i))
+    if (i > 0)
+      before = accumulatedHR.at(i - 1);
+
+    if (usedPoints.at(i))
       before += 1;
-    
+
     accumulatedHR.at(i) = before;
   }
 }
 
-void distance2Center(std::vector<cv::Point> attentionPoints, cv::Mat labeling, std::vector<cv::Point> centers, 
-                     std::vector<PointEvaluation> &distances, std::vector<bool> &usedAttentionPoints)
-{
+void distance2Center(std::vector<cv::Point> attentionPoints, cv::Mat labeling, std::vector<cv::Point> centers,
+                     std::vector<PointEvaluation> &distances, std::vector<bool> &usedAttentionPoints) {
   assert(labeling.type() == CV_8UC1);
   assert(attentionPoints.size() > 0);
-  
-  double maxVal=0;
-  cv::minMaxLoc(labeling,0,&maxVal,0,0);
-  
+
+  double maxVal = 0;
+  cv::minMaxLoc(labeling, 0, &maxVal, 0, 0);
+
   assert(centers.size() == (unsigned int)maxVal);
-  
+
   distances.resize(attentionPoints.size());
-  usedAttentionPoints.resize(attentionPoints.size(),false);
-  
-  for(unsigned int i = 0; i < attentionPoints.size(); ++i)
-  {
+  usedAttentionPoints.resize(attentionPoints.size(), false);
+
+  for (unsigned int i = 0; i < attentionPoints.size(); ++i) {
     cv::Point p = attentionPoints.at(i);
-    uchar objNum = labeling.at<uchar>(p.y,p.x);
-    if(objNum == 0)
-    {
+    uchar objNum = labeling.at<uchar>(p.y, p.x);
+    if (objNum == 0) {
       usedAttentionPoints.at(i) = true;
       distances.at(i).ObjectIdx = -1;
       distances.at(i).distance = -1;
       continue;
     }
-    
-    //calculate distance to the center
-    float distance = v4r::calculateDistance(centers.at(objNum-1),p);
-    
+
+    // calculate distance to the center
+    float distance = v4r::calculateDistance(centers.at(objNum - 1), p);
+
     usedAttentionPoints.at(i) = true;
     distances.at(i).ObjectIdx = objNum;
     distances.at(i).distance = distance;
   }
-  
+
   return;
 }
 
-void distance2Center(std::vector<cv::Point> attentionPoints, cv::Mat labeling, std::vector<cv::Point> centers, 
-                     std::vector<ObjectEvaluation> &firstDistance2Objects, std::vector<ObjectEvaluation> &bestDistance2Objects, 
-                     std::vector<bool> &usedObjects)
-{
+void distance2Center(std::vector<cv::Point> attentionPoints, cv::Mat labeling, std::vector<cv::Point> centers,
+                     std::vector<ObjectEvaluation> &firstDistance2Objects,
+                     std::vector<ObjectEvaluation> &bestDistance2Objects, std::vector<bool> &usedObjects) {
   assert(labeling.type() == CV_8UC1);
   assert(attentionPoints.size() > 0);
-  
-  double maxVal=0;
-  cv::minMaxLoc(labeling,0,&maxVal,0,0);
-  
+
+  double maxVal = 0;
+  cv::minMaxLoc(labeling, 0, &maxVal, 0, 0);
+
   assert(centers.size() == (unsigned int)maxVal);
-  
+
   firstDistance2Objects.resize(maxVal);
   bestDistance2Objects.resize(maxVal);
-  usedObjects.resize(maxVal,false);
-  
-  for(unsigned int i = 0; i < attentionPoints.size(); ++i)
-  {
+  usedObjects.resize(maxVal, false);
+
+  for (unsigned int i = 0; i < attentionPoints.size(); ++i) {
     cv::Point p = attentionPoints.at(i);
-    uchar objNum = labeling.at<uchar>(p.y,p.x);
-    if(objNum == 0)
+    uchar objNum = labeling.at<uchar>(p.y, p.x);
+    if (objNum == 0)
       continue;
-    
-    //calculate distance to the center
-    float distance = v4r::calculateDistance(centers.at(objNum-1),p);
-    
+
+    // calculate distance to the center
+    float distance = v4r::calculateDistance(centers.at(objNum - 1), p);
+
     // object is used the first time
-    if(!(usedObjects.at(objNum-1)))
-    {
-      usedObjects.at(objNum-1) = true;
-      firstDistance2Objects.at(objNum-1).attentionPointIdx = i;
-      firstDistance2Objects.at(objNum-1).distance = distance;
-      
-      bestDistance2Objects.at(objNum-1).attentionPointIdx = i;
-      bestDistance2Objects.at(objNum-1).distance = distance;
-    }
-    else
-    {
-      if(distance < bestDistance2Objects.at(objNum-1).distance)
-      {
-        bestDistance2Objects.at(objNum-1).attentionPointIdx = i;
-        bestDistance2Objects.at(objNum-1).distance = distance;
+    if (!(usedObjects.at(objNum - 1))) {
+      usedObjects.at(objNum - 1) = true;
+      firstDistance2Objects.at(objNum - 1).attentionPointIdx = i;
+      firstDistance2Objects.at(objNum - 1).distance = distance;
+
+      bestDistance2Objects.at(objNum - 1).attentionPointIdx = i;
+      bestDistance2Objects.at(objNum - 1).distance = distance;
+    } else {
+      if (distance < bestDistance2Objects.at(objNum - 1).distance) {
+        bestDistance2Objects.at(objNum - 1).attentionPointIdx = i;
+        bestDistance2Objects.at(objNum - 1).distance = distance;
       }
     }
   }
-  
+
   return;
-  
 }
 
-
-}//namespace EPEvaluation
+}  // namespace EPEvaluation

@@ -10,4 +10,3 @@
 
 template class V4R_EXPORTS v4r::ICPNode<pcl::PointXYZRGB>;
 template class V4R_EXPORTS v4r::FastIterativeClosestPointWithGC<pcl::PointXYZRGB>;
-

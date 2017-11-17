@@ -37,152 +37,132 @@
 **
 ****************************************************************************/
 
-
-
 #include "v4r/attention_segmentation/LocationMap.h"
 
-namespace v4r
-{
+namespace v4r {
 
-LocationSaliencyMap::LocationSaliencyMap():
-BaseMap()
-{
+LocationSaliencyMap::LocationSaliencyMap() : BaseMap() {
   reset();
 }
 
-LocationSaliencyMap::~LocationSaliencyMap()
-{
-}
+LocationSaliencyMap::~LocationSaliencyMap() {}
 
-void LocationSaliencyMap::reset()
-{
+void LocationSaliencyMap::reset() {
   BaseMap::reset();
   location = AM_CENTER;
-  center_point = cv::Point(0,0);
+  center_point = cv::Point(0, 0);
 
   mapName = "LocationSaliencyMap";
 }
 
-void LocationSaliencyMap::print()
-{
+void LocationSaliencyMap::print() {
   BaseMap::print();
-  printf("[%s]: location           = %d\n",mapName.c_str(),location);
-  printf("[%s]: center_point       = (%d,%d)\n",mapName.c_str(),center_point.x,center_point.y);
+  printf("[%s]: location           = %d\n", mapName.c_str(), location);
+  printf("[%s]: center_point       = (%d,%d)\n", mapName.c_str(), center_point.x, center_point.y);
 }
 
-void LocationSaliencyMap::setLocation(int location_)
-{
+void LocationSaliencyMap::setLocation(int location_) {
   location = location_;
   calculated = false;
-  printf("[INFO]: %s: location is set to: %d\n",mapName.c_str(),location);
+  printf("[INFO]: %s: location is set to: %d\n", mapName.c_str(), location);
 }
 
-void LocationSaliencyMap::setCenter(cv::Point _center_point)
-{
+void LocationSaliencyMap::setCenter(cv::Point _center_point) {
   center_point = _center_point;
   calculated = false;
-  printf("[INFO]: %s: center_point is set to: (%d,%d)\n",mapName.c_str(),center_point.x,center_point.y);
+  printf("[INFO]: %s: center_point is set to: (%d,%d)\n", mapName.c_str(), center_point.x, center_point.y);
 }
 
-int LocationSaliencyMap::checkParameters()
-{
-  if( (width == 0) || (height == 0) )
-  {
-    printf("[ERROR]: %s: Seems like image is empty.\n",mapName.c_str());
-    return(AM_IMAGE);
+int LocationSaliencyMap::checkParameters() {
+  if ((width == 0) || (height == 0)) {
+    printf("[ERROR]: %s: Seems like image is empty.\n", mapName.c_str());
+    return (AM_IMAGE);
   }
-  
-  if(!haveMask)
-    mask = cv::Mat_<uchar>::ones(height,width);
-  
-  if((mask.cols != width) || (mask.rows != height))
-  {
-    mask = cv::Mat_<uchar>::ones(height,width);
+
+  if (!haveMask)
+    mask = cv::Mat_<uchar>::ones(height, width);
+
+  if ((mask.cols != width) || (mask.rows != height)) {
+    mask = cv::Mat_<uchar>::ones(height, width);
   }
-  
-  return(AM_OK);
-  
+
+  return (AM_OK);
 }
 
-int LocationSaliencyMap::calculate()
-{
+int LocationSaliencyMap::calculate() {
   calculated = false;
 
   int rt_code = checkParameters();
-  if(rt_code != AM_OK)
-    return(rt_code);
+  if (rt_code != AM_OK)
+    return (rt_code);
 
-  printf("[INFO]: %s: Computation started.\n",mapName.c_str());
-  
+  printf("[INFO]: %s: Computation started.\n", mapName.c_str());
+
   cv::Point center;
   float a = 1;
   float b = 1;
 
-  switch(location)
-  {
+  switch (location) {
     case AM_CENTER:
-      center = cv::Point(width/2,height/2);
+      center = cv::Point(width / 2, height / 2);
       break;
     case AM_LEFT_CENTER:
-      center = cv::Point(width/4,height/2);
+      center = cv::Point(width / 4, height / 2);
       break;
     case AM_LEFT:
-      center = cv::Point(width/4,height/4);
+      center = cv::Point(width / 4, height / 4);
       b = 0;
       break;
     case AM_RIGHT_CENTER:
-      center = cv::Point(4*width/4,height/2);
+      center = cv::Point(4 * width / 4, height / 2);
       break;
     case AM_RIGHT:
-      center = cv::Point(3*width/4,3*height/2);
+      center = cv::Point(3 * width / 4, 3 * height / 2);
       b = 0;
       break;
     case AM_TOP_CENTER:
-      center = cv::Point(width/2,height/4);
+      center = cv::Point(width / 2, height / 4);
       break;
     case AM_TOP:
-      center = cv::Point(width/2,height/4);
+      center = cv::Point(width / 2, height / 4);
       a = 0;
       break;
     case AM_BOTTOM_CENTER:
-      center = cv::Point(width/2,3*height/4);
+      center = cv::Point(width / 2, 3 * height / 4);
       break;
     case AM_BOTTOM:
-      center = cv::Point(width/2,3*height/4);
+      center = cv::Point(width / 2, 3 * height / 4);
       a = 0;
       break;
     case AM_LOCATION_CUSTOM:
       center = center_point;
       break;
     default:
-      center = cv::Point(width/2,height/2);
+      center = cv::Point(width / 2, height / 2);
       break;
   }
-  
-  map = cv::Mat_<float>::zeros(height,width);
-  
-  for(int r = 0; r < height; ++r)
-  {
-    for(int c = 0; c < width; ++c)
-    {
-      if(mask.at<uchar>(r,c))
-      {
-        float dx = c-center.x;
-        dx = a*(dx/width);
-        float dy = r-center.y;
-        dy = b*(dy/height);
-        float value = dx*dx + dy*dy;
-        map.at<float>(r,c) = exp(-11*value);
+
+  map = cv::Mat_<float>::zeros(height, width);
+
+  for (int r = 0; r < height; ++r) {
+    for (int c = 0; c < width; ++c) {
+      if (mask.at<uchar>(r, c)) {
+        float dx = c - center.x;
+        dx = a * (dx / width);
+        float dy = r - center.y;
+        dy = b * (dy / height);
+        float value = dx * dx + dy * dy;
+        map.at<float>(r, c) = exp(-11 * value);
       }
     }
   }
-  
-  cv::blur(map,map,cv::Size(filter_size,filter_size));
 
-  v4r::normalize(map,normalization_type);
+  cv::blur(map, map, cv::Size(filter_size, filter_size));
+
+  v4r::normalize(map, normalization_type);
 
   calculated = true;
-  printf("[INFO]: %s: Computation succeed.\n",mapName.c_str());
-  return(AM_OK);
+  printf("[INFO]: %s: Computation succeed.\n", mapName.c_str());
+  return (AM_OK);
 }
-} //namespace v4r
+}  // namespace v4r

@@ -37,40 +37,35 @@
 **
 ****************************************************************************/
 
-
 /**
  * @file main.cpp
  * @author Johann Prankl (prankl@acin.tuwien.ac.at)
  * @date 2017
  * @brief
  *
- */ 
+ */
 
 #ifndef KP_TSF_DATA_HH
 #define KP_TSF_DATA_HH
 
-#include <Eigen/Dense>
-#include <opencv2/core/core.hpp>
-#include <boost/thread/mutex.hpp>
 #include <pcl/point_cloud.h>
 #include <pcl/point_types.h>
-#include <v4r/common/impl/DataMatrix2D.hpp> 
+#include <v4r/core/macros.h>
+#include <Eigen/Dense>
+#include <boost/thread/mutex.hpp>
+#include <opencv2/core/core.hpp>
+#include <queue>
 #include <v4r/camera_tracking_and_mapping/Surfel.hh>
 #include <v4r/camera_tracking_and_mapping/TSFFrame.hh>
-#include <queue>
-#include <v4r/core/macros.h>
+#include <v4r/common/impl/DataMatrix2D.hpp>
 
-namespace v4r
-{
-
-
+namespace v4r {
 
 /**
  * TSFData
  */
-class V4R_EXPORTS TSFData 
-{
-public:
+class V4R_EXPORTS TSFData {
+ public:
   boost::mutex mtx_shm;
 
   //// -> track (tf), -> init-tracking, -> integrate cloud
@@ -84,12 +79,12 @@ public:
   pcl::PointCloud<pcl::PointXYZRGB> cloud;  ///// new cloud
   uint64_t timestamp;
 
-  Eigen::Matrix4f pose;      /// global pose of the current frame (depth, gray, points[1], ....)
+  Eigen::Matrix4f pose;  /// global pose of the current frame (depth, gray, points[1], ....)
   bool have_pose;
 
   // used by klt pose tracker
   uint64_t kf_timestamp;
-  Eigen::Matrix4f kf_pose;   /// pose of the keyframe (points[0], points3d[0], normals, prev_gray
+  Eigen::Matrix4f kf_pose;  /// pose of the keyframe (points[0], points3d[0], normals, prev_gray
   std::vector<cv::Point2f> points[2];
   std::vector<Eigen::Vector3f> points3d[2];
 
@@ -103,20 +98,24 @@ public:
 
   void reset();
 
-  inline void lock() { mtx_shm.lock(); }
-  inline void unlock() { mtx_shm.unlock(); }
+  inline void lock() {
+    mtx_shm.lock();
+  }
+  inline void unlock() {
+    mtx_shm.unlock();
+  }
 
-  static void convert(const v4r::DataMatrix2D<v4r::Surfel> &sf_cloud, pcl::PointCloud<pcl::PointXYZRGBNormal> &cloud, const double &thr_weight=-1000000, const double &thr_delta_angle=180. );
-  static void convert(const v4r::DataMatrix2D<v4r::Surfel> &sf_cloud, pcl::PointCloud<pcl::Normal> &cloud, const double &thr_weight=-1000000, const double &thr_delta_angle=180. );
-  static void convert(const v4r::DataMatrix2D<v4r::Surfel> &sf_cloud, pcl::PointCloud<pcl::PointXYZRGB> &cloud, const double &thr_weight=-1000000, const double &thr_delta_angle=180. );
+  static void convert(const v4r::DataMatrix2D<v4r::Surfel> &sf_cloud, pcl::PointCloud<pcl::PointXYZRGBNormal> &cloud,
+                      const double &thr_weight = -1000000, const double &thr_delta_angle = 180.);
+  static void convert(const v4r::DataMatrix2D<v4r::Surfel> &sf_cloud, pcl::PointCloud<pcl::Normal> &cloud,
+                      const double &thr_weight = -1000000, const double &thr_delta_angle = 180.);
+  static void convert(const v4r::DataMatrix2D<v4r::Surfel> &sf_cloud, pcl::PointCloud<pcl::PointXYZRGB> &cloud,
+                      const double &thr_weight = -1000000, const double &thr_delta_angle = 180.);
   static void convert(const v4r::DataMatrix2D<v4r::Surfel> &sf_cloud, cv::Mat &image);
 };
 
-
-
 /*************************** INLINE METHODES **************************/
 
-} //--END--
+}  //--END--
 
 #endif
-

@@ -23,31 +23,32 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
 
 #include <cstdio>
 
-namespace gc
-{
-  
+namespace gc {
+
 typedef struct {
-  int rank;         // rank of element (starts with 0)
-  int p;            // Parent element
-  int size;         // How many elements are in a set
+  int rank;  // rank of element (starts with 0)
+  int p;     // Parent element
+  int size;  // How many elements are in a set
 } uni_elt;
 
-
 class universe {
-public:
+ public:
   universe(int elements);
   ~universe();
-  int find(int x);  
+  int find(int x);
   void join(int x, int y);
-  int size(int x) const { return elts[x].size; }
-  int num_sets() const { return num; }
+  int size(int x) const {
+    return elts[x].size;
+  }
+  int num_sets() const {
+    return num;
+  }
   void printAll();
 
-private:
+ private:
   uni_elt *elts;
   int num;
 };
-
 }
 
 #endif

@@ -37,8 +37,6 @@
 **
 ****************************************************************************/
 
-
-
 #ifndef EPMATH_H
 #define EPMATH_H
 
@@ -46,8 +44,7 @@
 
 #include "v4r/attention_segmentation/eputils_headers.h"
 
-namespace v4r
-{
+namespace v4r {
 
 float dotProduct(Eigen::Vector3f v1, Eigen::Vector3f v2);
 float dotProduct(cv::Point3f v1, cv::Point3f v2);
@@ -98,41 +95,30 @@ pcl::Normal calculatePlaneNormal(pcl::Normal p1, pcl::Normal p2, pcl::Normal p3)
 pcl::PointXYZ calculatePlaneNormal(pcl::PointXYZ v1, pcl::PointXYZ v2);
 pcl::PointXYZ calculatePlaneNormal(pcl::PointXYZ p1, pcl::PointXYZ p2, pcl::PointXYZ p3);
 
-V4R_EXPORTS void ProjectPointsOnThePlane(pcl::ModelCoefficients::ConstPtr coefficients,
-                             pcl::PointCloud<pcl::PointXYZRGB>::ConstPtr cloud,
-                             pcl::PointCloud<pcl::PointXYZRGB>::Ptr points_projected,
-                             std::vector<float> &distances, 
-                             pcl::PointIndices::Ptr indices = pcl::PointIndices::Ptr(new pcl::PointIndices()),
-                             bool normalize = true);
+V4R_EXPORTS void ProjectPointsOnThePlane(
+    pcl::ModelCoefficients::ConstPtr coefficients, pcl::PointCloud<pcl::PointXYZRGB>::ConstPtr cloud,
+    pcl::PointCloud<pcl::PointXYZRGB>::Ptr points_projected, std::vector<float> &distances,
+    pcl::PointIndices::Ptr indices = pcl::PointIndices::Ptr(new pcl::PointIndices()), bool normalize = true);
 
 template <class T>
 bool computeMean(const typename pcl::PointCloud<T> &cloud, Eigen::Vector3f &mean,
-                 std::vector<int> indices = std::vector<int>())
-{
-  if(indices.size() == 0)
-  {
+                 std::vector<int> indices = std::vector<int>()) {
+  if (indices.size() == 0) {
     indices.reserve(cloud.size());
-    for(unsigned int i = 0; i < cloud.size(); ++i)
-    {
-      if(std::isnan(cloud.points.at(i).x) ||
-         std::isnan(cloud.points.at(i).y) ||
-         std::isnan(cloud.points.at(i).z))
-      {
+    for (unsigned int i = 0; i < cloud.size(); ++i) {
+      if (std::isnan(cloud.points.at(i).x) || std::isnan(cloud.points.at(i).y) || std::isnan(cloud.points.at(i).z)) {
         continue;
-      }
-      else
-      {
+      } else {
         indices.push_back(i);
       }
     }
   }
 
-  if(indices.size() == 0)
-    return(false);
-  
+  if (indices.size() == 0)
+    return (false);
+
   mean.setZero();
-  for (unsigned i=0; i < indices.size(); ++i)
-  {
+  for (unsigned i = 0; i < indices.size(); ++i) {
     int idx = indices.at(i);
     mean[0] += cloud.points.at(idx).x;
     mean[1] += cloud.points.at(idx).y;
@@ -141,60 +127,51 @@ bool computeMean(const typename pcl::PointCloud<T> &cloud, Eigen::Vector3f &mean
 
   mean /= (float)indices.size();
 
-  return(true);
+  return (true);
 }
 
 template <class T>
 bool computeCovarianceMatrix(const typename pcl::PointCloud<T> &cloud, const Eigen::Vector3f &mean,
-                             Eigen::Matrix3f &cov, std::vector<int> indices = std::vector<int>())
-{
-  if(indices.size() == 0)
-  {
+                             Eigen::Matrix3f &cov, std::vector<int> indices = std::vector<int>()) {
+  if (indices.size() == 0) {
     indices.reserve(cloud.size());
-    for(unsigned int i = 0; i < cloud.size(); ++i)
-    {
-      if(std::isnan(cloud.points.at(i).x) ||
-         std::isnan(cloud.points.at(i).y) ||
-         std::isnan(cloud.points.at(i).z))
-      {
+    for (unsigned int i = 0; i < cloud.size(); ++i) {
+      if (std::isnan(cloud.points.at(i).x) || std::isnan(cloud.points.at(i).y) || std::isnan(cloud.points.at(i).z)) {
         continue;
-      }
-      else
-      {
+      } else {
         indices.push_back(i);
       }
     }
   }
-  
+
   bool done = false;
-  cov.setZero ();
-  
-  for (unsigned pi = 0; pi < indices.size (); ++pi)
-  {
+  cov.setZero();
+
+  for (unsigned pi = 0; pi < indices.size(); ++pi) {
     float x = cloud.points.at(indices.at(pi)).x - mean[0];
     float y = cloud.points.at(indices.at(pi)).y - mean[1];
     float z = cloud.points.at(indices.at(pi)).z - mean[2];
-    
-    cov(0,0) += x*x;
-    cov(0,1) += x*y;
-    cov(0,2) += x*z;
-    
-    cov(1,0) += y*x;
-    cov(1,1) += y*y;
-    cov(1,2) += y*z;
-    
-    cov(2,0) += z*x;
-    cov(2,1) += z*y;
-    cov(2,2) += z*z;
-    
+
+    cov(0, 0) += x * x;
+    cov(0, 1) += x * y;
+    cov(0, 2) += x * z;
+
+    cov(1, 0) += y * x;
+    cov(1, 1) += y * y;
+    cov(1, 2) += y * z;
+
+    cov(2, 0) += z * x;
+    cov(2, 1) += z * y;
+    cov(2, 2) += z * z;
+
     done = true;
   }
-  
-  return(done);
+
+  return (done);
 }
 
 #endif
 
-} //namespace v4r
+}  // namespace v4r
 
 #endif

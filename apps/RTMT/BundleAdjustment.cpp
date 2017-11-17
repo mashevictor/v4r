@@ -37,7 +37,6 @@
 **
 ****************************************************************************/
 
-
 /**
  * @file BundleAdjustment.cpp
  * @author Johann Prankl (prankl@acin.tuwien.ac.at), Aitor Aldoma (aldoma@acin.tuwien.ac.at)
@@ -46,7 +45,6 @@
  *
  */
 
-
 #ifndef Q_MOC_RUN
 #include "BundleAdjustment.h"
 #include <v4r/keypoints/impl/toString.hpp>
@@ -54,24 +52,17 @@
 
 using namespace std;
 
-
 /**
  * @brief BundleAdjustment::BundleAdjustment
  */
-BundleAdjustment::BundleAdjustment() :
-  cmd(UNDEF), m_run(false)
-{
-}
+BundleAdjustment::BundleAdjustment() : cmd(UNDEF), m_run(false) {}
 
 /**
  * @brief BundleAdjustment::~BundleAdjustment
  */
-BundleAdjustment::~BundleAdjustment()
-{
+BundleAdjustment::~BundleAdjustment() {
   stop();
 }
-
-
 
 /******************************** public *******************************/
 
@@ -79,18 +70,15 @@ BundleAdjustment::~BundleAdjustment()
  * @brief BundleAdjustment::start
  * @param cam_id
  */
-void BundleAdjustment::start()
-{
+void BundleAdjustment::start() {
   QThread::start();
 }
 
 /**
  * @brief BundleAdjustment::stop
  */
-void BundleAdjustment::stop()
-{
-  if(m_run)
-  {
+void BundleAdjustment::stop() {
+  if (m_run) {
     m_run = false;
     this->wait();
   }
@@ -100,8 +88,7 @@ void BundleAdjustment::stop()
  * @brief BundleAdjustment::isRunning
  * @return
  */
-bool BundleAdjustment::isRunning()
-{
+bool BundleAdjustment::isRunning() {
   return m_run;
 }
 
@@ -109,8 +96,7 @@ bool BundleAdjustment::isRunning()
  * @brief BundleAdjustment::cam_tracker_params_changed
  * @param _cam_tracker_params
  */
-void BundleAdjustment::cam_tracker_params_changed(const CamaraTrackerParameter &_cam_tracker_params)
-{
+void BundleAdjustment::cam_tracker_params_changed(const CamaraTrackerParameter &_cam_tracker_params) {
   cam_tracker_params = _cam_tracker_params;
 }
 
@@ -118,8 +104,10 @@ void BundleAdjustment::cam_tracker_params_changed(const CamaraTrackerParameter &
  * @brief BundleAdjustment::optimizeCamStructProj
  * @param _model
  */
-void BundleAdjustment::optimizeCamStructProj(v4r::Object::Ptr &_model, boost::shared_ptr< std::vector<Sensor::CameraLocation> > &_cam_trajectory, boost::shared_ptr< std::vector<std::pair<int, pcl::PointCloud<pcl::PointXYZRGB>::ConstPtr> > > &_log_clouds, boost::shared_ptr< Sensor::AlignedPointXYZRGBVector > &_oc_cloud)
-{
+void BundleAdjustment::optimizeCamStructProj(
+    v4r::Object::Ptr &_model, boost::shared_ptr<std::vector<Sensor::CameraLocation>> &_cam_trajectory,
+    boost::shared_ptr<std::vector<std::pair<int, pcl::PointCloud<pcl::PointXYZRGB>::ConstPtr>>> &_log_clouds,
+    boost::shared_ptr<Sensor::AlignedPointXYZRGBVector> &_oc_cloud) {
   model = _model;
   cam_trajectory = _cam_trajectory;
   log_clouds = _log_clouds;
@@ -133,26 +121,25 @@ void BundleAdjustment::optimizeCamStructProj(v4r::Object::Ptr &_model, boost::sh
  * @brief BundleAdjustment::restoreCameras
  * @return
  */
-bool BundleAdjustment::restoreCameras()
-{
-  if (model.get()==0)
+bool BundleAdjustment::restoreCameras() {
+  if (model.get() == 0)
     return false;
 
   Eigen::Matrix4f inv_pose;
   v4r::Object &ref_model = *model;
 
-  if (stored_cameras.size()==ref_model.cameras.size() && stored_camera_parameter.size()==ref_model.camera_parameter.size() && stored_points.size()==ref_model.points.size())
-  {
+  if (stored_cameras.size() == ref_model.cameras.size() &&
+      stored_camera_parameter.size() == ref_model.camera_parameter.size() &&
+      stored_points.size() == ref_model.points.size()) {
     ref_model.cameras = stored_cameras;
     ref_model.camera_parameter = stored_camera_parameter;
     ref_model.points = stored_points;
 
-    for (unsigned i=0; i<cam_trajectory->size(); i++)
-    {
+    for (unsigned i = 0; i < cam_trajectory->size(); i++) {
       Sensor::CameraLocation &cam = (*cam_trajectory)[i];
       v4r::invPose(ref_model.cameras[cam.idx], inv_pose);
-      cam.pt = inv_pose.block<3,1>(0,3);
-      cam.vr = inv_pose.block<3,1>(0,2);
+      cam.pt = inv_pose.block<3, 1>(0, 3);
+      cam.vr = inv_pose.block<3, 1>(0, 2);
     }
 
     renewPrevCloud(ref_model.cameras, *log_clouds);
@@ -167,37 +154,32 @@ bool BundleAdjustment::restoreCameras()
   return false;
 }
 
-
 /********************************** private ****************************************/
 
 /**
  * @brief BundleAdjustment::run
  * main loop
  */
-void BundleAdjustment::run()
-{
-  m_run=true;
+void BundleAdjustment::run() {
+  m_run = true;
 
-  switch (cmd)
-  {
-  case PROJ_BA_CAM_STRUCT:
-  {
-    // create tracking model
-    emit printStatus("Status: Optimizing camera locations ... Please be patient...");
+  switch (cmd) {
+    case PROJ_BA_CAM_STRUCT: {
+      // create tracking model
+      emit printStatus("Status: Optimizing camera locations ... Please be patient...");
 
-    optimizeCamStructProj();
+      optimizeCamStructProj();
 
-    break;
-  }
-  default:
-    break;
+      break;
+    }
+    default:
+      break;
   }
 
   cmd = UNDEF;
-  m_run=false;
+  m_run = false;
 
-
-  //while(m_run)
+  // while(m_run)
   //{
   //}
 }
@@ -205,15 +187,14 @@ void BundleAdjustment::run()
 /**
  * @brief BundleAdjustment::optimizeCamStructProj
  */
-void BundleAdjustment::optimizeCamStructProj()
-{
-  if (model.get()==0 || cam_trajectory.get()==0 || oc_cloud.get()==0)
+void BundleAdjustment::optimizeCamStructProj() {
+  if (model.get() == 0 || cam_trajectory.get() == 0 || oc_cloud.get() == 0)
     return;
 
-  unsigned z=0;
+  unsigned z = 0;
   Eigen::Matrix4f inv_pose;
 
-  v4r::ProjBundleAdjuster ba(v4r::ProjBundleAdjuster::Parameter(false,false,true, 100.,0.02, 1.2));
+  v4r::ProjBundleAdjuster ba(v4r::ProjBundleAdjuster::Parameter(false, false, true, 100., 0.02, 1.2));
 
   v4r::Object &ref_model = *model;
   stored_cameras = ref_model.cameras;
@@ -222,15 +203,13 @@ void BundleAdjustment::optimizeCamStructProj()
 
   ba.optimize(ref_model);
 
-  for (unsigned i=0; i<cam_trajectory->size(); i++)
-  {
+  for (unsigned i = 0; i < cam_trajectory->size(); i++) {
     Sensor::CameraLocation &cam = (*cam_trajectory)[i];
 
-    if (cam.idx>=0)
-    {
+    if (cam.idx >= 0) {
       v4r::invPose(ref_model.cameras[cam.idx], inv_pose);
-      cam.pt = inv_pose.block<3,1>(0,3);
-      cam.vr = inv_pose.block<3,1>(0,2);
+      cam.pt = inv_pose.block<3, 1>(0, 3);
+      cam.vr = inv_pose.block<3, 1>(0, 2);
       (*cam_trajectory)[z] = cam;
       z++;
     }
@@ -244,7 +223,7 @@ void BundleAdjustment::optimizeCamStructProj()
   emit update_model_cloud(oc_cloud);
   emit update_visualization();
   emit finishedOptimizeCameras(num_cameras);
-  std::string txt = std::string("Status: Optimized ")+v4r::toString(num_cameras,0)+std::string(" cameras");
+  std::string txt = std::string("Status: Optimized ") + v4r::toString(num_cameras, 0) + std::string(" cameras");
   emit printStatus(txt);
 }
 
@@ -253,28 +232,30 @@ void BundleAdjustment::optimizeCamStructProj()
  * @param poses
  * @param clouds
  */
-void BundleAdjustment::renewPrevCloud(const std::vector<Eigen::Matrix4f, Eigen::aligned_allocator<Eigen::Matrix4f> > &poses, const std::vector<std::pair<int, pcl::PointCloud<pcl::PointXYZRGB>::ConstPtr> > &clouds)
-{
-  if (clouds.size()>0)
-  {
+void BundleAdjustment::renewPrevCloud(
+    const std::vector<Eigen::Matrix4f, Eigen::aligned_allocator<Eigen::Matrix4f>> &poses,
+    const std::vector<std::pair<int, pcl::PointCloud<pcl::PointXYZRGB>::ConstPtr>> &clouds) {
+  if (clouds.size() > 0) {
     Eigen::Matrix4f inv_pose;
 
     pcl::PointCloud<pcl::PointXYZRGB>::Ptr tmp_cloud(new pcl::PointCloud<pcl::PointXYZRGB>());
     pcl::PointCloud<pcl::PointXYZRGB>::Ptr tmp_cloud2(new pcl::PointCloud<pcl::PointXYZRGB>());
     std::vector<int> indices;
 
-    pcl::octree::OctreePointCloudVoxelCentroid<pcl::PointXYZRGB,pcl::octree::OctreeVoxelCentroidContainerXYZRGB<pcl::PointXYZRGB> >::Ptr octree;
-    octree.reset(new pcl::octree::OctreePointCloudVoxelCentroid<pcl::PointXYZRGB,pcl::octree::OctreeVoxelCentroidContainerXYZRGB<pcl::PointXYZRGB> >(cam_tracker_params.prev_voxegrid_size));
+    pcl::octree::OctreePointCloudVoxelCentroid<
+        pcl::PointXYZRGB, pcl::octree::OctreeVoxelCentroidContainerXYZRGB<pcl::PointXYZRGB>>::Ptr octree;
+    octree.reset(new pcl::octree::OctreePointCloudVoxelCentroid<
+                 pcl::PointXYZRGB, pcl::octree::OctreeVoxelCentroidContainerXYZRGB<pcl::PointXYZRGB>>(
+        cam_tracker_params.prev_voxegrid_size));
     pcl::PassThrough<pcl::PointXYZRGB> pass;
 
-    for (unsigned i=0; i<clouds.size(); i++)
-    {
+    for (unsigned i = 0; i < clouds.size(); i++) {
       v4r::invPose(poses[clouds[i].first], inv_pose);
-      pcl::removeNaNFromPointCloud(*clouds[i].second,*tmp_cloud,indices);
-      pass.setInputCloud (tmp_cloud);
-      pass.setFilterFieldName ("z");
-      pass.setFilterLimits (0.0, cam_tracker_params.prev_z_cutoff);
-      pass.filter (*tmp_cloud2);
+      pcl::removeNaNFromPointCloud(*clouds[i].second, *tmp_cloud, indices);
+      pass.setInputCloud(tmp_cloud);
+      pass.setFilterFieldName("z");
+      pass.setFilterLimits(0.0, cam_tracker_params.prev_z_cutoff);
+      pass.filter(*tmp_cloud2);
       pcl::transformPointCloud(*tmp_cloud2, *tmp_cloud, inv_pose);
       octree->setInputCloud(tmp_cloud);
       octree->addPointsFromInputCloud();
@@ -284,5 +265,3 @@ void BundleAdjustment::renewPrevCloud(const std::vector<Eigen::Matrix4f, Eigen::
     octree->getVoxelCentroids(*oc_cloud);
   }
 }
-
-

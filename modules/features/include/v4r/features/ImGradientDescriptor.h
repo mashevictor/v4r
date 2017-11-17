@@ -37,51 +37,47 @@
 **
 ****************************************************************************/
 
-
 /**
  * @file main.cpp
  * @author Johann Prankl (prankl@acin.tuwien.ac.at)
  * @date 2017
  * @brief
  *
- */ 
+ */
 
 #ifndef V4R_IM_GRADIENT_DESCRIPTOR_HH
 #define V4R_IM_GRADIENT_DESCRIPTOR_HH
 
-#include <iostream>
-#include <fstream>
 #include <float.h>
-#include <vector>
-#include <set>
+#include <Eigen/Dense>
+#include <fstream>
+#include <iostream>
 #include <opencv2/core/core.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
-#include <Eigen/Dense>
+#include <set>
 #include <stdexcept>
 #include <v4r/common/impl/SmartPtr.hpp>
+#include <vector>
 
-namespace v4r 
-{
+namespace v4r {
 
-class V4R_EXPORTS ImGradientDescriptor
-{
-public:
-  class Parameter
-  {
-  public:
+class V4R_EXPORTS ImGradientDescriptor {
+ public:
+  class Parameter {
+   public:
     bool smooth;
-    float sigma; //1.6
+    float sigma;  // 1.6
     float thrCutDesc;
     bool gauss_lin;
     bool computeRootGD;  // L1 norm and square root => euc dist = hellinger dist
     bool normalize;
-    Parameter(bool _smooth=true, float _sigma=1.6, float _thrCutDesc=.2, bool _gauss_lin=false,
-      bool _computeRootGD=true, bool _normalize=true)
-    : smooth(_smooth), sigma(_sigma), thrCutDesc(_thrCutDesc), gauss_lin(_gauss_lin), 
-      computeRootGD(_computeRootGD), normalize(_normalize) {}
+    Parameter(bool _smooth = true, float _sigma = 1.6, float _thrCutDesc = .2, bool _gauss_lin = false,
+              bool _computeRootGD = true, bool _normalize = true)
+    : smooth(_smooth), sigma(_sigma), thrCutDesc(_thrCutDesc), gauss_lin(_gauss_lin), computeRootGD(_computeRootGD),
+      normalize(_normalize) {}
   };
 
-private:
+ private:
   Parameter param;
 
   cv::Mat_<unsigned char> im_smooth;
@@ -99,31 +95,25 @@ private:
 
   inline int sign(const float &v);
 
-
-public:
-
-  ImGradientDescriptor(const Parameter &p=Parameter());
+ public:
+  ImGradientDescriptor(const Parameter &p = Parameter());
   ~ImGradientDescriptor();
 
   void compute(const cv::Mat_<unsigned char> &im, std::vector<float> &desc);
-  void compute(const cv::Mat_<unsigned char> &im,const cv::Mat_<float> &weight, std::vector<float> &desc);
+  void compute(const cv::Mat_<unsigned char> &im, const cv::Mat_<float> &weight, std::vector<float> &desc);
 
-  typedef SmartPtr< ::v4r::ImGradientDescriptor> Ptr;
-  typedef SmartPtr< ::v4r::ImGradientDescriptor const> ConstPtr;
+  typedef SmartPtr<::v4r::ImGradientDescriptor> Ptr;
+  typedef SmartPtr<::v4r::ImGradientDescriptor const> ConstPtr;
 };
-
-
 
 /*************************** INLINE METHODES **************************/
 
-inline int ImGradientDescriptor::sign(const float &v)
-{
-  if (v<0.) return -1;
+inline int ImGradientDescriptor::sign(const float &v) {
+  if (v < 0.)
+    return -1;
   return +1;
 }
 
-
-} //--END--
+}  //--END--
 
 #endif
-

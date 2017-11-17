@@ -37,7 +37,6 @@
 **
 ****************************************************************************/
 
-
 /**
  * @file   types.h
  * @author Thomas Faeulhammer (faeulhammer@acin.tuwien.ac.at)
@@ -48,21 +47,18 @@
 
 #pragma once
 
-namespace v4r
-{
-    enum SegmentationType
-    {
-        OrganizedConnectedComponents = 0x01, // 00000001
-        EuclideanSegmentation = 0x02, // 00000010
-        ConnectedComponents2D  = 0x04, // 00000100
-        SmoothEuclideanClustering  = 0x08 // 00001000
-    };
+namespace v4r {
+enum SegmentationType {
+  OrganizedConnectedComponents = 0x01,  // 00000001
+  EuclideanSegmentation = 0x02,         // 00000010
+  ConnectedComponents2D = 0x04,         // 00000100
+  SmoothEuclideanClustering = 0x08      // 00001000
+};
 
-    enum PlaneExtractionType
-    {
-        OrganizedMultiplane = 0x01, // 00000001
-        SAC = 0x02, // 00000010
-        SACNormals = 0x04, // 00000100
-        Tile = 0x08 // 00001000
-    };
+enum PlaneExtractionType {
+  OrganizedMultiplane = 0x01,  // 00000001
+  SAC = 0x02,                  // 00000010
+  SACNormals = 0x04,           // 00000100
+  Tile = 0x08                  // 00001000
+};
 }

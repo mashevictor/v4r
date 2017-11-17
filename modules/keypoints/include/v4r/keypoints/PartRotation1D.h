@@ -37,46 +37,42 @@
 **
 ****************************************************************************/
 
-
 /**
  * @file main.cpp
  * @author Johann Prankl (prankl@acin.tuwien.ac.at)
  * @date 2017
  * @brief
  *
- */ 
+ */
 
 #ifndef KP_PART_ROTATION_1D_HH
 #define KP_PART_ROTATION_1D_HH
 
-#include <iostream>
-#include <fstream>
 #include <float.h>
-#include <vector>
-#include <Eigen/Dense>
-#include <stdexcept>
-#include <v4r/keypoints/Part.h>
 #include <v4r/common/rotation.h>
+#include <v4r/keypoints/Part.h>
+#include <Eigen/Dense>
+#include <fstream>
+#include <iostream>
+#include <stdexcept>
 #include <v4r/keypoints/impl/invPose.hpp>
+#include <vector>
 
-
-namespace v4r
-{
+namespace v4r {
 
 /**
- * Rotational part 
+ * Rotational part
  */
-class V4R_EXPORTS PartRotation1D : public Part
-{
-public:
-  double angle;                   // x-axis rotation [rad] (parameter)
-  Eigen::Matrix<double, 6, 1> rt; // rotation axis of the part [angle axis, translation]
+class V4R_EXPORTS PartRotation1D : public Part {
+ public:
+  double angle;                    // x-axis rotation [rad] (parameter)
+  Eigen::Matrix<double, 6, 1> rt;  // rotation axis of the part [angle axis, translation]
 
   PartRotation1D();
   ~PartRotation1D();
 
-  typedef SmartPtr< ::v4r::PartRotation1D> Ptr;
-  typedef SmartPtr< ::v4r::PartRotation1D const> ConstPtr;
+  typedef SmartPtr<::v4r::PartRotation1D> Ptr;
+  typedef SmartPtr<::v4r::PartRotation1D const> ConstPtr;
 
   virtual void setParameter(const Eigen::VectorXd &_param);
   virtual Eigen::VectorXd getParameter();
@@ -84,17 +80,14 @@ public:
   virtual void setBaseTransform(const Eigen::Matrix<double, 6, 1> &_pose);
   virtual void getBaseTransform(Eigen::Matrix4f &_pose);
   virtual void updatePose(const Eigen::Matrix4f &_pose);
-  virtual void initParameter() {angle = 0;}
+  virtual void initParameter() {
+    angle = 0;
+  }
   virtual void getDeltaPose(Eigen::Matrix4f &delta_pose);
 };
 
-
-
 /*************************** INLINE METHODES **************************/
 
-
-
-} //--END--
+}  //--END--
 
 #endif
-

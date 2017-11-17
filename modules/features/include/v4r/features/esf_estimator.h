@@ -37,7 +37,6 @@
 **
 ****************************************************************************/
 
-
 /**
  * @file esf_estimator.h
  * @author Thomas Faeulhammer (faeulhammer@acin.tuwien.ac.at), Aitor Aldoma (aldoma@acin.tuwien.ac.at)
@@ -53,29 +52,26 @@
 
 #include <glog/logging.h>
 
-namespace v4r
-{
-template<typename PointT>
-class V4R_EXPORTS ESFEstimation : public GlobalEstimator<PointT>
-{
-private:
-    using GlobalEstimator<PointT>::indices_;
-    using GlobalEstimator<PointT>::cloud_;
-    using GlobalEstimator<PointT>::descr_name_;
-    using GlobalEstimator<PointT>::descr_type_;
-    using GlobalEstimator<PointT>::feature_dimensions_;
+namespace v4r {
+template <typename PointT>
+class V4R_EXPORTS ESFEstimation : public GlobalEstimator<PointT> {
+ private:
+  using GlobalEstimator<PointT>::indices_;
+  using GlobalEstimator<PointT>::cloud_;
+  using GlobalEstimator<PointT>::descr_name_;
+  using GlobalEstimator<PointT>::descr_type_;
+  using GlobalEstimator<PointT>::feature_dimensions_;
 
-public:
-    ESFEstimation()
-        : GlobalEstimator<PointT>("esf", FeatureType::ESF, 640)
-    {}
+ public:
+  ESFEstimation() : GlobalEstimator<PointT>("esf", FeatureType::ESF, 640) {}
 
-    bool compute (Eigen::MatrixXf &signature);
+  bool compute(Eigen::MatrixXf &signature);
 
-    bool needNormals() const { return false; }
+  bool needNormals() const {
+    return false;
+  }
 
-    typedef boost::shared_ptr< ESFEstimation<PointT> > Ptr;
-    typedef boost::shared_ptr< ESFEstimation<PointT> const> ConstPtr;
+  typedef boost::shared_ptr<ESFEstimation<PointT>> Ptr;
+  typedef boost::shared_ptr<ESFEstimation<PointT> const> ConstPtr;
 };
 }
-

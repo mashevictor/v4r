@@ -37,7 +37,6 @@
 **
 ****************************************************************************/
 
-
 /**
  * @file SVMFileCreator.h
  * @author Andreas Richtsfeld
@@ -49,26 +48,22 @@
 #ifndef SVM_SVM_FILE_CREATOR_H
 #define SVM_SVM_FILE_CREATOR_H
 
-#include <vector>
-#include <iostream>
 #include <fstream>
+#include <iostream>
 #include <string>
+#include <vector>
 
 #include "v4r/attention_segmentation//Relation.h"
 #include "v4r/attention_segmentation//SurfaceModel.h"
 
-namespace svm
-{
+namespace svm {
 
 /**
- * @brief Class SVMFileCreator: 
+ * @brief Class SVMFileCreator:
  */
-class SVMFileCreator
-{
-public:
-  
-private:
-
+class SVMFileCreator {
+ public:
+ private:
   bool analyze;
   bool testset;
   std::vector<v4r::Relation> relations;
@@ -78,36 +73,44 @@ private:
   std::string filename_base, filename_base_as;
   int featureNumber;
 
-public:
+ public:
   SVMFileCreator();
   ~SVMFileCreator();
-  
+
   /** Set input surface patches **/
   void setRelations(std::vector<v4r::Relation> _relations);
 
   /** Set relations **/
   void setSurfaces(std::vector<v4r::SurfaceModel::Ptr> _surfaces);
-  
+
   /** Print aditional positive/negative file for analysation. **/
-  void setAnalyzeOutput(bool _analyze) {analyze = _analyze;}
-  
-  /** Set true for testset output **/
-  void setTestSet(bool _testset) {testset = _testset;}
-  
-  /** Set true for testset output **/
-  void setFilenameBase(std::string _filename_base) {filename_base = _filename_base;}
+  void setAnalyzeOutput(bool _analyze) {
+    analyze = _analyze;
+  }
 
   /** Set true for testset output **/
-  void setFilenameAsBase(std::string _filename_base_as) {filename_base_as = _filename_base_as;}
-  
+  void setTestSet(bool _testset) {
+    testset = _testset;
+  }
+
   /** Set true for testset output **/
-  void setFeatureNumber(int _featureNumber) {featureNumber = _featureNumber;}
-  
+  void setFilenameBase(std::string _filename_base) {
+    filename_base = _filename_base;
+  }
+
+  /** Set true for testset output **/
+  void setFilenameAsBase(std::string _filename_base_as) {
+    filename_base_as = _filename_base_as;
+  }
+
+  /** Set true for testset output **/
+  void setFeatureNumber(int _featureNumber) {
+    featureNumber = _featureNumber;
+  }
+
   /** Print relations for both levels to file (append) **/
   void process();
 };
-
 }
 
 #endif
-

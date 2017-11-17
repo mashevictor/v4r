@@ -37,7 +37,6 @@
 **
 ****************************************************************************/
 
-
 /**
  * @file ourcvfh_estimator.h
  * @author Thomas Faeulhammer (faeulhammer@acin.tuwien.ac.at), Aitor Aldoma (aldoma@acin.tuwien.ac.at)
@@ -51,61 +50,45 @@
 #include <v4r/features/global_estimator.h>
 #include <v4r/features/types.h>
 
-namespace v4r
-{
-class V4R_EXPORTS OURCVFHEstimatorParameter
-{
-public:
-    std::vector<float> eps_angle_threshold_vector_;
-    std::vector<float> curvature_threshold_vector_;
-    std::vector<float> cluster_tolerance_vector_;
-    float refine_factor_;
-    bool normalize_bins_;
-    size_t min_points_;
-    float axis_ratio_;
-    float min_axis_value_;
+namespace v4r {
+class V4R_EXPORTS OURCVFHEstimatorParameter {
+ public:
+  std::vector<float> eps_angle_threshold_vector_;
+  std::vector<float> curvature_threshold_vector_;
+  std::vector<float> cluster_tolerance_vector_;
+  float refine_factor_;
+  bool normalize_bins_;
+  size_t min_points_;
+  float axis_ratio_;
+  float min_axis_value_;
 
-
-    OURCVFHEstimatorParameter() :
-        eps_angle_threshold_vector_ ( { 10.f*M_PI/180.f } ),
-        curvature_threshold_vector_ ( {0.04} ),
-        cluster_tolerance_vector_ ( {0.02f} ), //3.f, 0.015f
-        refine_factor_ (1.f),
-        normalize_bins_ (false),
-        min_points_(50),
-        axis_ratio_ (0.8f),
-        min_axis_value_(0.925f)
-    {}
+  OURCVFHEstimatorParameter()
+  : eps_angle_threshold_vector_({10.f * M_PI / 180.f}), curvature_threshold_vector_({0.04}),
+    cluster_tolerance_vector_({0.02f}),  // 3.f, 0.015f
+    refine_factor_(1.f), normalize_bins_(false), min_points_(50), axis_ratio_(0.8f), min_axis_value_(0.925f) {}
 };
 
-template<typename PointT>
-class V4R_EXPORTS OURCVFHEstimator : public GlobalEstimator<PointT>
-{
-private:
-    using GlobalEstimator<PointT>::indices_;
-    using GlobalEstimator<PointT>::cloud_;
-    using GlobalEstimator<PointT>::normals_;
-    using GlobalEstimator<PointT>::descr_name_;
-    using GlobalEstimator<PointT>::descr_type_;
-    using GlobalEstimator<PointT>::feature_dimensions_;
-    using GlobalEstimator<PointT>::transforms_;
+template <typename PointT>
+class V4R_EXPORTS OURCVFHEstimator : public GlobalEstimator<PointT> {
+ private:
+  using GlobalEstimator<PointT>::indices_;
+  using GlobalEstimator<PointT>::cloud_;
+  using GlobalEstimator<PointT>::normals_;
+  using GlobalEstimator<PointT>::descr_name_;
+  using GlobalEstimator<PointT>::descr_type_;
+  using GlobalEstimator<PointT>::feature_dimensions_;
+  using GlobalEstimator<PointT>::transforms_;
 
-    OURCVFHEstimatorParameter param_;
+  OURCVFHEstimatorParameter param_;
 
-public:
-    OURCVFHEstimator(const OURCVFHEstimatorParameter &p = OURCVFHEstimatorParameter() )
-        :
-          GlobalEstimator<PointT>("ourcvfh", FeatureType::OURCVFH, 308),
-          param_(p)
-    { }
+ public:
+  OURCVFHEstimator(const OURCVFHEstimatorParameter &p = OURCVFHEstimatorParameter())
+  : GlobalEstimator<PointT>("ourcvfh", FeatureType::OURCVFH, 308), param_(p) {}
 
-    bool
-    compute (Eigen::MatrixXf &signature);
+  bool compute(Eigen::MatrixXf &signature);
 
-    bool
-    needNormals() const
-    {
-        return true;
-    }
+  bool needNormals() const {
+    return true;
+  }
 };
 }

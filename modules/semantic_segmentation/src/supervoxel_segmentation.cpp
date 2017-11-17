@@ -37,7 +37,6 @@
 **
 ****************************************************************************/
 
-
 /**
  * @file   supervoxel_segmentation.cpp
  * @author Daniel Wolf (wolf@acin.tuwien.ac.at)
@@ -53,6 +52,3 @@
 
 template class V4R_EXPORTS v4r::SupervoxelSegmentation<pcl::PointXYZRGB>;
 template class V4R_EXPORTS v4r::SupervoxelSegmentation<pcl::PointXYZRGBA>;
-
-
-

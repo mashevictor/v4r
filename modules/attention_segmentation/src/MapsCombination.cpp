@@ -37,64 +37,53 @@
 **
 ****************************************************************************/
 
-
-
 #include "v4r/attention_segmentation/MapsCombination.h"
 
-namespace v4r
-{
+namespace v4r {
 
-int CombineMaps(std::vector<cv::Mat> &maps, cv::Mat &combinedMap, int combination_type, int normalization_type)
-{
-  if(!maps.size())
-  {
+int CombineMaps(std::vector<cv::Mat> &maps, cv::Mat &combinedMap, int combination_type, int normalization_type) {
+  if (!maps.size()) {
     printf("[ERROR] CombineMaps: there should be at least one map!\n");
-    return(AM_ZEROSIZE);
+    return (AM_ZEROSIZE);
   }
 
-  switch(combination_type)
-  {
+  switch (combination_type) {
     case AM_SUM:
-      combinedMap = cv::Mat_<float>::zeros(maps.at(0).rows,maps.at(0).cols);
-      for(unsigned int i = 0; i < maps.size(); ++i)
-      {
-        cv::add(maps.at(i),combinedMap,combinedMap);
+      combinedMap = cv::Mat_<float>::zeros(maps.at(0).rows, maps.at(0).cols);
+      for (unsigned int i = 0; i < maps.size(); ++i) {
+        cv::add(maps.at(i), combinedMap, combinedMap);
       }
       combinedMap = combinedMap / maps.size();
-      v4r::normalize(combinedMap,normalization_type);
-      //v4r::normalize(combinedMap,v4r::NT_NONE);
-      return(AM_OK);
+      v4r::normalize(combinedMap, normalization_type);
+      // v4r::normalize(combinedMap,v4r::NT_NONE);
+      return (AM_OK);
     case AM_MUL:
-      combinedMap = cv::Mat_<float>::ones(maps.at(0).rows,maps.at(0).cols);
-      for(unsigned int i = 0; i < maps.size(); ++i)
-      {
-        cv::multiply(maps.at(i),combinedMap,combinedMap);
+      combinedMap = cv::Mat_<float>::ones(maps.at(0).rows, maps.at(0).cols);
+      for (unsigned int i = 0; i < maps.size(); ++i) {
+        cv::multiply(maps.at(i), combinedMap, combinedMap);
       }
-      v4r::normalize(combinedMap,normalization_type);
-      //v4r::normalize(combinedMap,v4r::NT_NONE);
-      return(AM_OK);
+      v4r::normalize(combinedMap, normalization_type);
+      // v4r::normalize(combinedMap,v4r::NT_NONE);
+      return (AM_OK);
     case AM_MIN:
-      combinedMap = cv::Mat_<float>::ones(maps.at(0).rows,maps.at(0).cols);
-      for(unsigned int i = 0; i < maps.size(); ++i)
-      {
-        combinedMap = cv::min(maps.at(i),combinedMap);
+      combinedMap = cv::Mat_<float>::ones(maps.at(0).rows, maps.at(0).cols);
+      for (unsigned int i = 0; i < maps.size(); ++i) {
+        combinedMap = cv::min(maps.at(i), combinedMap);
       }
-      v4r::normalize(combinedMap,normalization_type);
-      //v4r::normalize(combinedMap,v4r::NT_NONE);
-      return(AM_OK);
+      v4r::normalize(combinedMap, normalization_type);
+      // v4r::normalize(combinedMap,v4r::NT_NONE);
+      return (AM_OK);
     case AM_MAX:
-      combinedMap = cv::Mat_<float>::zeros(maps.at(0).rows,maps.at(0).cols);
-      for(unsigned int i = 0; i < maps.size(); ++i)
-      {
-        combinedMap = cv::max(maps.at(i),combinedMap);
+      combinedMap = cv::Mat_<float>::zeros(maps.at(0).rows, maps.at(0).cols);
+      for (unsigned int i = 0; i < maps.size(); ++i) {
+        combinedMap = cv::max(maps.at(i), combinedMap);
       }
-      v4r::normalize(combinedMap,normalization_type);
-      //v4r::normalize(combinedMap,v4r::NT_NONE);
-      return(AM_OK);
+      v4r::normalize(combinedMap, normalization_type);
+      // v4r::normalize(combinedMap,v4r::NT_NONE);
+      return (AM_OK);
     default:
-      combinedMap = cv::Mat_<float>::zeros(maps.at(0).rows,maps.at(0).cols);
-      return(AM_PARAMETERS);
+      combinedMap = cv::Mat_<float>::zeros(maps.at(0).rows, maps.at(0).cols);
+      return (AM_PARAMETERS);
   }
 }
-
 }

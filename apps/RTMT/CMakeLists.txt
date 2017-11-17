@@ -1,4 +1,4 @@
-SET(RTMT_DEPS v4r_core v4r_registration v4r_io v4r_common v4r_features v4r_keypoints v4r_reconstruction v4r_recognition edt ceres)
+SET(RTMT_DEPS v4r_core v4r_registration v4r_io v4r_common v4r_features v4r_keypoints v4r_reconstruction v4r_recognition)
 v4r_check_dependencies(${RTMT_DEPS})
 
 if(NOT V4R_DEPENDENCIES_FOUND)
@@ -55,9 +55,9 @@ if(HAVE_BOOST)
   list(APPEND DEP_LIBS ${BOOST_LIBRARIES})
 endif()
 
-if(HAVE_OPENNI2)
-  v4r_include_directories(${OPENNI2_INCLUDE_DIRS})
-  list(APPEND DEP_LIBS ${OPENNI2_LIBRARIES})
+if(HAVE_QT)
+  v4r_include_directories(${QT_INCLUDE_DIRS})
+  list(APPEND DEP_LIBS ${QT_LIBRARIES})
 endif()
 
 set(SOURCES
@@ -91,10 +91,6 @@ set(FORMS
         params.ui
 )
 
-v4r_include_directories(${Qt5Widgets_INCLUDE_DIRS})
-v4r_include_directories(${Qt5OpenGL_INCLUDE_DIRS})
-list(APPEND DEP_LIBS ${Qt5Widgets_LIBRARIES})
-list(APPEND DEP_LIBS ${Qt5OpenGL_LIBRARIES})
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTOUIC ON)
 qt5_wrap_ui(FORMS_MOC ${FORMS})

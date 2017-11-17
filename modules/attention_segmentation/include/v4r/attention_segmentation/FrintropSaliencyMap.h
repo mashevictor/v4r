@@ -37,8 +37,6 @@
 **
 ****************************************************************************/
 
-
-
 #ifndef FRINTROP_SALIENCYMAP_HPP
 #define FRINTROP_SALIENCYMAP_HPP
 
@@ -46,37 +44,34 @@
 #include "v4r/attention_segmentation/BaseMap.h"
 #include "v4r/attention_segmentation/ColorMap.h"
 
-namespace v4r
-{
+namespace v4r {
 
-class V4R_EXPORTS FrintropSaliencyMap: public BaseMap
-{
-public:
-  FrintropSaliencyMap();//
-  ~FrintropSaliencyMap();//
-  
-  void setNumberOfOrientations(int numberOfOrientations_);//
-  int getNumberOfOrientations();//
-  
+class V4R_EXPORTS FrintropSaliencyMap : public BaseMap {
+ public:
+  FrintropSaliencyMap();   //
+  ~FrintropSaliencyMap();  //
+
+  void setNumberOfOrientations(int numberOfOrientations_);  //
+  int getNumberOfOrientations();                            //
+
   virtual int calculate();
-  virtual void reset();//
-  virtual void print();//
-  
-private:
+  virtual void reset();  //
+  virtual void print();  //
+
+ private:
   cv::Mat R, G, B, Y, I;
-  int     numberOfOrientations;
-  
-  void initializePyramid(FrintropPyramid::Ptr pyramid, cv::Mat &IM, bool onSwitch_);//
-  void initializePyramid(SimplePyramid::Ptr pyramid, cv::Mat &IM);//
-  void createColorChannels();//
-  int createFeatureMapsI(FrintropPyramid::Ptr pyramid);//
-  int createFeatureMapsO(SimplePyramid::Ptr pyramid, float angle);//
-  
-protected:  
-  virtual int checkParameters();//
+  int numberOfOrientations;
+
+  void initializePyramid(FrintropPyramid::Ptr pyramid, cv::Mat &IM, bool onSwitch_);  //
+  void initializePyramid(SimplePyramid::Ptr pyramid, cv::Mat &IM);                    //
+  void createColorChannels();                                                         //
+  int createFeatureMapsI(FrintropPyramid::Ptr pyramid);                               //
+  int createFeatureMapsO(SimplePyramid::Ptr pyramid, float angle);                    //
+
+ protected:
+  virtual int checkParameters();  //
 };
 
-} // v4r
+}  // v4r
 
-#endif //FRINTROP_SALIENCYMAP_HPP
-  
+#endif  // FRINTROP_SALIENCYMAP_HPP

@@ -37,18 +37,14 @@
 **
 ****************************************************************************/
 
-
-
 #ifndef AM_ERRORS_HPP
 #define AM_ERRORS_HPP
 
-namespace v4r
-{
+namespace v4r {
 
-enum AttentionModuleErrors
-{
-  AM_OK                  = 0,
-  AM_POINTCLOUD          = 1,
+enum AttentionModuleErrors {
+  AM_OK = 0,
+  AM_POINTCLOUD = 1,
   AM_IMAGE,
   AM_PLANECOEFFICIENTS,
   AM_CAMERAPARAMETRS,
@@ -62,13 +58,12 @@ enum AttentionModuleErrors
   AM_CUSTOM,
 };
 
-enum CombinationTypeEnum
-{
+enum CombinationTypeEnum {
   AM_COMB_SUM = 0,
   AM_COMB_MUL = 1,
   AM_COMB_MAX,
 };
 
-} //namespace v4r
+}  // namespace v4r
 
-#endif // AM_ERRORS_HPP
+#endif  // AM_ERRORS_HPP

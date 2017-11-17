@@ -37,12 +37,10 @@
 **
 ****************************************************************************/
 
-
-
 #ifndef EPEVALUATION_INCLUDE_HEADERS_HPP
 #define EPEVALUATION_INCLUDE_HEADERS_HPP
 
 #include "v4r/attention_segmentation/HitRatio.h"
 #include "v4r/attention_segmentation/segmentEvaluation.h"
 
-#endif //EPEVALUATION_INCLUDE_HEADERS_HPP
+#endif  // EPEVALUATION_INCLUDE_HEADERS_HPP

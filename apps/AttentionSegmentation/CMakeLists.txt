@@ -8,7 +8,6 @@ endif()
 
 v4r_include_directories("${CMAKE_CURRENT_SOURCE_DIR}")
 v4r_include_directories(${OPENNURBS_INCLUDE_DIRS})
-v4r_include_directories(${ON_NURBS_INCLUDE_DIRS})
 v4r_include_modules(${AttentionSegmentation_DEPS})
 
 if(HAVE_PCL)
@@ -29,11 +28,6 @@ endif()
 if(HAVE_OPENNURBS)
   v4r_include_directories(${OPENNURBS_INCLUDE_DIRS})
   list(APPEND DEP_LIBS ${OPENNURBS_LIBRARIES})
-endif()
-
-if(HAVE_ON_NURBS)
-  v4r_include_directories(${ON_NURBS_INCLUDE_DIRS})
-  list(APPEND DEP_LIBS ${ON_NURBS_LIBRARIES})
 endif()
 
 #add_definitions(-std=c++0x)

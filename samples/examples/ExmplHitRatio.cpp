@@ -1,5 +1,5 @@
 /**
- *  Copyright (C) 2012  
+ *  Copyright (C) 2012
  *    Ekaterina Potapova
  *    Automation and Control Institute
  *    Vienna University of Technology
@@ -21,7 +21,6 @@
  *  along with this program.  If not, see http://www.gnu.org/licenses/
  */
 
-
 #include <opencv2/opencv.hpp>
 
 #include "v4r/attention_segmentation/AttentionModule.h"
@@ -30,45 +29,41 @@
 // This program calculates HitRatio from attention points
 void printUsage(const char *argv0);
 
-void printUsage(const char *argv0)
-{
+void printUsage(const char *argv0) {
   printf(
-    "Calculates HitRatio from attention points\n"
-    "usage: %s points.txt mask.png hitratio.txt\n"
-    "  points.txt            ... input text file with points\n"
-    "  mask.png              ... mask image\n"
-    "  hitratio.txt          ... output text file with hitratios\n", argv0);
-  printf(" Example: %s points.txt mask.png hitratio.txt\n",argv0);
+      "Calculates HitRatio from attention points\n"
+      "usage: %s points.txt mask.png hitratio.txt\n"
+      "  points.txt            ... input text file with points\n"
+      "  mask.png              ... mask image\n"
+      "  hitratio.txt          ... output text file with hitratios\n",
+      argv0);
+  printf(" Example: %s points.txt mask.png hitratio.txt\n", argv0);
 }
 
-int main(int argc, char** argv)
-{
-  srand ( time(NULL) );
+int main(int argc, char **argv) {
+  srand(time(NULL));
 
-  if(argc != 4)
-  {
+  if (argc != 4) {
     printUsage(argv[0]);
-    return(0);
+    return (0);
   }
-  
+
   std::string attention_points_txt(argv[1]);
   std::string mask_image_name(argv[2]);
   std::string output_hitration_txt(argv[3]);
-  
+
   std::vector<cv::Point> attentionPoints;
-  v4r::readAttentionPoints(attentionPoints,attention_points_txt);
-  cv::Mat mask = cv::imread(mask_image_name,0);
-  
+  v4r::readAttentionPoints(attentionPoints, attention_points_txt);
+  cv::Mat mask = cv::imread(mask_image_name, 0);
+
   v4r::AttentionPointsEvaluation attentionPointsEvaluation;
   attentionPointsEvaluation.setAttentionPoints(attentionPoints);
   attentionPointsEvaluation.setMask(mask);
-  
-  if(attentionPointsEvaluation.calculate())
-  {
+
+  if (attentionPointsEvaluation.calculate()) {
     attentionPointsEvaluation.writeToFile(output_hitration_txt);
-  }
-  else
+  } else
     printf("[ERROR]: Couldn't calculate Hit Ratio!\n");
 
-  return(0);
+  return (0);
 }

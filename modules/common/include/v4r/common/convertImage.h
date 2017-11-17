@@ -37,14 +37,13 @@
 **
 ****************************************************************************/
 
-
 /**
  * @file main.cpp
  * @author Johann Prankl (prankl@acin.tuwien.ac.at)
  * @date 2017
  * @brief
  *
- */ 
+ */
 
 #ifndef KP_CONVERT_CLOUDTOIMAGE_HPP
 #define KP_CONVERT_CLOUDTOIMAGE_HPP
@@ -53,25 +52,20 @@
 #include <v4r/core/macros.h>
 #include <opencv2/core/core.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
-//#include <pcl/point_cloud.h>
-//#include <pcl/point_types.h>
+#include <pcl/point_cloud.h>
+#include <pcl/point_types.h>
 
+namespace v4r {
 
-namespace v4r
-{
+DEPRECATED(inline void convertImage(const pcl::PointCloud<pcl::PointXYZRGB> &cloud, cv::Mat &image));
 
-DEPRECATED( inline void convertImage(const pcl::PointCloud<pcl::PointXYZRGB> &cloud, cv::Mat &image) );
-
-inline void convertImage(const pcl::PointCloud<pcl::PointXYZRGB> &cloud, cv::Mat &image)
-{
+inline void convertImage(const pcl::PointCloud<pcl::PointXYZRGB> &cloud, cv::Mat &image) {
   image = cv::Mat_<cv::Vec3b>(cloud.height, cloud.width);
 
-  for (unsigned v = 0; v < cloud.height; v++) 
-  {
-    for (unsigned u = 0; u < cloud.width; u++) 
-    {
-      cv::Vec3b &cv_pt = image.at<cv::Vec3b> (v, u);
-      const pcl::PointXYZRGB &pt = cloud(u,v);
+  for (unsigned v = 0; v < cloud.height; v++) {
+    for (unsigned u = 0; u < cloud.width; u++) {
+      cv::Vec3b &cv_pt = image.at<cv::Vec3b>(v, u);
+      const pcl::PointXYZRGB &pt = cloud(u, v);
 
       cv_pt[2] = pt.r;
       cv_pt[1] = pt.g;
@@ -80,10 +74,6 @@ inline void convertImage(const pcl::PointCloud<pcl::PointXYZRGB> &cloud, cv::Mat
   }
 }
 
-
-
-
-} //--END--
+}  //--END--
 
 #endif
-

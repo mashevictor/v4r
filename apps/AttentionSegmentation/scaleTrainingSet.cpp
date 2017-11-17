@@ -1,5 +1,5 @@
 /**
- *  Copyright (C) 2012  
+ *  Copyright (C) 2012
  *    Ekaterina Potapova, Andreas Richtsfeld, Johann Prankl, Thomas Mörwald, Michael Zillich
  *    Automation and Control Institute
  *    Vienna University of Technology
@@ -29,62 +29,60 @@
  * @brief Scales training set.
  */
 
-
-#include <stdio.h>      /* printf, scanf, puts, NULL */
-#include <stdlib.h>     /* srand, rand */
-#include <time.h>       /* time */
+#include <stdio.h>  /* printf, scanf, puts, NULL */
+#include <stdlib.h> /* srand, rand */
+#include <time.h>   /* time */
 #include <fstream>
 
 #include <pcl/io/pcd_io.h>
 
-#include <boost/filesystem/fstream.hpp>
 #include <boost/filesystem.hpp>
+#include <boost/filesystem/fstream.hpp>
 
 #include "v4r/attention_segmentation/SVMScale.h"
 
-void printUsage(char *av)
-{
-  printf("Usage: %s training_data.txt lower upper\n"
-    " Options:\n"
-    "   [-h] ... show this help.\n"
-    "   training_data.txt ... filename with training samples\n"
-    "   lower             ... lower bound for the scaling\n"
-    "   upper             ... uppdr bound for the scaling\n", av);
+void printUsage(char *);
+
+void printUsage(char *av) {
+  printf(
+      "Usage: %s training_data.txt lower upper\n"
+      " Options:\n"
+      "   [-h] ... show this help.\n"
+      "   training_data.txt ... filename with training samples\n"
+      "   lower             ... lower bound for the scaling\n"
+      "   upper             ... uppdr bound for the scaling\n",
+      av);
   std::cout << " Example: " << av << " training_data.txt -1 1" << std::endl;
 }
 
-int main(int argc, char *argv[])
-{
-  if(argc != 4)
-  {
+int main(int argc, char *argv[]) {
+  if (argc != 4) {
     printUsage(argv[0]);
     exit(0);
   }
-  
+
   std::string train_ST_file_name = argv[1];
   std::string train_ST_file_name_scaled = train_ST_file_name + ".scaled";
   std::string scaling_file_name = train_ST_file_name + ".scalingparams";
-  
+
   double lower = atof(argv[2]);
   double upper = atof(argv[3]);
-  
+
   svm::SVMScale svmScale;
-  
+
   svmScale.setLower(lower);
   svmScale.setUpper(upper);
   svmScale.setFeaturesFileName(train_ST_file_name);
   svmScale.setSaveFileName(scaling_file_name);
   svmScale.setFeaturesScaledFileName(train_ST_file_name_scaled);
   svmScale.compute();
-  
+
   //   svmScale.setLower(-1);
   //   svmScale.setUpper(1);
   //   svmScale.setFeaturesFileName("./AS-TrainALL.txt");
   //   svmScale.setSaveFileName("./AS-TrainALL.scalingparams.txt");
   //   svmScale.setFeaturesScaledFileName("./AS-TrainALL.scaled.txt");
   //   svmScale.compute();
-  
-  return(0);
+
+  return (0);
 }
-
-

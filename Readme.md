@@ -1,24 +1,24 @@
 [![build status](https://rgit.acin.tuwien.ac.at/v4r/v4r/badges/master/build.svg)](https://rgit.acin.tuwien.ac.at/v4r/v4r/commits/master)
 
-The V4R library is an open source project from the [Vision4Robotics (V4R)](http://v4r.acin.tuwien.ac.at) group at the ACIN institute, TU Vienna. It contains various state-of-the-art Computer Vision methods and applications especially designed for 3D point cloud processing with a strong focus on robotics applications. 
+The V4R library is an open source project from the [Vision4Robotics (V4R)](http://v4r.acin.tuwien.ac.at) group at the ACIN institute, TU Vienna. It contains various state-of-the-art Computer Vision methods and applications especially designed for 3D point cloud processing with a strong focus on robotics applications.
 
 # Dependencies:  
 V4R is stronlgy based on RGB-D data and uses [OpenCV](http://opencv.org/)  and [PCL](http://pointclouds.org/) to process data. Here is a list of **required** components:
 
-| Name | Version | Licence | 
+| Name | Version | Licence |
 | ------------- |:-------------:| -----:|
 | [OpenCV](http://opencv.org/)  | 2.4+  or 3.x| 3-clause BSD |
-| [Eigen](http://eigen.tuxfamily.org/index.php?title=Main_Page)  | 3+ | MPL2 | 
-| [Boost](http://www.boost.org/)  | 1.48+ | Boost Software License | 
-| [PCL](http://pointclouds.org/)  | 1.7.x or 1.8 | BSD | 
-| [glog](https://code.google.com/archive/p/google-glog/)  |  | New BSD	 | 
+| [Eigen](http://eigen.tuxfamily.org/index.php?title=Main_Page)  | 3+ | MPL2 |
+| [Boost](http://www.boost.org/)  | 1.48+ | Boost Software License |
+| [PCL](http://pointclouds.org/)  | 1.7.x or 1.8 | BSD |
+| [glog](https://code.google.com/archive/p/google-glog/)  |  | New BSD	 |
 
 
 This is a list of **optional** components:
 
 | Name | Version | Licence |  required[*r*] or optionally-used[*o*] by following V4R modules | Comments |
 | ------------- |:-------------:| -----:|-----:|-----:|
-| [Ceres](http://ceres-solver.org/)\* | 1.12 | New BSD |  reconstruction[*r*], camera_tracking_and_mapping[*r*], registration[*r*], recognition[*o*] | |
+| [Ceres](http://ceres-solver.org/)\* | 1.13 | New BSD |  reconstruction[*r*], camera_tracking_and_mapping[*r*], registration[*r*], recognition[*o*] | |
 | [LibSVM](http://www.csie.ntu.edu.tw/~cjlin/libsvm/)  | 3.20 | modified BSD  |  ml[*o*] |
 | [SiftGPU](https://github.com/pitzer/SiftGPU)\*   | v400 |  Copyright (c) 2007 University of North Carolina at Chapel Hill (see [license](https://github.com/pitzer/SiftGPU/blob/master/license.txt)) |  features[*o*] | required if SIFT is enabled; can be replaced by *non-free* OpenCV SIFT implementation. This option is enabled if BUILD_SIFTGPU is disabled in cmake. |
 | EDT\*  |  |  BSD |  features, recognition | computes the Euclidean Distance Transform for point clouds |
@@ -45,11 +45,9 @@ First enable the V4R apt repositories (trusty only for now) with the following c
  * Add the following line to your `/etc/apt/sources.list` file or in a new file (eg. `v4r.list`) in the `/etc/apt/sources.list.d`  directory.  
  `deb [arch=amd64] https://rwiki.acin.tuwien.ac.at/apt/v4r-release trusty main`
 
-* Add the gpg key I used to sign the release to your keyring  
-`sudo apt-key adv --keyserver hkp://pgp.mit.edu:80 --recv-key 943EB54F`
+* Add the gpg key I used to sign the release to your keyring
+`wget -qO - https://rwiki.acin.tuwien.ac.at/apt/v4r-release/Public.key | sudo apt-key add -`
 
-  
-   
 * Update and install  
 `sudo apt-get update && sudo apt-get install v4r`
 
@@ -69,7 +67,7 @@ sudo make install #optional
 ## ROS Interfaces  
 In order to use V4R in ROS, use the [v4r_ros_wrappers](https://rgit.acin.tuwien.ac.at/v4r/v4r_ros_wrappers).  
 
-  
+
 ## Notes
 ### Caffe
 If you want to use CNN feature extraction, you need to install the Caffe library. We recommend to use CMake-based installation for Caffe and provide the install folder to V4R's cmake call as
@@ -80,4 +78,3 @@ cmake .. -DCaffe_DIR=/your_caffe_ws/build/install/share/Caffe
 
 ### Ceres
 To avoid issues with Ceres when building shared libraries, we recommend to build and install Ceres from source.
-

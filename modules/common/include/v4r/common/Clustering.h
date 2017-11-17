@@ -37,67 +37,60 @@
 **
 ****************************************************************************/
 
-
 /**
  * @file main.cpp
  * @author Johann Prankl (prankl@acin.tuwien.ac.at)
  * @date 2017
  * @brief
  *
- */ 
+ */
 
 #ifndef V4R_CLUSTERING_HH
 #define V4R_CLUSTERING_HH
 
-#include <vector>
-#include <iostream>
-#include <Eigen/Dense>
 #include <v4r/core/macros.h>
+#include <Eigen/Dense>
+#include <iostream>
 #include <v4r/common/impl/DataMatrix2D.hpp>
 #include <v4r/common/impl/SmartPtr.hpp>
+#include <vector>
 
-
-namespace v4r 
-{
+namespace v4r {
 
 /**
  * Cluster
  */
-class V4R_EXPORTS Cluster
-{
-public:
+class V4R_EXPORTS Cluster {
+ public:
   float sqr_sigma;
   Eigen::VectorXf data;
   std::vector<int> indices;
 
-  Cluster() : sqr_sigma(0) {};
+  Cluster() : sqr_sigma(0){};
   Cluster(const Eigen::VectorXf &d) : sqr_sigma(0), data(d) {}
   Cluster(const Eigen::VectorXf &d, int idx) : sqr_sigma(0), data(d) {
     indices.push_back(idx);
   }
 
-  typedef SmartPtr< ::v4r::Cluster> Ptr;
-  typedef SmartPtr< ::v4r::Cluster const> ConstPtr;
+  typedef SmartPtr<::v4r::Cluster> Ptr;
+  typedef SmartPtr<::v4r::Cluster const> ConstPtr;
 };
 
 /**
  * Clustering
  */
-class V4R_EXPORTS Clustering
-{
-protected:
-  std::vector< Cluster::Ptr > clusters;
+class V4R_EXPORTS Clustering {
+ protected:
+  std::vector<Cluster::Ptr> clusters;
 
-public:
+ public:
   Clustering() {}
   virtual ~Clustering() {}
 
   virtual void cluster(const DataMatrix2Df &) = 0;
-  virtual void getClusters(std::vector<std::vector<int> > &) = 0;
+  virtual void getClusters(std::vector<std::vector<int>> &) = 0;
   virtual void getCenters(DataMatrix2Df &) = 0;
 };
-
 }
 
 #endif
-

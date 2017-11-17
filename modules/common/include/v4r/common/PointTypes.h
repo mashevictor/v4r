@@ -37,41 +37,36 @@
 **
 ****************************************************************************/
 
-
 /**
  * @file main.cpp
  * @author Johann Prankl (prankl@acin.tuwien.ac.at)
  * @date 2017
  * @brief
  *
- */ 
+ */
 
 #ifndef KP_POINT_TYPES_HPP
 #define KP_POINT_TYPES_HPP
 
-#include <v4r/core/macros.h>
-#include <stdio.h>
-#include <iostream>
-#include <fstream>
-#include <Eigen/Dense>
 #include <stdint.h>
+#include <stdio.h>
+#include <v4r/core/macros.h>
+#include <Eigen/Dense>
+#include <fstream>
+#include <iostream>
 
-namespace v4r 
-{
+namespace v4r {
 
 const float NaNf = std::numeric_limits<float>::quiet_NaN();
 
 /**
  * PointXYZRGB
  */
-class V4R_EXPORTS PointXYZRGB
-{
-public:
+class V4R_EXPORTS PointXYZRGB {
+ public:
   Eigen::Vector4f pt;
-  union
-  {
-    struct
-    {
+  union {
+    struct {
       uint8_t b;
       uint8_t g;
       uint8_t r;
@@ -81,37 +76,38 @@ public:
   };
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-  PointXYZRGB() : pt(Eigen::Vector4f(NaNf,NaNf,NaNf,1.)) {}
+  PointXYZRGB() : pt(Eigen::Vector4f(NaNf, NaNf, NaNf, 1.)) {}
 
-  inline Eigen::Map<Eigen::Vector3f> getVector3fMap() { 
-    return Eigen::Vector3f::Map(&pt[0]); 
+  inline Eigen::Map<Eigen::Vector3f> getVector3fMap() {
+    return Eigen::Vector3f::Map(&pt[0]);
   }
-  inline const Eigen::Map<const Eigen::Vector3f> getVector3fMap() const { 
-    return Eigen::Vector3f::Map(&pt[0]); 
+  inline const Eigen::Map<const Eigen::Vector3f> getVector3fMap() const {
+    return Eigen::Vector3f::Map(&pt[0]);
   }
   inline Eigen::Vector4f &getVector4fMap() {
-    return pt; 
+    return pt;
   }
-  inline const Eigen::Vector4f &getVector4fMap() const { 
+  inline const Eigen::Vector4f &getVector4fMap() const {
     return pt;
   }
 
-  inline float& operator[](int i) { return pt[i]; }
-  inline const float& operator[](int i) const { return pt[i]; }
+  inline float &operator[](int i) {
+    return pt[i];
+  }
+  inline const float &operator[](int i) const {
+    return pt[i];
+  }
 };
 
 /**
  * PointXYZNormalRGB
  */
-class V4R_EXPORTS PointXYZNormalRGB
-{
-public:
+class V4R_EXPORTS PointXYZNormalRGB {
+ public:
   Eigen::Vector4f pt;
   Eigen::Vector4f n;
-  union
-  {
-    struct
-    {
+  union {
+    struct {
       uint8_t b;
       uint8_t g;
       uint8_t r;
@@ -121,48 +117,51 @@ public:
   };
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-  PointXYZNormalRGB() : pt(Eigen::Vector4f(NaNf,NaNf,NaNf,1.)), n(Eigen::Vector4f(NaNf,NaNf,NaNf,1.)) {}
+  PointXYZNormalRGB() : pt(Eigen::Vector4f(NaNf, NaNf, NaNf, 1.)), n(Eigen::Vector4f(NaNf, NaNf, NaNf, 1.)) {}
 
-  inline Eigen::Map<Eigen::Vector3f> getVector3fMap() { 
-    return Eigen::Vector3f::Map(&pt[0]); 
+  inline Eigen::Map<Eigen::Vector3f> getVector3fMap() {
+    return Eigen::Vector3f::Map(&pt[0]);
   }
-  inline const Eigen::Map<const Eigen::Vector3f> getVector3fMap() const { 
-    return Eigen::Vector3f::Map(&pt[0]); 
+  inline const Eigen::Map<const Eigen::Vector3f> getVector3fMap() const {
+    return Eigen::Vector3f::Map(&pt[0]);
   }
   inline Eigen::Vector4f &getVector4fMap() {
-    return pt; 
-  }
-  inline const Eigen::Vector4f &getVector4fMap() const { 
     return pt;
   }
-  inline Eigen::Map<Eigen::Vector3f> getNormalVector3fMap() { 
-    return Eigen::Vector3f::Map(&n[0]); 
+  inline const Eigen::Vector4f &getVector4fMap() const {
+    return pt;
   }
-  inline const Eigen::Map<const Eigen::Vector3f> getNormalVector3fMap() const { 
-    return Eigen::Vector3f::Map(&n[0]); 
+  inline Eigen::Map<Eigen::Vector3f> getNormalVector3fMap() {
+    return Eigen::Vector3f::Map(&n[0]);
+  }
+  inline const Eigen::Map<const Eigen::Vector3f> getNormalVector3fMap() const {
+    return Eigen::Vector3f::Map(&n[0]);
   }
   inline Eigen::Vector4f &getNormalVector4fMap() {
-    return n; 
+    return n;
   }
-  inline const Eigen::Vector4f &getNormalVector4fMap() const { 
+  inline const Eigen::Vector4f &getNormalVector4fMap() const {
     return n;
   }
 
-  inline float& operator[](int i) { return pt[i]; }
-  inline const float& operator[](int i) const { return pt[i]; }
+  inline float &operator[](int i) {
+    return pt[i];
+  }
+  inline const float &operator[](int i) const {
+    return pt[i];
+  }
 };
 
 /**
  * PointXYZ (might be wrong!!!!)
  */
-class V4R_EXPORTS PointXYZ
-{
-public:
+class V4R_EXPORTS PointXYZ {
+ public:
   Eigen::Vector3f pt;
 
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-  PointXYZ() : pt(Eigen::Vector3f(NaNf,NaNf,NaNf)) {}
+  PointXYZ() : pt(Eigen::Vector3f(NaNf, NaNf, NaNf)) {}
 
   inline Eigen::Vector3f &getVector3fMap() {
     return pt;
@@ -171,12 +170,14 @@ public:
     return pt;
   }
 
-  inline float& operator[](int i) { return pt[i]; }
-  inline const float& operator[](int i) const { return pt[i]; }
+  inline float &operator[](int i) {
+    return pt[i];
+  }
+  inline const float &operator[](int i) const {
+    return pt[i];
+  }
 };
 
-
-} //--END--
+}  //--END--
 
 #endif
-

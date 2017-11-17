@@ -37,42 +37,37 @@
 **
 ****************************************************************************/
 
-
 #ifndef EP_BASE_HH
 #define EP_BASE_HH
 
-#include <iostream>
-#include <opencv2/opencv.hpp>
+#include <pcl/common/time.h>
 #include <pcl/point_cloud.h>
 #include <pcl/point_types.h>
-#include <pcl/common/time.h>
+#include <iostream>
+#include <opencv2/opencv.hpp>
 //#include <pcl/ModelCoefficients.h>
 #include <pcl/io/pcd_io.h>
 #include <v4r/core/macros.h>
 
-namespace v4r
-{
+namespace v4r {
 
 /**
  * EPBase
  */
-class V4R_EXPORTS EPBase
-{
-public:
-  
+class V4R_EXPORTS EPBase {
+ public:
   typedef boost::shared_ptr<EPBase> Ptr;
 
-protected:
-  
+ protected:
   bool computed;
   bool have_cloud;
   bool have_normals;
   bool have_indices;
-  
-  pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud;               ///< Input cloud
-  pcl::PointCloud<pcl::Normal>::Ptr normals;                  ///< Normals (set from outside or from surfaces)
-  std::vector<int> indices;                             ///< Indices to be used
-  
+
+  pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud;  ///< Input cloud
+  pcl::PointCloud<pcl::Normal>::Ptr normals;     ///< Normals (set from outside or from surfaces)
+  std::vector<int> indices;                      ///< Indices to be used
+
   int width, height;
 
   inline int getIdx(int x, int y) const;
@@ -81,10 +76,10 @@ protected:
   inline bool isNaN(const pcl::PointXYZRGB p);
   inline bool isNaN(const pcl::Normal n);
   inline bool isNaN(const Eigen::Vector3f p);
-  
+
   std::string ClassName;
 
-public:
+ public:
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
   EPBase();
@@ -100,68 +95,48 @@ public:
 
   /** General compute method **/
   virtual void compute();
-  
+
   /** Return normals **/
   inline pcl::PointCloud<pcl::Normal>::Ptr getNormals();
-
 };
 
-
 /*********************** INLINE METHODES **************************/
-inline bool EPBase::isNaN(const pcl::PointXYZRGB p)
-{
-  if(std::isnan(p.x) ||
-     std::isnan(p.y) ||
-     std::isnan(p.z))
-  {
-    return(true);
+inline bool EPBase::isNaN(const pcl::PointXYZRGB p) {
+  if (std::isnan(p.x) || std::isnan(p.y) || std::isnan(p.z)) {
+    return (true);
   }
-  return(false);
+  return (false);
 }
 
-inline bool EPBase::isNaN(const pcl::Normal n)
-{
-  if(std::isnan(n.normal[0]) ||
-     std::isnan(n.normal[1]) ||
-     std::isnan(n.normal[2]))
-  {
-    return(true);
+inline bool EPBase::isNaN(const pcl::Normal n) {
+  if (std::isnan(n.normal[0]) || std::isnan(n.normal[1]) || std::isnan(n.normal[2])) {
+    return (true);
   }
-  return(false);
+  return (false);
 }
 
-inline bool EPBase::isNaN(const Eigen::Vector3f p)
-{
-  if(std::isnan(p[0]) ||
-     std::isnan(p[1]) ||
-     std::isnan(p[2]))
-  {
-    return(true);
+inline bool EPBase::isNaN(const Eigen::Vector3f p) {
+  if (std::isnan(p[0]) || std::isnan(p[1]) || std::isnan(p[2])) {
+    return (true);
   }
-  return(false);
+  return (false);
 }
 
-inline int EPBase::getIdx(int x, int y) const
-{
-  return y*width+x; 
+inline int EPBase::getIdx(int x, int y) const {
+  return y * width + x;
 }
 
-inline int EPBase::X(int idx)
-{
-  return idx%width;
+inline int EPBase::X(int idx) {
+  return idx % width;
 }
 
-inline int EPBase::Y(int idx)
-{
-  return idx/width;
+inline int EPBase::Y(int idx) {
+  return idx / width;
 }
 
-inline pcl::PointCloud<pcl::Normal>::Ptr EPBase::getNormals()
-{
+inline pcl::PointCloud<pcl::Normal>::Ptr EPBase::getNormals() {
   return normals;
 }
-
 }
 
-#endif //BASE_HH
-
+#endif  // BASE_HH

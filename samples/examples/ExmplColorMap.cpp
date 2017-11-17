@@ -1,5 +1,5 @@
 /**
- *  Copyright (C) 2012  
+ *  Copyright (C) 2012
  *    Ekaterina Potapova
  *    Automation and Control Institute
  *    Vienna University of Technology
@@ -21,163 +21,136 @@
  *  along with this program.  If not, see http://www.gnu.org/licenses/
  */
 
-
 #include "v4r/attention_segmentation/AttentionModule.h"
 
 // This program shows the use of Color Saliency Map on one image
 
-int main(int argc, char** argv)
-{
-  if(argc != 2)
-  {
+int main(int argc, char** argv) {
+  if (argc != 2) {
     std::cerr << "Usage: image" << std::endl;
-    return(0);
+    return (0);
   }
-  
+
   // read image
   std::string image_name(argv[1]);
-  cv::Mat image = cv::imread(image_name,-1);
-  
-  cv::imshow("Original Image",image);
-    
+  cv::Mat image = cv::imread(image_name, -1);
+
+  cv::imshow("Original Image", image);
+
   // start creating parameters
   v4r::ColorSaliencyMap colorSaliencyMap;
   colorSaliencyMap.setImage(image);
   // blue color
-  colorSaliencyMap.setColor(cv::Scalar(0,0,255));
-      
+  colorSaliencyMap.setColor(cv::Scalar(0, 0, 255));
+
   cv::Mat map;
-  
+
   printf("[INFO]: Computing color map (blue) in RGB space.\n");
-  
+
   colorSaliencyMap.calculate();
-  
-  if(colorSaliencyMap.getMap(map))
-  {
+
+  if (colorSaliencyMap.getMap(map)) {
     printf("[INFO]: Computation completed.\n");
-    cv::imshow("Color Map (blue) RGB",map);
+    cv::imshow("Color Map (blue) RGB", map);
     printf("[INFO]: Press any key to continue.\n");
     cv::waitKey();
-  }
-  else
-  {
+  } else {
     printf("[ERROR]: Computation failed.\n");
   }
-  
+
   printf("[INFO]: Computing color map (blue) in RGB space using Simple pyramid.\n");
-  
+
   colorSaliencyMap.calculatePyramid();
-  
-  if(colorSaliencyMap.getMap(map))
-  {
+
+  if (colorSaliencyMap.getMap(map)) {
     printf("[INFO]: Computation completed.\n");
-    cv::imshow("Color Map (blue) RGB Simple Pyramid",map);
+    cv::imshow("Color Map (blue) RGB Simple Pyramid", map);
     printf("[INFO]: Press any key to continue.\n");
     cv::waitKey();
-  }
-  else
-  {
+  } else {
     printf("[ERROR]: Computation failed.\n");
   }
-  
+
   printf("[INFO]: Computing color map (blue) in RGB space using Itti pyramid.\n");
-  
+
   colorSaliencyMap.calculatePyramid(v4r::ITTI_PYRAMID);
-  
-  if(colorSaliencyMap.getMap(map))
-  {
+
+  if (colorSaliencyMap.getMap(map)) {
     printf("[INFO]: Computation completed.\n");
-    cv::imshow("Color Map (blue) RGB Itti Pyramid",map);
+    cv::imshow("Color Map (blue) RGB Itti Pyramid", map);
     printf("[INFO]: Press any key to continue.\n");
     cv::waitKey();
-  }
-  else
-  {
+  } else {
     printf("[ERROR]: Computation failed.\n");
   }
-  
+
   printf("[INFO]: Computing color map (blue) in RGB space using Frintrop pyramid.\n");
-  
+
   colorSaliencyMap.calculatePyramid(v4r::FRINTROP_PYRAMID);
-  
-  if(colorSaliencyMap.getMap(map))
-  {
+
+  if (colorSaliencyMap.getMap(map)) {
     printf("[INFO]: Computation completed.\n");
-    cv::imshow("Color Map (blue) RGB Frintrop Pyramid",map);
+    cv::imshow("Color Map (blue) RGB Frintrop Pyramid", map);
     printf("[INFO]: Press any key to continue.\n");
     cv::waitKey();
-  }
-  else
-  {
+  } else {
     printf("[ERROR]: Computation failed.\n");
   }
-  
+
   printf("[INFO]: Computing color map (blue) in Lab space.\n");
-  
+
   // blue color
-  colorSaliencyMap.setColor(cv::Scalar(0,0.5,0));
+  colorSaliencyMap.setColor(cv::Scalar(0, 0.5, 0));
   colorSaliencyMap.setUseLAB(true);
   colorSaliencyMap.calculate();
-  
-  if(colorSaliencyMap.getMap(map))
-  {
+
+  if (colorSaliencyMap.getMap(map)) {
     printf("[INFO]: Computation completed.\n");
-    cv::imshow("Color Map (blue) Lab",map);
+    cv::imshow("Color Map (blue) Lab", map);
     printf("[INFO]: Press any key to continue.\n");
     cv::waitKey();
-  }
-  else
-  {
+  } else {
     printf("[ERROR]: Computation failed.\n");
   }
-  
+
   printf("[INFO]: Computing color map (blue) in Lab space using Simple pyramid.\n");
 
   colorSaliencyMap.calculatePyramid();
-  
-  if(colorSaliencyMap.getMap(map))
-  {
+
+  if (colorSaliencyMap.getMap(map)) {
     printf("[INFO]: Computation completed.\n");
-    cv::imshow("Color Map (blue) Lab Simple Pyramid",map);
+    cv::imshow("Color Map (blue) Lab Simple Pyramid", map);
     printf("[INFO]: Press any key to continue.\n");
     cv::waitKey();
-  }
-  else
-  {
+  } else {
     printf("[ERROR]: Computation failed.\n");
   }
-  
+
   printf("[INFO]: Computing color map (blue) in Lab space using Itti pyramid.\n");
-  
+
   colorSaliencyMap.calculatePyramid(v4r::ITTI_PYRAMID);
-  
-  if(colorSaliencyMap.getMap(map))
-  {
+
+  if (colorSaliencyMap.getMap(map)) {
     printf("[INFO]: Computation completed.\n");
-    cv::imshow("Color Map (blue) Lab Itti Pyramid",map);
+    cv::imshow("Color Map (blue) Lab Itti Pyramid", map);
     printf("[INFO]: Press any key to continue.\n");
     cv::waitKey();
-  }
-  else
-  {
+  } else {
     printf("[ERROR]: Computation failed.\n");
   }
-  
+
   printf("[INFO]: Computing color map (blue) in Lab space using Frintrop pyramid.\n");
-  
+
   colorSaliencyMap.calculatePyramid(v4r::FRINTROP_PYRAMID);
-  
-  if(colorSaliencyMap.getMap(map))
-  {
+
+  if (colorSaliencyMap.getMap(map)) {
     printf("[INFO]: Computation completed.\n");
-    cv::imshow("Color Map (blue) Lab Frintrop Pyramid",map);
+    cv::imshow("Color Map (blue) Lab Frintrop Pyramid", map);
     printf("[INFO]: Press any key to continue.\n");
     cv::waitKey();
-  }
-  else
-  {
+  } else {
     printf("[ERROR]: Computation failed.\n");
   }
-  
-  return(0);
+
+  return (0);
 }

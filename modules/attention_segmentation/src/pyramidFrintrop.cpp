@@ -37,153 +37,126 @@
 **
 ****************************************************************************/
 
-
-
 #include "v4r/attention_segmentation/pyramidFrintrop.h"
 
-namespace v4r
-{
+namespace v4r {
 
-FrintropPyramid::FrintropPyramid():
-BasePyramid()
-{
+FrintropPyramid::FrintropPyramid() : BasePyramid() {
   reset();
 }
 
-FrintropPyramid::~FrintropPyramid()
-{
-}
+FrintropPyramid::~FrintropPyramid() {}
 
-void FrintropPyramid::reset()
-{
+void FrintropPyramid::reset() {
   BasePyramid::reset();
-  
-  R.resize(2); R.at(0) = 3; R.at(1) = 7;
+
+  R.resize(2);
+  R.at(0) = 3;
+  R.at(1) = 7;
   onSwitch = true;
-  
+
   pyramidName = "FrintropPyramid";
 }
 
-void FrintropPyramid::setR(std::vector<int> &R_)
-{
+void FrintropPyramid::setR(std::vector<int> &R_) {
   R = R_;
   calculated = false;
   haveImagePyramid = false;
-  printf("[INFO]: %s: R is set to: [ ",pyramidName.c_str());
-  for(size_t i = 0; i < R.size(); ++i)
-  {
-    printf("%d ",R.at(i));
+  printf("[INFO]: %s: R is set to: [ ", pyramidName.c_str());
+  for (size_t i = 0; i < R.size(); ++i) {
+    printf("%d ", R.at(i));
   }
   printf("]\n");
 }
 
-std::vector<int> FrintropPyramid::getR()
-{
-  return(R);
+std::vector<int> FrintropPyramid::getR() {
+  return (R);
 }
 
-void FrintropPyramid::setOnSwitch(bool onSwitch_)
-{
+void FrintropPyramid::setOnSwitch(bool onSwitch_) {
   onSwitch = onSwitch_;
   calculated = false;
-  //haveImagePyramid = false;
-  printf("[INFO]: %s: onSwitch is set to: %s\n",pyramidName.c_str(),onSwitch ? "yes" : "no");
+  // haveImagePyramid = false;
+  printf("[INFO]: %s: onSwitch is set to: %s\n", pyramidName.c_str(), onSwitch ? "yes" : "no");
 }
 
-bool FrintropPyramid::getOnSwitch()
-{
-  return(onSwitch);
+bool FrintropPyramid::getOnSwitch() {
+  return (onSwitch);
 }
 
-void FrintropPyramid::print()
-{
+void FrintropPyramid::print() {
   BasePyramid::print();
-  
-  printf("[PyramidParameters]: onSwitch             = %s\n",onSwitch ? "yes" : "no");
+
+  printf("[PyramidParameters]: onSwitch             = %s\n", onSwitch ? "yes" : "no");
   printf("[PyramidParameters]: R                    = [ ");
-  for(unsigned int i = 0; i < R.size(); ++i)
-  {
-    printf("%d ",R.at(i));
+  for (unsigned int i = 0; i < R.size(); ++i) {
+    printf("%d ", R.at(i));
   }
   printf("]\n");
 }
 
-void FrintropPyramid::combinePyramid(bool standard)
-{
+void FrintropPyramid::combinePyramid(bool standard) {
   calculated = false;
-  
-  int number_of_features = (max_level-start_level+1)*R.size();
-  
-  pyramidConspicuities.resize(number_of_features);
-  
-  std::vector<int> trueLevel;
-  
-  for(int s = start_level; s <= max_level; ++s)
-  {
-    for(unsigned int r = 0; r < R.size(); ++r)
-    {
-      cv::Mat kernel = cv::Mat_<float>::ones(R.at(r),R.at(r));
-      kernel = kernel / (R.at(r)*R.at(r));
-      
-      int current = (R.size()-0)*(s-start_level)+(r-0);
-      if (current < number_of_features)
-      {
-        cv::Mat temp;
-        filter2D(pyramidFeatures.at(s),temp,pyramidFeatures.at(s).depth(),kernel);
 
-        if(onSwitch)
-	{
+  int number_of_features = (max_level - start_level + 1) * R.size();
+
+  pyramidConspicuities.resize(number_of_features);
+
+  std::vector<int> trueLevel;
+
+  for (int s = start_level; s <= max_level; ++s) {
+    for (unsigned int r = 0; r < R.size(); ++r) {
+      cv::Mat kernel = cv::Mat_<float>::ones(R.at(r), R.at(r));
+      kernel = kernel / (R.at(r) * R.at(r));
+
+      int current = (R.size() - 0) * (s - start_level) + (r - 0);
+      if (current < number_of_features) {
+        cv::Mat temp;
+        filter2D(pyramidFeatures.at(s), temp, pyramidFeatures.at(s).depth(), kernel);
+
+        if (onSwitch) {
           temp = pyramidFeatures.at(s) - temp;
-	}
-        else
-	{
+        } else {
           temp = temp - pyramidFeatures.at(s);
-	}
-  
-        cv::max(temp,0.0,pyramidConspicuities.at(current));
-	v4r::normalize(pyramidConspicuities.at(current),normalization_type);
-	trueLevel.push_back(s);
+        }
+
+        cv::max(temp, 0.0, pyramidConspicuities.at(current));
+        v4r::normalize(pyramidConspicuities.at(current), normalization_type);
+        trueLevel.push_back(s);
       }
     }
   }
-  
-  if(combination_type == AM_COMB_MUL)
-  {
-    map = cv::Mat_<float>::ones(pyramidImages.at(sm_level).rows,pyramidImages.at(sm_level).cols);
+
+  if (combination_type == AM_COMB_MUL) {
+    map = cv::Mat_<float>::ones(pyramidImages.at(sm_level).rows, pyramidImages.at(sm_level).cols);
+  } else {
+    map = cv::Mat_<float>::zeros(pyramidImages.at(sm_level).rows, pyramidImages.at(sm_level).cols);
   }
-  else
-  {
-    map = cv::Mat_<float>::zeros(pyramidImages.at(sm_level).rows,pyramidImages.at(sm_level).cols);
-  }
-  
-  for (int i=0; i < number_of_features; ++i)
-  {
+
+  for (int i = 0; i < number_of_features; ++i) {
     cv::Mat temp;
-    if(standard)
-    {
-      cv::resize(pyramidConspicuities.at(i),temp,cv::Size(pyramidImages.at(sm_level).cols,pyramidImages.at(sm_level).rows));
+    if (standard) {
+      cv::resize(pyramidConspicuities.at(i), temp,
+                 cv::Size(pyramidImages.at(sm_level).cols, pyramidImages.at(sm_level).rows));
+    } else {
+      v4r::scaleImage(pyramidImages, pyramidConspicuities.at(i), temp, trueLevel.at(i), sm_level);
     }
-    else
-    {
-      v4r::scaleImage(pyramidImages,pyramidConspicuities.at(i),temp,trueLevel.at(i),sm_level);
-    }
-//     cv::imshow("temp",temp);
-//     cv::waitKey(-1);
-    combineConspicuityMaps(map,temp);
+    //     cv::imshow("temp",temp);
+    //     cv::waitKey(-1);
+    combineConspicuityMaps(map, temp);
   }
-  
+
   double maxValue, minValue;
-  cv::minMaxLoc(map,&minValue,&maxValue);
+  cv::minMaxLoc(map, &minValue, &maxValue);
   max_map_value = maxValue;
-  
-  v4r::normalize(map,normalization_type);
-  
-//   cv::minMaxLoc(map,&minValue,&maxValue);
-//   std::cerr << maxValue << std::endl;
-//   cv::imshow("map5",map);
-//   cv::waitKey(-1);
-  
+
+  v4r::normalize(map, normalization_type);
+
+  //   cv::minMaxLoc(map,&minValue,&maxValue);
+  //   std::cerr << maxValue << std::endl;
+  //   cv::imshow("map5",map);
+  //   cv::waitKey(-1);
+
   calculated = true;
 }
-
 }

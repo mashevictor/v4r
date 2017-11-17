@@ -25,14 +25,12 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-
 #include <v4r/ml/node.h>
 
 using namespace v4r::RandomForest;
 
 // default constructor
-Node::Node()
-{
+Node::Node() {
   isSplitNode_ = false;
   splitOnFeatureIdx_ = -1;
   threshold_ = 0.0f;
@@ -41,8 +39,7 @@ Node::Node()
 }
 
 // constructor for split node
-Node::Node(int splitOnFeature, float threshold, int leftChildIdx, int rightChildIdx)
-{
+Node::Node(int splitOnFeature, float threshold, int leftChildIdx, int rightChildIdx) {
   isSplitNode_ = true;
   splitOnFeatureIdx_ = splitOnFeature;
   this->threshold_ = threshold;
@@ -52,8 +49,7 @@ Node::Node(int splitOnFeature, float threshold, int leftChildIdx, int rightChild
 }
 
 // constructor for leaf node
-Node::Node(std::pair<std::vector<unsigned int >, std::vector< float > > labelDistributions)
-{
+Node::Node(std::pair<std::vector<unsigned int>, std::vector<float>> labelDistributions) {
   isSplitNode_ = false;
   splitOnFeatureIdx_ = -1;
   threshold_ = 0.0f;
@@ -64,8 +60,8 @@ Node::Node(std::pair<std::vector<unsigned int >, std::vector< float > > labelDis
 }
 
 // constructor for split node, also saving the label distributions for later
-Node::Node(int splitOnFeature, float threshold, int leftChildIdx, int rightChildIdx, std::pair<std::vector<unsigned int >, std::vector< float > > labelDistributions)
-{
+Node::Node(int splitOnFeature, float threshold, int leftChildIdx, int rightChildIdx,
+           std::pair<std::vector<unsigned int>, std::vector<float>> labelDistributions) {
   isSplitNode_ = true;
   splitOnFeatureIdx_ = splitOnFeature;
   this->threshold_ = threshold;
@@ -75,42 +71,33 @@ Node::Node(int splitOnFeature, float threshold, int leftChildIdx, int rightChild
   absLabelDistribution_ = labelDistributions.first;
 }
 
-void Node::ClearSplitNodeLabelDistribution()
-{
-    if(isSplitNode_)
-    {
-        labelDistribution_.clear();
-        absLabelDistribution_.clear();
-    }
+void Node::ClearSplitNodeLabelDistribution() {
+  if (isSplitNode_) {
+    labelDistribution_.clear();
+    absLabelDistribution_.clear();
+  }
 }
 
-void Node::ResetLabelDistribution()
-{
+void Node::ResetLabelDistribution() {
   labelDistribution_.assign(labelDistribution_.size(), 0.0f);
   absLabelDistribution_.assign(absLabelDistribution_.size(), 0);
 }
 
-void Node::AddToAbsLabelDistribution(int labelIdx)
-{
+void Node::AddToAbsLabelDistribution(int labelIdx) {
   absLabelDistribution_[labelIdx]++;
 }
 
-void Node::UpdateLabelDistribution(std::vector<int> labels, std::map<int, unsigned int>& pointsPerLabel)
-{
+void Node::UpdateLabelDistribution(std::vector<int> labels, std::map<int, unsigned int>& pointsPerLabel) {
   float sum = 0;
-  
-  for(unsigned int i=0; i<labels.size(); ++i)
+
+  for (unsigned int i = 0; i < labels.size(); ++i)
     labelDistribution_[i] = ((float)absLabelDistribution_[i]) / ((float)pointsPerLabel[labels[i]]);
-  
-  for(unsigned int i=0; i<labelDistribution_.size(); ++i)
+
+  for (unsigned int i = 0; i < labelDistribution_.size(); ++i)
     sum += labelDistribution_[i];
-  
-  for(unsigned int i=0; i<absLabelDistribution_.size(); ++i)
+
+  for (unsigned int i = 0; i < absLabelDistribution_.size(); ++i)
     labelDistribution_[i] /= sum;
 }
 
-Node::~Node()
-{
-
-}
-
+Node::~Node() {}

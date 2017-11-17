@@ -1,5 +1,5 @@
 /**
- *  Copyright (C) 2012  
+ *  Copyright (C) 2012
  *    Ekaterina Potapova
  *    Automation and Control Institute
  *    Vienna University of Technology
@@ -21,55 +21,49 @@
  *  along with this program.  If not, see http://www.gnu.org/licenses/
  */
 
-
 #include "v4r/attention_segmentation/AttentionModule.h"
 
 // This program shows the use of Symmetry Saliency Map on one image
 void printUsage(const char *argv0);
 
-void printUsage(const char *argv0)
-{
+void printUsage(const char *argv0) {
   printf(
-    "Calculates 3D Symmentry Saliency Map\n"
-    "usage: %s image.png result.png\n"
-    "  image.png             ... color image\n"
-    "  result.png            ... output file name\n", argv0);
-  printf(" Example: %s image.png result.png\n",argv0);
+      "Calculates 3D Symmentry Saliency Map\n"
+      "usage: %s image.png result.png\n"
+      "  image.png             ... color image\n"
+      "  result.png            ... output file name\n",
+      argv0);
+  printf(" Example: %s image.png result.png\n", argv0);
 }
 
-int main(int argc, char** argv)
-{
-  if(argc != 3)
-  {
+int main(int argc, char **argv) {
+  if (argc != 3) {
     printUsage(argv[0]);
-    return(0);
+    return (0);
   }
-  
+
   // read image
   std::string image_name(argv[1]);
-  cv::Mat image = cv::imread(image_name,-1);
-  
+  cv::Mat image = cv::imread(image_name, -1);
+
   std::string output_name(argv[2]);
-  
+
   // start creating parameters
   v4r::SymmetryMap symmetryMap;
   symmetryMap.setImage(image);
-      
+
   cv::Mat map;
-  
+
   symmetryMap.calculatePyramid();
-  
-  if(symmetryMap.getMap(map))
-  {
+
+  if (symmetryMap.getMap(map)) {
     printf("[INFO]: Computation completed.\n");
     cv::Mat temp;
-    map.convertTo(temp,CV_8U,255);
-    cv::imwrite(output_name,temp);
-  }
-  else
-  {
+    map.convertTo(temp, CV_8U, 255);
+    cv::imwrite(output_name, temp);
+  } else {
     printf("[ERROR]: Computation failed.\n");
   }
-  
-  return(0);
+
+  return (0);
 }

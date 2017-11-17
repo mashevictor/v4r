@@ -37,58 +37,51 @@
 **
 ****************************************************************************/
 
-
 /**
  * @file main.cpp
  * @author Johann Prankl (prankl@acin.tuwien.ac.at)
  * @date 2017
  * @brief
  *
- */ 
+ */
 
 #ifndef _CREATE_TRACKING_MODEL_H
 #define _CREATE_TRACKING_MODEL_H
 
-
-#include <queue>
-#include <opencv2/opencv.hpp>
+#include <pcl/common/transforms.h>
 #include <pcl/point_cloud.h>
 #include <pcl/point_types.h>
-#include <boost/shared_ptr.hpp>
-#include <pcl/common/transforms.h>
-#include "params.h"
-#include <v4r/keypoints/impl/Object.hpp>
-#include <v4r/common/impl/DataMatrix2D.hpp>
+#include <v4r/camera_tracking_and_mapping/TSFData.h>
+#include <v4r/common/ZAdaptiveNormals.h>
 #include <v4r/common/convertCloud.h>
-#include <v4r/keypoints/ArticulatedObject.h>
-#include <v4r/common/impl/SmartPtr.hpp>
-#include <v4r/keypoints/RigidTransformationRANSAC.h>
-#include <v4r/reconstruction/impl/projectPointToImage.hpp>
-#include <v4r/keypoints/impl/invPose.hpp>
 #include <v4r/common/convertImage.h>
 #include <v4r/features/FeatureDetectorHeaders.h>
+#include <v4r/keypoints/ArticulatedObject.h>
+#include <v4r/keypoints/RigidTransformationRANSAC.h>
 #include <v4r/keypoints/io.h>
-#include <v4r/common/ZAdaptiveNormals.h>
+#include <boost/shared_ptr.hpp>
+#include <opencv2/opencv.hpp>
+#include <queue>
 #include <v4r/camera_tracking_and_mapping/TSFFrame.hh>
-#include <v4r/camera_tracking_and_mapping/TSFData.h>
+#include <v4r/common/impl/DataMatrix2D.hpp>
+#include <v4r/common/impl/SmartPtr.hpp>
+#include <v4r/keypoints/impl/Object.hpp>
+#include <v4r/keypoints/impl/invPose.hpp>
+#include <v4r/reconstruction/impl/projectPointToImage.hpp>
+#include "params.h"
 
-
-
-class CreateTrackingModel
-{
-
-public:
-
+class CreateTrackingModel {
+ public:
   CreateTrackingModel();
   ~CreateTrackingModel();
 
-  void createTrackingModel(const std::vector<v4r::TSFFrame::Ptr> &map_frames, const std::vector< cv::Mat_<unsigned char> > &masks, const Eigen::Matrix4f &object_base_transform);
+  void createTrackingModel(const std::vector<v4r::TSFFrame::Ptr> &map_frames,
+                           const std::vector<cv::Mat_<unsigned char>> &masks,
+                           const Eigen::Matrix4f &object_base_transform);
   void saveTrackingModel(const std::string &folder, const std::string &objectname);
   void setCameraParameter(const cv::Mat_<double> &_intrinsic, const cv::Mat_<double> &_dist_coeffs);
 
-
-private:
-
+ private:
   void addObjectView(const v4r::DataMatrix2D<Eigen::Vector3f> &cloud, const v4r::DataMatrix2D<Eigen::Vector3f> &normals,
                      const cv::Mat_<unsigned char> &im, const cv::Mat_<unsigned char> &mask,
                      const Eigen::Matrix4f &pose, v4r::ArticulatedObject &model);
@@ -105,7 +98,6 @@ private:
   v4r::ArticulatedObject::Ptr model;
   v4r::FeatureDetector::Ptr keyDet;
   v4r::FeatureDetector::Ptr keyDesc;
-
 };
 
 #endif

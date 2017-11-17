@@ -37,77 +37,60 @@
 **
 ****************************************************************************/
 
-
-
 #include "v4r/attention_segmentation/pyramidSimple.h"
 
-namespace v4r
-{
+namespace v4r {
 
-SimplePyramid::SimplePyramid():
-BasePyramid()
-{
+SimplePyramid::SimplePyramid() : BasePyramid() {
   reset();
 }
 
-SimplePyramid::~SimplePyramid()
-{
-}
+SimplePyramid::~SimplePyramid() {}
 
-void SimplePyramid::reset()
-{
+void SimplePyramid::reset() {
   BasePyramid::reset();
 
   pyramidName = "SimplePyramid";
 }
 
-void SimplePyramid::combinePyramid(bool standard)
-{
+void SimplePyramid::combinePyramid(bool standard) {
   int sm_width = pyramidImages.at(sm_level).cols;
   int sm_height = pyramidImages.at(sm_level).rows;
-  if(combination_type == AM_COMB_MUL)
-  {
-    map = cv::Mat_<float>::ones(sm_height,sm_width);
-  }
-  else
-  {
-    map = cv::Mat_<float>::zeros(sm_height,sm_width);
+  if (combination_type == AM_COMB_MUL) {
+    map = cv::Mat_<float>::ones(sm_height, sm_width);
+  } else {
+    map = cv::Mat_<float>::zeros(sm_height, sm_width);
   }
 
-  for(int i = start_level; i <= max_level; ++i)
-  {
+  for (int i = start_level; i <= max_level; ++i) {
     cv::Mat temp;
-    
-//     cv::imshow("pyramidFeatures.at(i)",pyramidFeatures.at(i));
-//     cv::waitKey(-1);
-    
-    if(standard)
-    {
-      cv::resize(pyramidFeatures.at(i),temp,map.size());
+
+    //     cv::imshow("pyramidFeatures.at(i)",pyramidFeatures.at(i));
+    //     cv::waitKey(-1);
+
+    if (standard) {
+      cv::resize(pyramidFeatures.at(i), temp, map.size());
+    } else {
+      v4r::scaleImage(pyramidFeatures, pyramidFeatures.at(i), temp, i, sm_level);
     }
-    else
-    {
-      v4r::scaleImage(pyramidFeatures,pyramidFeatures.at(i),temp,i,sm_level);
-    }
-    
-//     cv::imshow("temp",temp);
-//     cv::waitKey(-1);
-    
-    v4r::normalize(temp,normalization_type);
-//     cv::imshow("temp",temp);
-//     cv::waitKey(-1);
-    combineConspicuityMaps(map,temp);
-    
-//     cv::imshow("map",map);
-//     cv::waitKey(-1);
+
+    //     cv::imshow("temp",temp);
+    //     cv::waitKey(-1);
+
+    v4r::normalize(temp, normalization_type);
+    //     cv::imshow("temp",temp);
+    //     cv::waitKey(-1);
+    combineConspicuityMaps(map, temp);
+
+    //     cv::imshow("map",map);
+    //     cv::waitKey(-1);
   }
 
   double maxValue, minValue;
-  cv::minMaxLoc(map,&minValue,&maxValue);
+  cv::minMaxLoc(map, &minValue, &maxValue);
   max_map_value = maxValue;
-  v4r::normalize(map,normalization_type);
-  
+  v4r::normalize(map, normalization_type);
+
   calculated = true;
 }
-
 }

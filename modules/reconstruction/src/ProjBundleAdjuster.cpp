@@ -37,87 +37,73 @@
 **
 ****************************************************************************/
 
-
 /**
  * @file main.cpp
  * @author Johann Prankl (prankl@acin.tuwien.ac.at)
  * @date 2017
  * @brief
  *
- */ 
+ */
 
 #include <v4r/reconstruction/ProjBundleAdjuster.h>
 #include <v4r/keypoints/impl/invPose.hpp>
 #include <v4r/keypoints/impl/triple.hpp>
 #include <v4r/reconstruction/impl/ReprojectionError.hpp>
 
-namespace v4r 
-{
+namespace v4r {
 
 using namespace std;
-
 
 /************************************************************************************
  * Constructor/Destructor
  */
-ProjBundleAdjuster::ProjBundleAdjuster(const Parameter &p)
- : param(p)
-{ 
-  sqr_depth_inl_dist = param.depth_inl_dist*param.depth_inl_dist;
+ProjBundleAdjuster::ProjBundleAdjuster(const Parameter &p) : param(p) {
+  sqr_depth_inl_dist = param.depth_inl_dist * param.depth_inl_dist;
 }
 
-ProjBundleAdjuster::~ProjBundleAdjuster()
-{
-}
-
+ProjBundleAdjuster::~ProjBundleAdjuster() {}
 
 /**
  * getDataToBundle
  */
-void ProjBundleAdjuster::getCameras(const Object &data, std::vector<Camera> &cameras)
-{
+void ProjBundleAdjuster::getCameras(const Object &data, std::vector<Camera> &cameras) {
   cameras.clear();
   Eigen::Matrix3d R;
   Eigen::Vector3d t;
 
   cameras.resize(data.cameras.size());
 
-  for (unsigned i=0; i<cameras.size(); i++)
-  {
-      getR(data.cameras[i], R);
-      getT(data.cameras[i], t);
-      ceres::RotationMatrixToAngleAxis(&R(0,0), &cameras[i].pose_Rt(0));                
-      cameras[i].pose_Rt.tail<3>() = t;
-      cameras[i].idx = i;
-  } 
+  for (unsigned i = 0; i < cameras.size(); i++) {
+    getR(data.cameras[i], R);
+    getT(data.cameras[i], t);
+    ceres::RotationMatrixToAngleAxis(&R(0, 0), &cameras[i].pose_Rt(0));
+    cameras[i].pose_Rt.tail<3>() = t;
+    cameras[i].idx = i;
+  }
 }
 
 /**
  * setBundledData
  */
-void ProjBundleAdjuster::setCameras(const std::vector<Camera> &cameras, Object &data)
-{
+void ProjBundleAdjuster::setCameras(const std::vector<Camera> &cameras, Object &data) {
   Eigen::Matrix3d R;
   Eigen::Vector3d t;
 
-  for (unsigned i=0; i<cameras.size(); i++)
-  {
+  for (unsigned i = 0; i < cameras.size(); i++) {
     const Camera &cam = cameras[i];
 
-    ceres::AngleAxisToRotationMatrix(&cam.pose_Rt(0), &R(0,0));
+    ceres::AngleAxisToRotationMatrix(&cam.pose_Rt(0), &R(0, 0));
     t = cam.pose_Rt.tail<3>();
 
-    setPose(R,t, data.cameras[i]);
+    setPose(R, t, data.cameras[i]);
   }
 }
-
 
 /**
  * bundle
  */
-void ProjBundleAdjuster::bundle(Object &data, std::vector<Camera> &cameras)
-{
-  if (cameras.size()<2)
+void ProjBundleAdjuster::bundle(Object &data, std::vector<Camera> &cameras) {
+  if (cameras.size() < 2)
     return;
 
   ceres::Problem::Options problem_options;
@@ -132,14 +118,12 @@ void ProjBundleAdjuster::bundle(Object &data, std::vector<Camera> &cameras)
   std::set<int>::iterator it;
   std::vector<int> constant_intrinsics;
 
-  if (data.camera_parameter.size()==1)
-  {
+  if (data.camera_parameter.size() == 1) {
     intrinsics = &data.camera_parameter[0][0];
     num_cam_param = data.camera_parameter[0].size();
   }
 
-  if (param.optimize_intrinsic && !param.optimize_dist_coeffs)
-  {
+  if (param.optimize_intrinsic && !param.optimize_dist_coeffs) {
     constant_intrinsics.push_back(4);
     constant_intrinsics.push_back(5);
     constant_intrinsics.push_back(6);
@@ -147,93 +131,91 @@ void ProjBundleAdjuster::bundle(Object &data, std::vector<Camera> &cameras)
     constant_intrinsics.push_back(8);
   }
 
-  //std::vector<int> projections_per_point(data.points.size(), 0);
+  // std::vector<int> projections_per_point(data.points.size(), 0);
 
-  for (unsigned v=0; v<data.views.size(); v++)
-  {
+  for (unsigned v = 0; v < data.views.size(); v++) {
     ObjectView &view = *data.views[v];
 
-    for (unsigned i=0; i<view.projs.size(); i++)
-    {
+    for (unsigned i = 0; i < view.projs.size(); i++) {
       Eigen::Vector3d &eig_pt3 = view.getPt(i).pt;
       double *pt3 = &eig_pt3[0];
-      const std::vector< triple<int, cv::Point2f, Eigen::Vector3f> > &projs = view.projs[i];
+      const std::vector<triple<int, cv::Point2f, Eigen::Vector3f>> &projs = view.projs[i];
 
-      //projections_per_point[view.points[i]]+=projs.size();
-      if (projs.size() < 2) continue;
+      // projections_per_point[view.points[i]]+=projs.size();
+      if (projs.size() < 2)
+        continue;
 
-      for (unsigned j=0; j<projs.size(); j++)
-      {
+      for (unsigned j = 0; j < projs.size(); j++) {
         const triple<int, cv::Point2f, Eigen::Vector3f> &p = projs[j];
         double *pose_Rt = &cameras[p.first].pose_Rt[0];
-        poseR = data.cameras[cameras[p.first].idx].topLeftCorner<3,3>();
-        poset = data.cameras[cameras[p.first].idx].block<3,1>(0,3);
+        poseR = data.cameras[cameras[p.first].idx].topLeftCorner<3, 3>();
+        poset = data.cameras[cameras[p.first].idx].block<3, 1>(0, 3);
 
-        if (data.camera_parameter.size() > 1)
-        {
+        if (data.camera_parameter.size() > 1) {
           intrinsics = &data.camera_parameter[p.first][0];
           num_cam_param = data.camera_parameter[p.first].size();
           idx_cams.insert(p.first);
         }
 
-        if (num_cam_param==4) {
-          if ( param.use_depth_prior && !isnan(p.third) && p.third[2]<param.depth_cut_off && 
-               (poseR*eig_pt3.cast<float>()+poset - p.third).squaredNorm() < sqr_depth_inl_dist ) {
-            problem.AddResidualBlock(
-              new ceres::AutoDiffCostFunction< NoDistortionReprojectionAndDepthError, 3, 4, 6, 3 >(
-              new NoDistortionReprojectionAndDepthError(p.second.x,p.second.y,1./p.third[2],param.depth_error_weight)), 0/*new ceres::CauchyLoss(0.1)*/,intrinsics,pose_Rt,pt3);
+        if (num_cam_param == 4) {
+          if (param.use_depth_prior && !isnan(p.third) && p.third[2] < param.depth_cut_off &&
+              (poseR * eig_pt3.cast<float>() + poset - p.third).squaredNorm() < sqr_depth_inl_dist) {
+            problem.AddResidualBlock(new ceres::AutoDiffCostFunction<NoDistortionReprojectionAndDepthError, 3, 4, 6, 3>(
+                                         new NoDistortionReprojectionAndDepthError(
+                                             p.second.x, p.second.y, 1. / p.third[2], param.depth_error_weight)),
+                                     0 /*new ceres::CauchyLoss(0.1)*/, intrinsics, pose_Rt, pt3);
           } else {
-            problem.AddResidualBlock(
-              new ceres::AutoDiffCostFunction< NoDistortionReprojectionError, 2, 4, 6, 3 >(
-              new NoDistortionReprojectionError(p.second.x, p.second.y)), 0/*new ceres::CauchyLoss(0.1)*/,intrinsics, pose_Rt, pt3);
+            problem.AddResidualBlock(new ceres::AutoDiffCostFunction<NoDistortionReprojectionError, 2, 4, 6, 3>(
+                                         new NoDistortionReprojectionError(p.second.x, p.second.y)),
+                                     0 /*new ceres::CauchyLoss(0.1)*/, intrinsics, pose_Rt, pt3);
           }
-        } else if (num_cam_param==9) {
-          if ( param.use_depth_prior && !isnan(p.third) && p.third[2]<param.depth_cut_off && 
-               (poseR*eig_pt3.cast<float>()+poset - p.third).squaredNorm() < sqr_depth_inl_dist )           {
+        } else if (num_cam_param == 9) {
+          if (param.use_depth_prior && !isnan(p.third) && p.third[2] < param.depth_cut_off &&
+              (poseR * eig_pt3.cast<float>() + poset - p.third).squaredNorm() < sqr_depth_inl_dist) {
             problem.AddResidualBlock(
-              new ceres::AutoDiffCostFunction< RadialDistortionReprojectionAndDepthError, 3, 9, 6, 3 >(
-              new RadialDistortionReprojectionAndDepthError(p.second.x, p.second.y, 1./p.third[2],param.depth_error_weight)), 0/*new ceres::CauchyLoss(0.1)*/, intrinsics, pose_Rt, pt3);
+                new ceres::AutoDiffCostFunction<RadialDistortionReprojectionAndDepthError, 3, 9, 6, 3>(
+                    new RadialDistortionReprojectionAndDepthError(p.second.x, p.second.y, 1. / p.third[2],
+                                                                  param.depth_error_weight)),
+                0 /*new ceres::CauchyLoss(0.1)*/, intrinsics, pose_Rt, pt3);
           } else {
-            problem.AddResidualBlock(
-              new ceres::AutoDiffCostFunction< RadialDistortionReprojectionError, 2, 9, 6, 3 >(
-              new RadialDistortionReprojectionError(p.second.x, p.second.y)), 0/*new ceres::CauchyLoss(0.1)*/, intrinsics, pose_Rt, pt3);
+            problem.AddResidualBlock(new ceres::AutoDiffCostFunction<RadialDistortionReprojectionError, 2, 9, 6, 3>(
+                                         new RadialDistortionReprojectionError(p.second.x, p.second.y)),
+                                     0 /*new ceres::CauchyLoss(0.1)*/, intrinsics, pose_Rt, pt3);
           }
         }
       }
     }
   }
 
-  //std::cout << "Number of 3D points:" << projections_per_point.size() << std::endl;
-  //for(size_t i=0; i < projections_per_point.size(); i++)
+  // std::cout << "Number of 3D points:" << projections_per_point.size() << std::endl;
+  // for(size_t i=0; i < projections_per_point.size(); i++)
   //{
   //    std::cout << projections_per_point[i] << " ";
   //}
-  //std::cout << std::endl;
+  // std::cout << std::endl;
 
-  if (data.camera_parameter.size()==1) 
-  {
+  if (data.camera_parameter.size() == 1) {
     if (param.optimize_intrinsic) {
-      if (num_cam_param==9 && !param.optimize_dist_coeffs) {
-        ceres::SubsetParameterization *subset_parameterization = 
-              new ceres::SubsetParameterization(9, constant_intrinsics);
+      if (num_cam_param == 9 && !param.optimize_dist_coeffs) {
+        ceres::SubsetParameterization *subset_parameterization =
+            new ceres::SubsetParameterization(9, constant_intrinsics);
         problem.SetParameterization(intrinsics, subset_parameterization);
-      } 
-    } else problem.SetParameterBlockConstant(intrinsics);
-  }
-  else
-  {
-    for (it=idx_cams.begin(); it!=idx_cams.end(); it++)
-    {
-      if (param.optimize_intrinsic) { 
-        if (num_cam_param==9 && !param.optimize_dist_coeffs) {
+      }
+    } else
+      problem.SetParameterBlockConstant(intrinsics);
+  } else {
+    for (it = idx_cams.begin(); it != idx_cams.end(); it++) {
+      if (param.optimize_intrinsic) {
+        if (num_cam_param == 9 && !param.optimize_dist_coeffs) {
           ceres::SubsetParameterization *subset_parameterization =
-                new ceres::SubsetParameterization(9, constant_intrinsics);
+              new ceres::SubsetParameterization(9, constant_intrinsics);
           problem.SetParameterization(&data.camera_parameter[*it][0], subset_parameterization);
         }
-      } else problem.SetParameterBlockConstant(&data.camera_parameter[*it][0]);
+      } else
+        problem.SetParameterBlockConstant(&data.camera_parameter[*it][0]);
     }
   }
- 
+
   // Configure the solver.
   ceres::Solver::Options options;
   options.use_nonmonotonic_steps = true;
@@ -242,9 +224,10 @@ void ProjBundleAdjuster::bundle(Object &data, std::vector<Camera> &cameras)
   options.use_inner_iterations = true;
   options.max_num_iterations = 100;
 
-  if (!dbg.empty()) 
+  if (!dbg.empty())
     options.minimizer_progress_to_stdout = true;
-  else options.minimizer_progress_to_stdout = false;
+  else
+    options.minimizer_progress_to_stdout = false;
 
   // Solve!
   ceres::Solver::Summary summary;
@@ -261,7 +244,8 @@ void ProjBundleAdjuster::bundle(Object &data, std::vector<Camera> &cameras)
  */
 /*static const bool param.use_depth_prior = true;  // HACK!!!!!!!!!!!!!!
 static const double depth_error_weight = 100.;//30.;
-void ProjBundleAdjuster::bundle(Object &data, std::vector<Camera> &cameras, std::vector< std::vector<Eigen::Vector3d> > &points)
+void ProjBundleAdjuster::bundle(Object &data, std::vector<Camera> &cameras, std::vector< std::vector<Eigen::Vector3d> >
+&points)
 {
   if (cameras.size()<2)
     return;
@@ -334,16 +318,18 @@ cout<<delta_pose<<endl;
         }
 
         if (num_cam_param==4) {
-          if ( param.use_depth_prior && !isnan(p.third) && 
+          if ( param.use_depth_prior && !isnan(p.third) &&
                (poseR*eig_pt3.cast<float>()+poset - p.third).squaredNorm() < 0.01*0.01 ) {
             problem.AddResidualBlock(
               new ceres::AutoDiffCostFunction< NoDistortionReprojectionAndDepthError, 3, 4, 6, 3 >(
-              new NoDistortionReprojectionAndDepthError(p.second.x,p.second.y,p.third.norm(),depth_error_weight)), NULL,intrinsics,pose_Rt,pt3);
+              new NoDistortionReprojectionAndDepthError(p.second.x,p.second.y,p.third.norm(),depth_error_weight)),
+NULL,intrinsics,pose_Rt,pt3);
 */
-            //problem.AddResidualBlock(
-            //  new ceres::AutoDiffCostFunction< NoDistortionReprojectionAndPointPlaneError, 3, 4, 6, 6, 3 >(
-            //  new NoDistortionReprojectionAndPointPlaneError(p.second.x,p.second.y,p.third[0],p.third[1],p.third[2],
-            //          normal[0],normal[1],normal[2],depth_error_weight)), NULL /*new ceres::CauchyLoss(0.5)*/,intrinsics,pose_Rt,&delta_Rt[0],pt3);
+// problem.AddResidualBlock(
+//  new ceres::AutoDiffCostFunction< NoDistortionReprojectionAndPointPlaneError, 3, 4, 6, 6, 3 >(
+//  new NoDistortionReprojectionAndPointPlaneError(p.second.x,p.second.y,p.third[0],p.third[1],p.third[2],
+//          normal[0],normal[1],normal[2],depth_error_weight)), NULL /*new
+//          ceres::CauchyLoss(0.5)*/,intrinsics,pose_Rt,&delta_Rt[0],pt3);
 /*          } else {
             problem.AddResidualBlock(
               new ceres::AutoDiffCostFunction< NoDistortionReprojectionError, 2, 4, 6, 3 >(
@@ -360,21 +346,21 @@ cout<<delta_pose<<endl;
 
 //problem.SetParameterBlockConstant(&delta_Rt[0]);
 
-  if (data.camera_parameter.size()==1) 
+  if (data.camera_parameter.size()==1)
   {
     if (param.optimize_intrinsic) {
       if (num_cam_param==9 && !param.optimize_dist_coeffs) {
-        ceres::SubsetParameterization *subset_parameterization = 
+        ceres::SubsetParameterization *subset_parameterization =
               new ceres::SubsetParameterization(9, constant_intrinsics);
         problem.SetParameterization(intrinsics, subset_parameterization);
-      } 
+      }
     } else problem.SetParameterBlockConstant(intrinsics);
   }
   else
   {
     for (it=idx_cams.begin(); it!=idx_cams.end(); it++)
     {
-      if (param.optimize_intrinsic) { 
+      if (param.optimize_intrinsic) {
         if (num_cam_param==9 && !param.optimize_dist_coeffs) {
           ceres::SubsetParameterization *subset_parameterization =
                 new ceres::SubsetParameterization(9, constant_intrinsics);
@@ -383,7 +369,7 @@ cout<<delta_pose<<endl;
       } else problem.SetParameterBlockConstant(&data.camera_parameter[*it][0]);
     }
   }
- 
+
   // Configure the solver.
   ceres::Solver::Options options;
   options.use_nonmonotonic_steps = true;
@@ -392,7 +378,7 @@ cout<<delta_pose<<endl;
   options.use_inner_iterations = true;
   options.max_num_iterations = 100;
 
-  if (!dbg.empty()) 
+  if (!dbg.empty())
     options.minimizer_progress_to_stdout = true;
   else options.minimizer_progress_to_stdout = false;
 
@@ -412,56 +398,37 @@ cout<<delta_pose<<endl;
 }
 */
 
-
-
 /***************************************************************************************/
 
 /**
  * optimize
  */
-void ProjBundleAdjuster::optimize(Object &data)
-{
-  if (!dbg.empty()) cout<<"-- [ProjBundleAdjuster::bundle] debug out --"<<endl;
+void ProjBundleAdjuster::optimize(Object &data) {
+  if (!dbg.empty())
+    cout << "-- [ProjBundleAdjuster::bundle] debug out --" << endl;
 
   getCameras(data, cameras);
 
-  if (cameras.size()<2) return;
+  if (cameras.size() < 2)
+    return;
 
   if (!dbg.empty() && param.optimize_intrinsic) {
-    for (unsigned i=0; i<data.camera_parameter[0].size(); i++)
-      cout<<data.camera_parameter[0][i]<<" ";
-    cout<<endl;
+    for (unsigned i = 0; i < data.camera_parameter[0].size(); i++)
+      cout << data.camera_parameter[0][i] << " ";
+    cout << endl;
   }
 
   bundle(data, cameras);
 
-  setCameras(cameras, data); 
+  setCameras(cameras, data);
 
-  if (!dbg.empty()) cout<<"[ProjBundleAdjuster::optimize] Number of cameras to bundle: "<<cameras.size()<<endl;
-  
+  if (!dbg.empty())
+    cout << "[ProjBundleAdjuster::optimize] Number of cameras to bundle: " << cameras.size() << endl;
+
   if (!dbg.empty() && param.optimize_intrinsic) {
-    for (unsigned i=0; i<data.camera_parameter[0].size(); i++)
-      cout<<data.camera_parameter[0][i]<<" ";
-    cout<<endl;
+    for (unsigned i = 0; i < data.camera_parameter[0].size(); i++)
+      cout << data.camera_parameter[0][i] << " ";
+    cout << endl;
   }
-
 }
-
-
-
-
-
-
 }
-
-
-
-
-
-
-
-
-
-
-
-

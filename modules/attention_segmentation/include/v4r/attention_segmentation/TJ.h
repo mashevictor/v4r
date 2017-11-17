@@ -37,15 +37,13 @@
 **
 ****************************************************************************/
 
-
 #ifndef TJ_HPP
 #define TJ_HPP
 
 #include <v4r/core/macros.h>
 #include "v4r/attention_segmentation/headers.h"
 
-namespace v4r
-{
+namespace v4r {
 
 /*extern int dy8[8];
 extern int dx8[8];
@@ -55,33 +53,32 @@ extern int dy4[4];
 */
 
 enum PointJunctionType {
-  UNKNOWN       = 0,
-  T_JUNCTION    = 3,
-  END_POINT     = 1,
+  UNKNOWN = 0,
+  T_JUNCTION = 3,
+  END_POINT = 1,
   REGULAR_POINT = 2,
 };
 
 struct JunctionNode {
   int num;
-  int x,y;
+  int x, y;
   std::vector<int> edges;
   int edges_num;
   int type;
   float saliency;
-  JunctionNode()
-  {
+  JunctionNode() {
     edges_num = 0;
     type = UNKNOWN;
   }
 };
 
-class V4R_EXPORTS SaliencyLine
-{
-private:
+class V4R_EXPORTS SaliencyLine {
+ private:
   std::vector<JunctionNode> points;
   int points_num;
   float saliency;
-public:
+
+ public:
   SaliencyLine();
   void clear();
   float getSaliency();
@@ -99,16 +96,19 @@ bool calculateSaliencyLine(cv::Mat mask, const cv::Mat symmetry, SaliencyLine &s
 bool findTJunctions(SaliencyLine saliencyLine, std::vector<int> &tjunctionPoints);
 std::vector<int> findEndPoints(SaliencyLine saliencyLine, std::vector<int> segment);
 std::vector<int> findEndPoints(SaliencyLine saliencyLine);
-std::vector<int> getEdges(std::vector<JunctionNode> nodes,int nodeIdx);
-void breakIntoSegments(SaliencyLine saliencyLine, std::vector<std::vector<int> > &segments);
+std::vector<int> getEdges(std::vector<JunctionNode> nodes, int nodeIdx);
+void breakIntoSegments(SaliencyLine saliencyLine, std::vector<std::vector<int>> &segments);
 void modifySymmetryLine(SaliencyLine saliencyLine, std::vector<bool> &usedPoints, float th = 0.5);
 V4R_EXPORTS void selectSaliencyCenterPoint(SaliencyLine saliencyLine, PointSaliency &center);
 void createSimpleLine(SaliencyLine saliencyLine, std::vector<cv::Point> &points);
 V4R_EXPORTS bool extractSaliencyLine(cv::Mat mask, cv::Mat map, SaliencyLine &saliencyLine, unsigned int th = 10);
-V4R_EXPORTS void createAttentionPoints(std::vector<PointSaliency> saliencyPoints, std::vector<cv::Point> &attentionPoints);
+V4R_EXPORTS void createAttentionPoints(std::vector<PointSaliency> saliencyPoints,
+                                       std::vector<cv::Point> &attentionPoints);
 
-inline bool saliencyPointsSort (PointSaliency p1, PointSaliency p2) { return (p1.saliency>p2.saliency); }
+inline bool saliencyPointsSort(PointSaliency p1, PointSaliency p2) {
+  return (p1.saliency > p2.saliency);
+}
 
-} //namespace v4r
+}  // namespace v4r
 
-#endif //TJ_HPP
+#endif  // TJ_HPP

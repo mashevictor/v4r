@@ -37,161 +37,137 @@
 **
 ****************************************************************************/
 
-
-
 #include "v4r/attention_segmentation/SurfaceCurvatureMap.h"
 
-namespace v4r
-{
+namespace v4r {
 
-SurfaceCurvatureMap::SurfaceCurvatureMap():
-BaseMap()  
-{
+SurfaceCurvatureMap::SurfaceCurvatureMap() : BaseMap() {
   reset();
 }
 
-SurfaceCurvatureMap::~SurfaceCurvatureMap()
-{
-}
+SurfaceCurvatureMap::~SurfaceCurvatureMap() {}
 
-void SurfaceCurvatureMap::reset()
-{
+void SurfaceCurvatureMap::reset() {
   BaseMap::reset();
-  
+
   curvatureType = AM_CONVEX;
 
   mapName = "SurfaceCurvatureMap";
 }
 
-void SurfaceCurvatureMap::print()
-{
+void SurfaceCurvatureMap::print() {
   BaseMap::print();
-  printf("[%s]: curvatureType      = %d\n",mapName.c_str(),curvatureType);
+  printf("[%s]: curvatureType      = %d\n", mapName.c_str(), curvatureType);
 }
 
-int SurfaceCurvatureMap::checkParameters()
-{
+int SurfaceCurvatureMap::checkParameters() {
+  if (!haveCloud) {
+    printf("[ERROR]: %s: Seems like there is no cloud.\n", mapName.c_str());
+    return (AM_POINTCLOUD);
+  }
 
-  if(!haveCloud)
-  {
-    printf("[ERROR]: %s: Seems like there is no cloud.\n",mapName.c_str());
-    return(AM_POINTCLOUD);
+  if (!haveIndices) {
+    printf("[ERROR]: %s: Seems like there are no indices.\n", mapName.c_str());
+    return (AM_POINTCLOUD);
   }
-  
-  if(!haveIndices)
-  {
-    printf("[ERROR]: %s: Seems like there are no indices.\n",mapName.c_str());
-    return(AM_POINTCLOUD);
+
+  if (!haveNormals) {
+    printf("[ERROR]: %s: Seems like there are no normals.\n", mapName.c_str());
+    return (AM_NORMALCLOUD);
   }
-  
-  if(!haveNormals)
-  {
-    printf("[ERROR]: %s: Seems like there are no normals.\n",mapName.c_str());
-    return(AM_NORMALCLOUD);
+
+  if (indices->indices.size() != normals->points.size()) {
+    printf("[ERROR]: %s: Seems like there is different number of indices and normals.\n", mapName.c_str());
+    return (AM_DIFFERENTSIZES);
   }
-  
-  if(indices->indices.size() != normals->points.size())
-  {
-    printf("[ERROR]: %s: Seems like there is different number of indices and normals.\n",mapName.c_str());
-    return(AM_DIFFERENTSIZES);
+
+  if ((width == 0) || (height == 0)) {
+    printf("[ERROR]: %s: Seems like image size is wrong.\n", mapName.c_str());
+    return (AM_IMAGE);
   }
-  
-  if( (width == 0) || (height == 0) )
-  {
-    printf("[ERROR]: %s: Seems like image size is wrong.\n",mapName.c_str());
-    return(AM_IMAGE);
+
+  if (!haveMask)
+    mask = cv::Mat_<uchar>::ones(height, width);
+
+  if ((mask.cols != width) || (mask.rows != height)) {
+    mask = cv::Mat_<uchar>::ones(height, width);
   }
-  
-  if(!haveMask)
-    mask = cv::Mat_<uchar>::ones(height,width);
-  
-  if((mask.cols != width) || (mask.rows != height))
-  {
-    mask = cv::Mat_<uchar>::ones(height,width);
-  }
-  
-  return(AM_OK);
+
+  return (AM_OK);
 }
 
-void SurfaceCurvatureMap::setCurvatureType(int curvatureType_)
-{
+void SurfaceCurvatureMap::setCurvatureType(int curvatureType_) {
   curvatureType = curvatureType_;
   calculated = false;
-  printf("[INFO]: %s: curvatureType: %d.\n",mapName.c_str(),curvatureType);
+  printf("[INFO]: %s: curvatureType: %d.\n", mapName.c_str(), curvatureType);
 }
 
-int SurfaceCurvatureMap::getCurvatureType()
-{
-  return(curvatureType);
+int SurfaceCurvatureMap::getCurvatureType() {
+  return (curvatureType);
 }
 
-int SurfaceCurvatureMap::calculate()
-{
+int SurfaceCurvatureMap::calculate() {
   calculated = false;
 
   int rt_code = checkParameters();
-  if(rt_code != AM_OK)
-    return(rt_code);
-  
-  printf("[INFO]: %s: Computation started.\n",mapName.c_str());
-  
+  if (rt_code != AM_OK)
+    return (rt_code);
+
+  printf("[INFO]: %s: Computation started.\n", mapName.c_str());
+
   float curvatureCoefficient = getCurvatureCoefficient(curvatureType);
 
-  curvatureMap(normals,indices,width,height,curvatureCoefficient,map);
+  curvatureMap(normals, indices, width, height, curvatureCoefficient, map);
 
-  cv::blur(map,map,cv::Size(filter_size,filter_size));
+  cv::blur(map, map, cv::Size(filter_size, filter_size));
 
   refineMap();
-  
-  v4r::normalize(map,normalization_type);
-  calculated = true;
-  printf("[INFO]: %s: Computation succeed.\n",mapName.c_str());
 
-  return(AM_OK);
+  v4r::normalize(map, normalization_type);
+  calculated = true;
+  printf("[INFO]: %s: Computation succeed.\n", mapName.c_str());
+
+  return (AM_OK);
 }
 
-void SurfaceCurvatureMap::curvatureMap(pcl::PointCloud<pcl::Normal>::Ptr normals_cur, pcl::PointIndices::Ptr indices_cur, int image_width, int image_height, 
-		                      float curvatureCoefficient, cv::Mat &map_cur)
-{
-  map_cur = cv::Mat_<float>::zeros(image_height,image_width);
-  
-  for(unsigned int pi = 0; pi < indices_cur->indices.size(); ++pi)
-  {
+void SurfaceCurvatureMap::curvatureMap(pcl::PointCloud<pcl::Normal>::Ptr normals_cur,
+                                       pcl::PointIndices::Ptr indices_cur, int image_width, int image_height,
+                                       float curvatureCoefficient, cv::Mat &map_cur) {
+  map_cur = cv::Mat_<float>::zeros(image_height, image_width);
+
+  for (unsigned int pi = 0; pi < indices_cur->indices.size(); ++pi) {
     int idx = indices_cur->indices.at(pi);
     int r = idx / image_width;
     int c = idx % image_width;
-    
-    //if(mask.at<uchar>(r,c))
+
+    // if(mask.at<uchar>(r,c))
     {
       float nx = normals_cur->points.at(pi).normal[0];
       float ny = normals_cur->points.at(pi).normal[1];
       float nz = normals_cur->points.at(pi).normal[2];
 
-      if(std::isnan(nx) || std::isnan(ny) || std::isnan(nz))
-      {
+      if (std::isnan(nx) || std::isnan(ny) || std::isnan(nz)) {
         continue;
       }
-      
+
       float value = normals_cur->points.at(pi).curvature;
-      float t1 = 1.0-curvatureCoefficient;
+      float t1 = 1.0 - curvatureCoefficient;
       float t2 = curvatureCoefficient;
-      value = t1*value + t2*(1.0-value);
-      
-      map_cur.at<float>(r,c) = value;
+      value = t1 * value + t2 * (1.0 - value);
+
+      map_cur.at<float>(r, c) = value;
     }
   }
 }
 
-float SurfaceCurvatureMap::getCurvatureCoefficient(int curvatureType_)
-{
-  switch(curvatureType_)
-  {
+float SurfaceCurvatureMap::getCurvatureCoefficient(int curvatureType_) {
+  switch (curvatureType_) {
     case AM_FLAT:
-      return(1.0);
+      return (1.0);
     case AM_CONVEX:
-      return(0.0);
+      return (0.0);
   }
-  return(0.0);
+  return (0.0);
 }
 
-} //namespace v4r
+}  // namespace v4r

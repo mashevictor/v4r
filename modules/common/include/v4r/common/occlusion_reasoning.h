@@ -37,7 +37,6 @@
 **
 ****************************************************************************/
 
-
 /**
  * @file occlusion_reasoning.h
  * @author Thomas Faeulhammer (faeulhammer@acin.tuwien.ac.at)
@@ -49,90 +48,81 @@
 #ifndef V4R_OCCLUSION_REASONING_H_
 #define V4R_OCCLUSION_REASONING_H_
 
-#include <boost/dynamic_bitset.hpp>
 #include <pcl/point_cloud.h>
 #include <v4r/common/camera.h>
 #include <v4r/core/macros.h>
+#include <boost/dynamic_bitset.hpp>
 
-
-namespace v4r
-{
+namespace v4r {
 
 /**
  * @brief Class to reason about occlusion
  * @author: Thomas Faeulhammer
  * @date August 2016
  */
-template<typename PointTA, typename PointTB>
-class V4R_EXPORTS OcclusionReasoner
-{
-private:
-    typename pcl::PointCloud<PointTA>::ConstPtr occluder_cloud_; ///< organized_cloud point cloud that potentially causes occlusion
-    typename pcl::PointCloud<PointTB>::ConstPtr cloud_to_be_filtered_; ///< to_be_filtered point cloud to be checked for occlusion
-    float occlusion_threshold_m_;   ///< occlusion threshold in meter
-    Camera::ConstPtr cam_; ///@brief camera parameters for re-projection to image plane by depth buffering (only used if point clouds are not organized)
-    boost::dynamic_bitset<> px_is_visible_; ///< indicates if a pixel re-projected by the cloud_to_be_filtered_ is in front of the occlusion cloud (i.e. if the pixel belongs to the object)
+template <typename PointTA, typename PointTB>
+class V4R_EXPORTS OcclusionReasoner {
+ private:
+  typename pcl::PointCloud<PointTA>::ConstPtr
+      occluder_cloud_;  ///< organized_cloud point cloud that potentially causes occlusion
+  typename pcl::PointCloud<PointTB>::ConstPtr
+      cloud_to_be_filtered_;     ///< to_be_filtered point cloud to be checked for occlusion
+  float occlusion_threshold_m_;  ///< occlusion threshold in meter
+  Camera::ConstPtr cam_;  ///@brief camera parameters for re-projection to image plane by depth buffering (only used if
+                          /// point clouds are not organized)
+  boost::dynamic_bitset<> px_is_visible_;  ///< indicates if a pixel re-projected by the cloud_to_be_filtered_ is in
+                                           /// front of the occlusion cloud (i.e. if the pixel belongs to the object)
 
-public:
-    OcclusionReasoner()
-        : occlusion_threshold_m_ (0.01f)
-    { }
+ public:
+  OcclusionReasoner() : occlusion_threshold_m_(0.01f) {}
 
-    /**
-     * @brief setCamera
-     * @param cam
-     */
-    void
-    setCamera ( const Camera::ConstPtr cam )
-    {
-        cam_ = cam;
-    }
+  /**
+   * @brief setCamera
+   * @param cam
+   */
+  void setCamera(const Camera::ConstPtr cam) {
+    cam_ = cam;
+  }
 
-    /**
-     * @brief setOcclusionThreshold
-     * @param occlusion_thresh_m
-     */
-    void
-    setOcclusionThreshold(float occlusion_thresh_m)
-    {
-        occlusion_threshold_m_ = occlusion_thresh_m;
-    }
+  /**
+   * @brief setOcclusionThreshold
+   * @param occlusion_thresh_m
+   */
+  void setOcclusionThreshold(float occlusion_thresh_m) {
+    occlusion_threshold_m_ = occlusion_thresh_m;
+  }
 
-    /**
-     * @brief setOcclusionCloud
-     * @param occlusion_cloud cloud that can cause occlusion
-     */
-    void
-    setOcclusionCloud( const typename pcl::PointCloud<PointTA>::ConstPtr occlusion_cloud )
-    {
-        occluder_cloud_ = occlusion_cloud;
-    }
+  /**
+   * @brief setOcclusionCloud
+   * @param occlusion_cloud cloud that can cause occlusion
+   */
+  void setOcclusionCloud(const typename pcl::PointCloud<PointTA>::ConstPtr occlusion_cloud) {
+    occluder_cloud_ = occlusion_cloud;
+  }
 
-    /**
-     * @brief setInputCloud
-     * @param cloud_to_be_filtered object cloud that is checked for occlusion
-     */
-    void
-    setInputCloud( const typename pcl::PointCloud<PointTB>::ConstPtr cloud_to_be_filtered )
-    {
-        cloud_to_be_filtered_ = cloud_to_be_filtered;
-    }
+  /**
+   * @brief setInputCloud
+   * @param cloud_to_be_filtered object cloud that is checked for occlusion
+   */
+  void setInputCloud(const typename pcl::PointCloud<PointTB>::ConstPtr cloud_to_be_filtered) {
+    cloud_to_be_filtered_ = cloud_to_be_filtered;
+  }
 
-    /**
-     * @brief getPixelMask
-     * @return indicates if a pixel re-projected by the cloud_to_be_filtered_ is in front of the occlusion cloud (i.e. if the pixel belongs to the object) - bitset size is equal to number of pixel
-     */
-    boost::dynamic_bitset<>
-    getPixelMask() const
-    {
-        return px_is_visible_;
-    }
+  /**
+   * @brief getPixelMask
+   * @return indicates if a pixel re-projected by the cloud_to_be_filtered_ is in front of the occlusion cloud (i.e. if
+   * the pixel belongs to the object) - bitset size is equal to number of pixel
+   */
+  boost::dynamic_bitset<> getPixelMask() const {
+    return px_is_visible_;
+  }
 
-    /**
-     * @brief compute occlusion
-     * @return binary mask which indicates for each point of the cloud_to_be_filtered_ if it is visible (true) or occluded (false) - bitset size is equal to number of points of cloud
-     */
-    boost::dynamic_bitset<> computeVisiblePoints();
+  /**
+   * @brief compute occlusion
+   * @return binary mask which indicates for each point of the cloud_to_be_filtered_ if it is visible (true) or occluded
+   * (false) - bitset size is equal to number of points of cloud
+   */
+  boost::dynamic_bitset<> computeVisiblePoints();
 };
 }
 

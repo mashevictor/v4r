@@ -1,5 +1,5 @@
 /**
- *  Copyright (C) 2012  
+ *  Copyright (C) 2012
  *    Ekaterina Potapova, Andreas Richtsfeld, Johann Prankl, Thomas Mörwald, Michael Zillich
  *    Automation and Control Institute
  *    Vienna University of Technology
@@ -29,22 +29,20 @@
  * @brief Trains svm based on scaled features.
  */
 
-
-#include <stdio.h>      /* printf, scanf, puts, NULL */
-#include <stdlib.h>     /* srand, rand */
-#include <time.h>       /* time */
+#include <stdio.h>  /* printf, scanf, puts, NULL */
+#include <stdlib.h> /* srand, rand */
+#include <time.h>   /* time */
 #include <fstream>
 
 #include <pcl/io/pcd_io.h>
 
-#include <boost/filesystem/fstream.hpp>
 #include <boost/filesystem.hpp>
+#include <boost/filesystem/fstream.hpp>
 
 #include "v4r/attention_segmentation/SVMTrainModel.h"
 
-void trainFeatures(double gamma, double C, int kernel, int n_folds, double &RecRate, std::vector<int> &ConfusionTable, 
-                   std::string &train_ST_file_name_scaled, std::string &model_file_name)
-{
+void trainFeatures(double gamma, double C, int kernel, int n_folds, double &RecRate, std::vector<int> &ConfusionTable,
+                   std::string &train_ST_file_name_scaled, std::string &model_file_name) {
   svm::SVMTrainModel svmTrainModel;
   svmTrainModel.setInputFileName(train_ST_file_name_scaled);
   svmTrainModel.setModelFileName(model_file_name);
@@ -55,11 +53,10 @@ void trainFeatures(double gamma, double C, int kernel, int n_folds, double &RecR
   svmTrainModel.setProbability(1);
   svmTrainModel.setCrossValidation(n_folds);
   svmTrainModel.setNoPrint(true);
-  svmTrainModel.train(RecRate,ConfusionTable);
+  svmTrainModel.train(RecRate, ConfusionTable);
 }
 
-void trainSVM(std::string &train_ST_file_name_scaled, std::string &model_file_name)
-{
+void trainSVM(std::string &train_ST_file_name_scaled, std::string &model_file_name) {
   int kernels[4] = {svm::RBF, svm::LINEAR, svm::POLY, svm::SIGMOID};
   std::vector<std::string> kernel_names;
   kernel_names.resize(4);
@@ -77,22 +74,20 @@ void trainSVM(std::string &train_ST_file_name_scaled, std::string &model_file_na
   int gammaBest = 0;
   int CBest = 0;
 
-  for(int k = 0; k < 1; ++k)
-  {
-    for(int C = -5; C <= 15; C = C+2)
-    {
-      for(int gamma = -15; gamma <= 3; gamma = gamma + 2)
-      {
+  for (int k = 0; k < 1; ++k) {
+    for (int C = -5; C <= 15; C = C + 2) {
+      for (int gamma = -15; gamma <= 3; gamma = gamma + 2) {
         double RecRate;
         std::vector<int> ConfusionTable;
         ConfusionTable.resize(4);
-        trainFeatures(pow(2.0,gamma),pow(2.0,C),kernels[k],2,RecRate,ConfusionTable,train_ST_file_name_scaled,model_file_name);
+        trainFeatures(pow(2.0, gamma), pow(2.0, C), kernels[k], 2, RecRate, ConfusionTable, train_ST_file_name_scaled,
+                      model_file_name);
 
-        printf("%s;%8.6f;%8.6f;%8.6f;%3.1f/%3.1f/%3.1f/%3.1f/\n",kernel_names.at(k).c_str(),pow(2.0,C),pow(2.0,gamma),RecRate,
-               (double)(ConfusionTable.at(0)),(double)(ConfusionTable.at(1)),(double)(ConfusionTable.at(2)),(double)(ConfusionTable.at(3)));
+        printf("%s;%8.6f;%8.6f;%8.6f;%3.1f/%3.1f/%3.1f/%3.1f/\n", kernel_names.at(k).c_str(), pow(2.0, C),
+               pow(2.0, gamma), RecRate, (double)(ConfusionTable.at(0)), (double)(ConfusionTable.at(1)),
+               (double)(ConfusionTable.at(2)), (double)(ConfusionTable.at(3)));
 
-        if(RecRate>RecRateBest)
-        {
+        if (RecRate > RecRateBest) {
           RecRateBest = RecRate;
           kernelBest = k;
           gammaBest = gamma;
@@ -104,40 +99,39 @@ void trainSVM(std::string &train_ST_file_name_scaled, std::string &model_file_na
   }
 
   printf("--\nGlobalBest (LibSVM):\n");
-  printf("%s;%8.6f;%8.6f;%8.6f;%3.1f/%3.1f/%3.1f/%3.1f/\n",kernel_names.at(kernelBest).c_str(),pow(2.0,CBest),pow(2.0,gammaBest),RecRateBest,
-         (double)(ConfusionTableBest.at(0)),(double)(ConfusionTableBest.at(1)),(double)(ConfusionTableBest.at(2)),(double)(ConfusionTableBest.at(3)));
+  printf("%s;%8.6f;%8.6f;%8.6f;%3.1f/%3.1f/%3.1f/%3.1f/\n", kernel_names.at(kernelBest).c_str(), pow(2.0, CBest),
+         pow(2.0, gammaBest), RecRateBest, (double)(ConfusionTableBest.at(0)), (double)(ConfusionTableBest.at(1)),
+         (double)(ConfusionTableBest.at(2)), (double)(ConfusionTableBest.at(3)));
 
   printf("Training final classifier...\n");
-  trainFeatures(pow(2.0,gammaBest),pow(2.0,CBest),kernels[kernelBest],0,RecRateBest,ConfusionTableBest,train_ST_file_name_scaled,model_file_name);
-  printf("%s;%8.6f;%8.6f;%8.6f;%3.1f/%3.1f/%3.1f/%3.1f/\n",kernel_names.at(kernelBest).c_str(),pow(2.0,CBest),pow(2.0,gammaBest),RecRateBest,
-         (double)(ConfusionTableBest.at(0)),(double)(ConfusionTableBest.at(1)),(double)(ConfusionTableBest.at(2)),(double)(ConfusionTableBest.at(3)));
-
+  trainFeatures(pow(2.0, gammaBest), pow(2.0, CBest), kernels[kernelBest], 0, RecRateBest, ConfusionTableBest,
+                train_ST_file_name_scaled, model_file_name);
+  printf("%s;%8.6f;%8.6f;%8.6f;%3.1f/%3.1f/%3.1f/%3.1f/\n", kernel_names.at(kernelBest).c_str(), pow(2.0, CBest),
+         pow(2.0, gammaBest), RecRateBest, (double)(ConfusionTableBest.at(0)), (double)(ConfusionTableBest.at(1)),
+         (double)(ConfusionTableBest.at(2)), (double)(ConfusionTableBest.at(3)));
 }
 
-void printUsage(char *av)
-{
-  printf("Usage: %s training_data.txt.scaled model.txt\n"
-    " Options:\n"
-    "   [-h] ... show this help.\n"
-    "   training_data.txt.scaled ... filename with scaled training samples\n"
-    "   model.txt                ... output model\n", av);
+void printUsage(char *av) {
+  printf(
+      "Usage: %s training_data.txt.scaled model.txt\n"
+      " Options:\n"
+      "   [-h] ... show this help.\n"
+      "   training_data.txt.scaled ... filename with scaled training samples\n"
+      "   model.txt                ... output model\n",
+      av);
   std::cout << " Example: " << av << " training_data.txt.scaled model.txt" << std::endl;
 }
 
-int main(int argc, char *argv[])
-{
-  if(argc != 3)
-  {
+int main(int argc, char *argv[]) {
+  if (argc != 3) {
     printUsage(argv[0]);
     exit(0);
   }
-  
+
   std::string train_ST_file_name_scaled = argv[1];
   std::string model_file_name = argv[2];
-  
-  trainSVM(train_ST_file_name_scaled,model_file_name);
-  
-  return(0);
+
+  trainSVM(train_ST_file_name_scaled, model_file_name);
+
+  return (0);
 }
-
-

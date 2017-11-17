@@ -37,7 +37,6 @@
 **
 ****************************************************************************/
 
-
 /**
  * @file ObjectSegmentation.h
  * @author Johann Prankl (prankl@acin.tuwien.ac.at), Aitor Aldoma (aldoma@acin.tuwien.ac.at)
@@ -46,47 +45,37 @@
  *
  */
 
-
-
 #ifndef _OBJECT_SEGMENTATION_H
 #define _OBJECT_SEGMENTATION_H
 
 #ifndef Q_MOC_RUN
-#include <QObject>
-#include <QThread>
-#include <QMutex>
-#include <opencv2/core/core.hpp>
-#include <pcl/point_cloud.h>
-#include <pcl/point_types.h>
-#include <boost/shared_ptr.hpp>
 #include <pcl/common/transforms.h>
-#include <pcl/octree/octree_pointcloud_voxelcentroid.h>
+#include <pcl/io/pcd_io.h>
 #include <pcl/octree/octree.h>
 #include <pcl/octree/octree_impl.h>
 #include <pcl/octree/octree_pointcloud.h>
-#include <pcl/io/pcd_io.h>
-#include "OctreeVoxelCentroidContainerXYZRGB.hpp"
+#include <pcl/octree/octree_pointcloud_voxelcentroid.h>
+#include <pcl/point_cloud.h>
+#include <pcl/point_types.h>
 #include <v4r/common/ZAdaptiveNormals.h>
 #include <v4r/keypoints/ClusterNormalsToPlanes.h>
-#include <v4r/common/impl//DataMatrix2D.hpp>
+#include <QMutex>
+#include <QObject>
+#include <QThread>
+#include <boost/shared_ptr.hpp>
+#include <opencv2/core/core.hpp>
+#include <v4r/common/impl/DataMatrix2D.hpp>
 #include <v4r/keypoints/impl/triple.hpp>
+#include "OctreeVoxelCentroidContainerXYZRGB.hpp"
 #include "params.h"
 #include "sensor.h"
 #endif
 
-
-class ObjectSegmentation : public QThread
-{
+class ObjectSegmentation : public QThread {
   Q_OBJECT
 
-public:
-  enum Command
-  {
-    FINISH_OBJECT_MODELLING,
-    OPTIMIZE_MULTIVIEW,
-    MAX_COMMAND,
-    UNDEF = MAX_COMMAND
-  };
+ public:
+  enum Command { FINISH_OBJECT_MODELLING, OPTIMIZE_MULTIVIEW, MAX_COMMAND, UNDEF = MAX_COMMAND };
 
   ObjectSegmentation();
   ~ObjectSegmentation();
@@ -95,8 +84,12 @@ public:
   void stop();
   bool isRunning();
 
-  void setData(const std::vector<Eigen::Matrix4f, Eigen::aligned_allocator<Eigen::Matrix4f> > &_cameras, const boost::shared_ptr< std::vector<std::pair<int, pcl::PointCloud<pcl::PointXYZRGB>::ConstPtr> > > &_clouds);
-  const std::vector< cv::Mat_<unsigned char> > &getMasks() {return masks; }
+  void setData(
+      const std::vector<Eigen::Matrix4f, Eigen::aligned_allocator<Eigen::Matrix4f>> &_cameras,
+      const boost::shared_ptr<std::vector<std::pair<int, pcl::PointCloud<pcl::PointXYZRGB>::ConstPtr>>> &_clouds);
+  const std::vector<cv::Mat_<unsigned char>> &getMasks() {
+    return masks;
+  }
   void drawObjectCloud();
   void storeMasks(const std::string &_folder);
   bool storePointCloudModel(const std::string &_folder);
@@ -104,30 +97,35 @@ public:
   void activateROI(bool enable);
   void finishSegmentation();
   bool optimizeMultiview();
-  const std::vector<Eigen::Matrix4f, Eigen::aligned_allocator<Eigen::Matrix4f> > &getCameras() { return cameras; }
-  const std::vector<std::vector<int> > &getObjectIndices() {return indices; }
-  const Eigen::Matrix4f &getObjectBaseTransform() {return object_base_transform; }
+  const std::vector<Eigen::Matrix4f, Eigen::aligned_allocator<Eigen::Matrix4f>> &getCameras() {
+    return cameras;
+  }
+  const std::vector<std::vector<int>> &getObjectIndices() {
+    return indices;
+  }
+  const Eigen::Matrix4f &getObjectBaseTransform() {
+    return object_base_transform;
+  }
 
-public slots:
+ public slots:
   void segment_image(int x, int y);
   void set_image(int idx);
   void cam_params_changed(const RGBDCameraParameter &_cam_params);
-  void segmentation_parameter_changed(const SegmentationParameter& param);
-  void object_modelling_parameter_changed(const ObjectModelling& param);
+  void segmentation_parameter_changed(const SegmentationParameter &param);
+  void object_modelling_parameter_changed(const ObjectModelling &param);
   void set_roi(const Eigen::Vector3f &_bb_min, const Eigen::Vector3f &_bb_max, const Eigen::Matrix4f &_roi_pose);
-  void set_segmentation_params(bool use_roi_segm, const double &offs, bool _use_dense_mv, const double &_edge_radius_px);
+  void set_segmentation_params(bool use_roi_segm, const double &offs, bool _use_dense_mv,
+                               const double &_edge_radius_px);
 
-signals:
+ signals:
   void new_image(const pcl::PointCloud<pcl::PointXYZRGB>::ConstPtr &_cloud, const cv::Mat_<cv::Vec3b> &image);
-  void update_model_cloud(const boost::shared_ptr< Sensor::AlignedPointXYZRGBVector > &_oc_cloud);
+  void update_model_cloud(const boost::shared_ptr<Sensor::AlignedPointXYZRGBVector> &_oc_cloud);
   void printStatus(const std::string &_txt);
   void update_visualization();
   void set_object_base_transform(const Eigen::Matrix4f &_object_base_transform);
   void finishedObjectSegmentation();
 
-
-private:
-
+ private:
   Command cmd;
   bool m_run;
 
@@ -141,25 +139,26 @@ private:
   bool first_click;
   double max_point_dist;
 
-  std::vector<Eigen::Matrix4f, Eigen::aligned_allocator<Eigen::Matrix4f> > cameras;
-  boost::shared_ptr< std::vector<std::pair<int, pcl::PointCloud<pcl::PointXYZRGB>::ConstPtr> > > clouds;
-  std::vector< pcl::PointCloud<pcl::Normal>::ConstPtr > normals;
-  std::vector< cv::Mat_<int> > labels;
-  std::vector< cv::Mat_<unsigned char> > masks;
-  std::vector< std::vector<v4r::ClusterNormalsToPlanes::Plane::Ptr> > planes;
+  std::vector<Eigen::Matrix4f, Eigen::aligned_allocator<Eigen::Matrix4f>> cameras;
+  boost::shared_ptr<std::vector<std::pair<int, pcl::PointCloud<pcl::PointXYZRGB>::ConstPtr>>> clouds;
+  std::vector<pcl::PointCloud<pcl::Normal>::ConstPtr> normals;
+  std::vector<cv::Mat_<int>> labels;
+  std::vector<cv::Mat_<unsigned char>> masks;
+  std::vector<std::vector<v4r::ClusterNormalsToPlanes::Plane::Ptr>> planes;
   pcl::PointCloud<pcl::PointXYZRGBNormal>::Ptr ncloud_filt;
 
   cv::Mat_<cv::Vec3b> image;
   pcl::PointCloud<pcl::PointXYZRGB>::Ptr tmp_cloud1, tmp_cloud2;
 
-  boost::shared_ptr< Sensor::AlignedPointXYZRGBVector > oc_cloud;
+  boost::shared_ptr<Sensor::AlignedPointXYZRGBVector> oc_cloud;
 
-  pcl::octree::OctreePointCloudVoxelCentroid<pcl::PointXYZRGB,pcl::octree::OctreeVoxelCentroidContainerXYZRGB<pcl::PointXYZRGB> >::Ptr octree;
+  pcl::octree::OctreePointCloudVoxelCentroid<
+      pcl::PointXYZRGB, pcl::octree::OctreeVoxelCentroidContainerXYZRGB<pcl::PointXYZRGB>>::Ptr octree;
 
   pcl::PointCloud<pcl::Normal>::Ptr big_normals;
   pcl::PointCloud<pcl::PointXYZRGB>::Ptr octree_cloud;
-  std::vector<Eigen::Matrix4f, Eigen::aligned_allocator<Eigen::Matrix4f> > inv_poses;
-  std::vector<std::vector<int> > indices;
+  std::vector<Eigen::Matrix4f, Eigen::aligned_allocator<Eigen::Matrix4f>> inv_poses;
+  std::vector<std::vector<int>> indices;
 
   bool have_roi;
   Eigen::Matrix4f roi_pose;
@@ -178,20 +177,21 @@ private:
   v4r::ZAdaptiveNormals::Ptr nest;
   v4r::ClusterNormalsToPlanes::Ptr pest;
 
-
   void run();
 
-  void postProcessingSegmentation(bool do_mv=false);
+  void postProcessingSegmentation(bool do_mv = false);
   void convertImage(const pcl::PointCloud<pcl::PointXYZRGB> &cloud, cv::Mat_<cv::Vec3b> &image);
   void getInplaneTransform(const Eigen::Vector3f &pt, const Eigen::Vector3f &normal, Eigen::Matrix4f &pose);
-  void getMaskedImage(const pcl::PointCloud<pcl::PointXYZRGB> &cloud, const cv::Mat_<unsigned char> &mask, cv::Mat_<cv::Vec3b> &image, float alpha=.5);
+  void getMaskedImage(const pcl::PointCloud<pcl::PointXYZRGB> &cloud, const cv::Mat_<unsigned char> &mask,
+                      cv::Mat_<cv::Vec3b> &image, float alpha = .5);
   void createObjectCloud();
   void createObjectCloudFiltered();
-  void segmentObject(const pcl::PointCloud<pcl::PointXYZRGB> &cloud, const cv::Mat_<unsigned char> &mask, pcl::PointCloud<pcl::PointXYZRGB> &seg_cloud);
+  void segmentObject(const pcl::PointCloud<pcl::PointXYZRGB> &cloud, const cv::Mat_<unsigned char> &mask,
+                     pcl::PointCloud<pcl::PointXYZRGB> &seg_cloud);
   void detectCoordinateSystem(Eigen::Matrix4f &pose);
-  void createMaskFromROI(const v4r::DataMatrix2D<Eigen::Vector3f> &cloud, cv::Mat_<unsigned char> &mask, const Eigen::Matrix4f &object_base_transform,
-                         const Eigen::Vector3f &bb_min, const Eigen::Vector3f &bb_max, const double &roi_offs);
-
+  void createMaskFromROI(const v4r::DataMatrix2D<Eigen::Vector3f> &cloud, cv::Mat_<unsigned char> &mask,
+                         const Eigen::Matrix4f &object_base_transform, const Eigen::Vector3f &bb_min,
+                         const Eigen::Vector3f &bb_max, const double &roi_offs);
 
   inline bool isnan(const Eigen::Vector3f &pt);
 };
@@ -201,13 +201,10 @@ private:
  * @param pt
  * @return
  */
-inline bool ObjectSegmentation::isnan(const Eigen::Vector3f &pt)
-{
+inline bool ObjectSegmentation::isnan(const Eigen::Vector3f &pt) {
   if (std::isnan(pt[0]) || std::isnan(pt[1]) || std::isnan(pt[2]))
     return true;
   return false;
 }
-
-
 
 #endif

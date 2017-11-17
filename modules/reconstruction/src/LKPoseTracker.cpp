@@ -37,14 +37,13 @@
 **
 ****************************************************************************/
 
-
 /**
  * @file main.cpp
  * @author Johann Prankl (prankl@acin.tuwien.ac.at)
  * @date 2017
  * @brief
  *
- */ 
+ */
 
 #include <v4r/reconstruction/LKPoseTracker.h>
 #include <opencv2/video/tracking.hpp>
@@ -54,43 +53,37 @@
 #define HAVE_OCV_2
 #endif
 
-
-namespace v4r 
-{
+namespace v4r {
 
 using namespace std;
-
 
 /************************************************************************************
  * Constructor/Destructor
  */
 LKPoseTracker::LKPoseTracker(const Parameter &p)
- : param(p), last_pose(Eigen::Matrix4f::Identity()), have_im_last(false)
-{ 
-  sqr_inl_dist = param.inl_dist*param.inl_dist;
-  #ifdef HAVE_OCV_2
-  if (param.pnp_method==INT_MIN) param.pnp_method=cv::P3P;
-  #else
-  if (param.pnp_method==INT_MIN) param.pnp_method=cv::SOLVEPNP_P3P;
-  #endif
+: param(p), last_pose(Eigen::Matrix4f::Identity()), have_im_last(false) {
+  sqr_inl_dist = param.inl_dist * param.inl_dist;
+#ifdef HAVE_OCV_2
+  if (param.pnp_method == INT_MIN)
+    param.pnp_method = cv::P3P;
+#else
+  if (param.pnp_method == INT_MIN)
+    param.pnp_method = cv::SOLVEPNP_P3P;
+#endif
 }
 
-LKPoseTracker::~LKPoseTracker()
-{
-}
+LKPoseTracker::~LKPoseTracker() {}
 
 /**
  * getRandIdx
  */
-void LKPoseTracker::getRandIdx(int size, int num, std::vector<int> &idx)
-{
+void LKPoseTracker::getRandIdx(int size, int num, std::vector<int> &idx) {
   int temp;
   idx.clear();
-  for (int i=0; i<num; i++)
-  {
-    do{
-      temp = rand()%size;
-    }while(contains(idx,temp));
+  for (int i = 0; i < num; i++) {
+    do {
+      temp = rand() % size;
+    } while (contains(idx, temp));
     idx.push_back(temp);
   }
 }
@@ -98,27 +91,26 @@ void LKPoseTracker::getRandIdx(int size, int num, std::vector<int> &idx)
 /**
  * countInliers
  */
-unsigned LKPoseTracker::countInliers(const std::vector<cv::Point3f> &points, const std::vector<cv::Point2f> &im_points, const Eigen::Matrix4f &pose)
-{
-  unsigned cnt=0;
+unsigned LKPoseTracker::countInliers(const std::vector<cv::Point3f> &points, const std::vector<cv::Point2f> &im_points,
+                                     const Eigen::Matrix4f &pose) {
+  unsigned cnt = 0;
 
   Eigen::Vector2f im_pt;
   Eigen::Vector3f pt3;
   bool have_dist = !dist_coeffs.empty();
 
   Eigen::Matrix3f R = pose.topLeftCorner<3, 3>();
-  Eigen::Vector3f t = pose.block<3,1>(0, 3);
+  Eigen::Vector3f t = pose.block<3, 1>(0, 3);
 
-  for (unsigned i=0; i<points.size(); i++)
-  {
-    pt3 = R*Eigen::Map<const Eigen::Vector3f>(&points[i].x) + t;
+  for (unsigned i = 0; i < points.size(); i++) {
+    pt3 = R * Eigen::Map<const Eigen::Vector3f>(&points[i].x) + t;
 
     if (have_dist)
       projectPointToImage(&pt3[0], intrinsic.ptr<double>(), dist_coeffs.ptr<double>(), &im_pt[0]);
-    else projectPointToImage(&pt3[0], intrinsic.ptr<double>(), &im_pt[0]);
+    else
+      projectPointToImage(&pt3[0], intrinsic.ptr<double>(), &im_pt[0]);
 
-    if ((im_pt - Eigen::Map<const Eigen::Vector2f>(&im_points[i].x)).squaredNorm() < sqr_inl_dist)
-    {
+    if ((im_pt - Eigen::Map<const Eigen::Vector2f>(&im_points[i].x)).squaredNorm() < sqr_inl_dist) {
       cnt++;
     }
   }
@@ -129,27 +121,26 @@ unsigned LKPoseTracker::countInliers(const std::vector<cv::Point3f> &points, con
 /**
  * getInliers
  */
-void LKPoseTracker::getInliers(const std::vector<cv::Point3f> &points, const std::vector<cv::Point2f> &im_points, const Eigen::Matrix4f &pose, std::vector<int> &_inliers)
-{
+void LKPoseTracker::getInliers(const std::vector<cv::Point3f> &points, const std::vector<cv::Point2f> &im_points,
+                               const Eigen::Matrix4f &pose, std::vector<int> &_inliers) {
   Eigen::Vector2f im_pt;
   Eigen::Vector3f pt3;
   bool have_dist = !dist_coeffs.empty();
 
   Eigen::Matrix3f R = pose.topLeftCorner<3, 3>();
-  Eigen::Vector3f t = pose.block<3,1>(0, 3);
+  Eigen::Vector3f t = pose.block<3, 1>(0, 3);
 
   _inliers.clear();
 
-  for (unsigned i=0; i<points.size(); i++)
-  {
-    pt3 = R*Eigen::Map<const Eigen::Vector3f>(&points[i].x) + t;
+  for (unsigned i = 0; i < points.size(); i++) {
+    pt3 = R * Eigen::Map<const Eigen::Vector3f>(&points[i].x) + t;
 
     if (have_dist)
       projectPointToImage(&pt3[0], intrinsic.ptr<double>(), dist_coeffs.ptr<double>(), &im_pt[0]);
-    else projectPointToImage(&pt3[0], intrinsic.ptr<double>(), &im_pt[0]);
+    else
+      projectPointToImage(&pt3[0], intrinsic.ptr<double>(), &im_pt[0]);
 
-    if ((im_pt - Eigen::Map<const Eigen::Vector2f>(&im_points[i].x)).squaredNorm() < sqr_inl_dist)
-    {
+    if ((im_pt - Eigen::Map<const Eigen::Vector2f>(&im_points[i].x)).squaredNorm() < sqr_inl_dist) {
       _inliers.push_back(i);
     }
   }
@@ -158,22 +149,20 @@ void LKPoseTracker::getInliers(const std::vector<cv::Point3f> &points, const std
 /**
  * ransacSolvePnP
  */
-void LKPoseTracker::ransacSolvePnP(const std::vector<cv::Point3f> &points, const std::vector<cv::Point2f> &im_points, Eigen::Matrix4f &pose, std::vector<int> &_inliers)
-{
-  int k=0;
-  float sig=param.nb_ransac_points, sv_sig=0.;
-  float eps = sig/(float)points.size();
+void LKPoseTracker::ransacSolvePnP(const std::vector<cv::Point3f> &points, const std::vector<cv::Point2f> &im_points,
+                                   Eigen::Matrix4f &pose, std::vector<int> &_inliers) {
+  int k = 0;
+  float sig = param.nb_ransac_points, sv_sig = 0.;
+  float eps = sig / (float)points.size();
   std::vector<int> indices;
   std::vector<cv::Point3f> model_pts(param.nb_ransac_points);
   std::vector<cv::Point2f> query_pts(param.nb_ransac_points);
-  cv::Mat_<double> R(3,3), rvec, tvec, sv_rvec, sv_tvec;
+  cv::Mat_<double> R(3, 3), rvec, tvec, sv_rvec, sv_tvec;
 
-  while (pow(1. - pow(eps,param.nb_ransac_points), k) >= param.eta_ransac && k < (int)param.max_rand_trials)
-  {
+  while (pow(1. - pow(eps, param.nb_ransac_points), k) >= param.eta_ransac && k < (int)param.max_rand_trials) {
     getRandIdx(points.size(), param.nb_ransac_points, indices);
 
-    for (unsigned i=0; i<indices.size(); i++)
-    {
+    for (unsigned i = 0; i < indices.size(); i++) {
       model_pts[i] = points[indices[i]];
       query_pts[i] = im_points[indices[i]];
     }
@@ -185,8 +174,7 @@ void LKPoseTracker::ransacSolvePnP(const std::vector<cv::Point3f> &points, const
 
     sig = countInliers(points, im_points, pose);
 
-    if (sig > sv_sig)
-    {
+    if (sig > sv_sig) {
       sv_sig = sig;
       rvec.copyTo(sv_rvec);
       tvec.copyTo(sv_tvec);
@@ -197,7 +185,8 @@ void LKPoseTracker::ransacSolvePnP(const std::vector<cv::Point3f> &points, const
     k++;
   }
 
-  if (sv_sig<4) return;
+  if (sv_sig < 4)
+    return;
 
   cv::Rodrigues(sv_rvec, R);
   cvToEigen(R, sv_tvec, pose);
@@ -206,38 +195,35 @@ void LKPoseTracker::ransacSolvePnP(const std::vector<cv::Point3f> &points, const
   model_pts.resize(_inliers.size());
   query_pts.resize(_inliers.size());
 
-  for (unsigned i=0; i<_inliers.size(); i++)
-  {
+  for (unsigned i = 0; i < _inliers.size(); i++) {
     model_pts[i] = points[_inliers[i]];
     query_pts[i] = im_points[_inliers[i]];
   }
 
-  #ifdef HAVE_OCV_2
-  cv::solvePnP(cv::Mat(model_pts), cv::Mat(query_pts), intrinsic, dist_coeffs, sv_rvec, sv_tvec, true, cv::ITERATIVE );
-  #else
-  cv::solvePnP(cv::Mat(model_pts), cv::Mat(query_pts), intrinsic, dist_coeffs, sv_rvec, sv_tvec, true, cv::SOLVEPNP_ITERATIVE );
-  #endif
+#ifdef HAVE_OCV_2
+  cv::solvePnP(cv::Mat(model_pts), cv::Mat(query_pts), intrinsic, dist_coeffs, sv_rvec, sv_tvec, true, cv::ITERATIVE);
+#else
+  cv::solvePnP(cv::Mat(model_pts), cv::Mat(query_pts), intrinsic, dist_coeffs, sv_rvec, sv_tvec, true,
+               cv::SOLVEPNP_ITERATIVE);
+#endif
 
   cv::Rodrigues(sv_rvec, R);
   cvToEigen(R, sv_tvec, pose);
 
-
-  if (!dbg.empty()) cout<<"Num ransac trials: "<<k<<endl;
+  if (!dbg.empty())
+    cout << "Num ransac trials: " << k << endl;
 }
-
-
-
-
 
 /******************************* PUBLIC ***************************************/
 
 /**
  * setLastFrame
  */
-void LKPoseTracker::setLastFrame(const cv::Mat &image, const Eigen::Matrix4f &pose)
-{
-  if( image.type() != CV_8U ) cv::cvtColor( image, im_last, CV_RGB2GRAY );
-  else image.copyTo(im_last);
+void LKPoseTracker::setLastFrame(const cv::Mat &image, const Eigen::Matrix4f &pose) {
+  if (image.type() != CV_8U)
+    cv::cvtColor(image, im_last, CV_RGB2GRAY);
+  else
+    image.copyTo(im_last);
 
   last_pose = pose;
   have_im_last = true;
@@ -246,19 +232,20 @@ void LKPoseTracker::setLastFrame(const cv::Mat &image, const Eigen::Matrix4f &po
 /**
  * detect
  */
-double LKPoseTracker::detectIncremental(const cv::Mat &image, Eigen::Matrix4f &pose)
-{
-  if (model.get()==0)
+double LKPoseTracker::detectIncremental(const cv::Mat &image, Eigen::Matrix4f &pose) {
+  if (model.get() == 0)
     throw std::runtime_error("[LKPoseTracker::detect] No model available!");
   if (intrinsic.empty())
     throw std::runtime_error("[LKPoseTracker::detect] Intrinsic camera parameter not set!");
 
-  if( image.type() != CV_8U ) cv::cvtColor( image, im_gray, CV_RGB2GRAY );
-  else im_gray = image;
+  if (image.type() != CV_8U)
+    cv::cvtColor(image, im_gray, CV_RGB2GRAY);
+  else
+    im_gray = image;
 
   if (!have_im_last || im_last.empty()) {
-    //last_pose = pose;
-    //im_gray.copyTo(im_last);
+    // last_pose = pose;
+    // im_gray.copyTo(im_last);
     return 0.;
   }
 
@@ -266,7 +253,7 @@ double LKPoseTracker::detectIncremental(const cv::Mat &image, Eigen::Matrix4f &p
 
   ObjectView &m = *model;
 
-  cv::Mat_<double> R(3,3), rvec, tvec;
+  cv::Mat_<double> R(3, 3), rvec, tvec;
   std::vector<Eigen::Vector3f> points;
   std::vector<cv::Point3f> model_pts;
   std::vector<cv::Point2f> query_pts;
@@ -277,64 +264,67 @@ double LKPoseTracker::detectIncremental(const cv::Mat &image, Eigen::Matrix4f &p
   inliers.clear();
 
   Eigen::Matrix3f pose_R = last_pose.topLeftCorner<3, 3>();
-  Eigen::Vector3f pose_t = last_pose.block<3,1>(0, 3);
+  Eigen::Vector3f pose_t = last_pose.block<3, 1>(0, 3);
   Eigen::Vector3f pt3;
   bool have_dist = !dist_coeffs.empty();
 
-  for (unsigned i=0; i<points.size(); i++)
-  {
-    pt3 = pose_R*points[i] + pose_t;
+  for (unsigned i = 0; i < points.size(); i++) {
+    pt3 = pose_R * points[i] + pose_t;
 
     if (have_dist)
       projectPointToImage(&pt3[0], intrinsic.ptr<double>(), dist_coeffs.ptr<double>(), &im_points0[i].x);
-    else projectPointToImage(&pt3[0], intrinsic.ptr<double>(), &im_points0[i].x);
+    else
+      projectPointToImage(&pt3[0], intrinsic.ptr<double>(), &im_points0[i].x);
   }
 
-  cv::calcOpticalFlowPyrLK(im_last, im_gray, im_points0, im_points1, status, error, param.win_size, param.max_level, param.termcrit, 0, 0.001 );
+  cv::calcOpticalFlowPyrLK(im_last, im_gray, im_points0, im_points1, status, error, param.win_size, param.max_level,
+                           param.termcrit, 0, 0.001);
 
-  for (unsigned i=0; i<im_points0.size(); i++)
-  {
-    if (status[i]!=0 && error[i]<param.max_error)
-    {
+  for (unsigned i = 0; i < im_points0.size(); i++) {
+    if (status[i] != 0 && error[i] < param.max_error) {
       lk_inliers.push_back(i);
       const Eigen::Vector3d &pt = m.getPt(i).pt;
-      model_pts.push_back(cv::Point3f(pt[0],pt[1],pt[2]));
+      model_pts.push_back(cv::Point3f(pt[0], pt[1], pt[2]));
       query_pts.push_back(im_points1[i]);
-      if (!dbg.empty()) cv::line(dbg,im_points0[i], im_points1[i],CV_RGB(0,0,0));
+      if (!dbg.empty())
+        cv::line(dbg, im_points0[i], im_points1[i], CV_RGB(0, 0, 0));
     }
   }
 
-  if (int(query_pts.size())<4) return 0.;
+  if (int(query_pts.size()) < 4)
+    return 0.;
 
   ransacSolvePnP(model_pts, query_pts, pose, pnp_inliers);
 
-  if (int(pnp_inliers.size())<4) return 0.;
+  if (int(pnp_inliers.size()) < 4)
+    return 0.;
 
-  for (unsigned i=0; i<pnp_inliers.size(); i++) {
+  for (unsigned i = 0; i < pnp_inliers.size(); i++) {
     inliers.push_back(lk_inliers[pnp_inliers[i]]);
-    if (!dbg.empty()) cv::circle(dbg,im_points1[inliers.back()],2,CV_RGB(255,255,0));
+    if (!dbg.empty())
+      cv::circle(dbg, im_points1[inliers.back()], 2, CV_RGB(255, 255, 0));
   }
 
-  return double(inliers.size())/double(model->points.size());
+  return double(inliers.size()) / double(model->points.size());
 }
-
 
 /**
  * detect
  */
-double LKPoseTracker::detect(const cv::Mat &image, Eigen::Matrix4f &pose)
-{
-  if (model.get()==0)
+double LKPoseTracker::detect(const cv::Mat &image, Eigen::Matrix4f &pose) {
+  if (model.get() == 0)
     throw std::runtime_error("[LKPoseTracker::detect] No model available!");
   if (intrinsic.empty())
     throw std::runtime_error("[LKPoseTracker::detect] Intrinsic camera parameter not set!");
 
-  if( image.type() != CV_8U ) cv::cvtColor( image, im_gray, CV_RGB2GRAY );
-  else im_gray = image;
+  if (image.type() != CV_8U)
+    cv::cvtColor(image, im_gray, CV_RGB2GRAY);
+  else
+    im_gray = image;
 
   ObjectView &m = *model;
 
-  cv::Mat_<double> R(3,3), rvec, tvec;
+  cv::Mat_<double> R(3, 3), rvec, tvec;
   std::vector<cv::Point3f> model_pts;
   std::vector<cv::Point2f> query_pts;
   std::vector<int> lk_inliers, pnp_inliers;
@@ -342,112 +332,95 @@ double LKPoseTracker::detect(const cv::Mat &image, Eigen::Matrix4f &pose)
   inliers.clear();
 
   Eigen::Matrix3f pose_R = pose.topLeftCorner<3, 3>();
-  Eigen::Vector3f pose_t = pose.block<3,1>(0, 3);
+  Eigen::Vector3f pose_t = pose.block<3, 1>(0, 3);
   Eigen::Vector3f pt3;
   bool have_dist = !dist_coeffs.empty();
 
-  for (unsigned i=0; i<m.points.size(); i++)
-  {
-    pt3 = pose_R*m.getPt(i).pt.cast<float>() + pose_t;
+  for (unsigned i = 0; i < m.points.size(); i++) {
+    pt3 = pose_R * m.getPt(i).pt.cast<float>() + pose_t;
 
     if (have_dist)
       projectPointToImage(&pt3[0], intrinsic.ptr<double>(), dist_coeffs.ptr<double>(), &im_points1[i].x);
-    else projectPointToImage(&pt3[0], intrinsic.ptr<double>(), &im_points1[i].x);
+    else
+      projectPointToImage(&pt3[0], intrinsic.ptr<double>(), &im_points1[i].x);
   }
 
-  cv::calcOpticalFlowPyrLK(model->image, im_gray, im_points0, im_points1, status, error, param.win_size, param.max_level, param.termcrit, cv::OPTFLOW_USE_INITIAL_FLOW, 0.001 );
+  cv::calcOpticalFlowPyrLK(model->image, im_gray, im_points0, im_points1, status, error, param.win_size,
+                           param.max_level, param.termcrit, cv::OPTFLOW_USE_INITIAL_FLOW, 0.001);
 
-
-  for (unsigned i=0; i<im_points0.size(); i++)
-  {
-    if (status[i]!=0 && error[i]<param.max_error)
-    {
+  for (unsigned i = 0; i < im_points0.size(); i++) {
+    if (status[i] != 0 && error[i] < param.max_error) {
       lk_inliers.push_back(i);
       const Eigen::Vector3d &pt = m.getPt(i).pt;
-      model_pts.push_back(cv::Point3f(pt[0],pt[1],pt[2]));
+      model_pts.push_back(cv::Point3f(pt[0], pt[1], pt[2]));
       query_pts.push_back(im_points1[i]);
-      if (!dbg.empty()) cv::line(dbg,im_points0[i], im_points1[i],CV_RGB(0,0,0));
+      if (!dbg.empty())
+        cv::line(dbg, im_points0[i], im_points1[i], CV_RGB(0, 0, 0));
     }
   }
 
-  if (int(query_pts.size())<4) return 0.;
+  if (int(query_pts.size()) < 4)
+    return 0.;
 
-cout<<"3"<<endl;
+  cout << "3" << endl;
   ransacSolvePnP(model_pts, query_pts, pose, pnp_inliers);
-cout<<"4"<<endl;
+  cout << "4" << endl;
 
+  if (int(pnp_inliers.size()) < 4)
+    return 0.;
 
-  if (int(pnp_inliers.size())<4) return 0.;
-
-  for (unsigned i=0; i<pnp_inliers.size(); i++) {
+  for (unsigned i = 0; i < pnp_inliers.size(); i++) {
     inliers.push_back(lk_inliers[pnp_inliers[i]]);
-    if (!dbg.empty()) cv::circle(dbg,im_points1[inliers.back()],2,CV_RGB(255,255,0));
+    if (!dbg.empty())
+      cv::circle(dbg, im_points1[inliers.back()], 2, CV_RGB(255, 255, 0));
   }
 
-  return double(inliers.size())/double(model->points.size());
+  return double(inliers.size()) / double(model->points.size());
 }
 
 /**
  * getProjections
  * @param im_pts <model_point_index, projection>
  */
-void LKPoseTracker::getProjections(std::vector< std::pair<int,cv::Point2f> > &im_pts)
-{
+void LKPoseTracker::getProjections(std::vector<std::pair<int, cv::Point2f>> &im_pts) {
   im_pts.clear();
-  if (model.get()==0 || im_points1.size()!=model->keys.size() || inliers.size()>im_points1.size())
+  if (model.get() == 0 || im_points1.size() != model->keys.size() || inliers.size() > im_points1.size())
     return;
 
-  for (unsigned i=0; i<inliers.size(); i++)
-    im_pts.push_back(make_pair(inliers[i],im_points1[inliers[i]]));
+  for (unsigned i = 0; i < inliers.size(); i++)
+    im_pts.push_back(make_pair(inliers[i], im_points1[inliers[i]]));
 }
 
 /**
  * setModel
  */
-void LKPoseTracker::setModel(const ObjectView::Ptr &_model) 
-{  
-  if (_model->points.size()!=_model->keys.size())
+void LKPoseTracker::setModel(const ObjectView::Ptr &_model) {
+  if (_model->points.size() != _model->keys.size())
     throw std::runtime_error("[LKPoseTracker::setModel] Invalid model!");
 
-  model=_model; 
+  model = _model;
   ObjectView &view = *model;
 
   im_points0.resize(view.keys.size());
   im_points1.resize(view.keys.size());
 
-  for (unsigned i=0; i<view.keys.size(); i++)
+  for (unsigned i = 0; i < view.keys.size(); i++)
     im_points0[i] = view.keys[i].pt;
 }
 
 /**
  * setCameraParameter
  */
-void LKPoseTracker::setCameraParameter(const cv::Mat &_intrinsic, const cv::Mat &_dist_coeffs)
-{
+void LKPoseTracker::setCameraParameter(const cv::Mat &_intrinsic, const cv::Mat &_dist_coeffs) {
   dist_coeffs = cv::Mat_<double>();
   if (_intrinsic.type() != CV_64F)
     _intrinsic.convertTo(intrinsic, CV_64F);
-  else intrinsic = _intrinsic;
-  if (!_dist_coeffs.empty())
-  {
-    dist_coeffs = cv::Mat_<double>::zeros(1,8);
-    for (int i=0; i<_dist_coeffs.cols*_dist_coeffs.rows; i++)
-      dist_coeffs(0,i) = _dist_coeffs.at<double>(0,i);
+  else
+    intrinsic = _intrinsic;
+  if (!_dist_coeffs.empty()) {
+    dist_coeffs = cv::Mat_<double>::zeros(1, 8);
+    for (int i = 0; i < _dist_coeffs.cols * _dist_coeffs.rows; i++)
+      dist_coeffs(0, i) = _dist_coeffs.at<double>(0, i);
   }
 }
-
-
-
 }
-
-
-
-
-
-
-
-
-
-
-
-

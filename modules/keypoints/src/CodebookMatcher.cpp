@@ -37,56 +37,40 @@
 **
 ****************************************************************************/
 
-
 /**
  * @file main.cpp
  * @author Johann Prankl (prankl@acin.tuwien.ac.at)
  * @date 2017
  * @brief
  *
- */ 
+ */
 
-#include <v4r/keypoints/CodebookMatcher.h>
 #include <pcl/common/time.h>
+#include <v4r/keypoints/CodebookMatcher.h>
 
-
-namespace v4r
-{
-
+namespace v4r {
 
 using namespace std;
 
-
-inline bool cmpViewRandDec(const std::pair<int,int> &i, const std::pair<int,int> &j)
-{
-  return (i.second>j.second);
+inline bool cmpViewRandDec(const std::pair<int, int> &i, const std::pair<int, int> &j) {
+  return (i.second > j.second);
 }
-
 
 /************************************************************************************
  * Constructor/Destructor
  */
-CodebookMatcher::CodebookMatcher(const Parameter &p)
- : param(p), max_view_index(0)
-{ 
+CodebookMatcher::CodebookMatcher(const Parameter &p) : param(p), max_view_index(0) {
   rnn.dbg = true;
 }
 
-CodebookMatcher::~CodebookMatcher()
-{
-}
-
-
-
-
+CodebookMatcher::~CodebookMatcher() {}
 
 /***************************************************************************************/
 
 /**
  * @brief CodebookMatcher::clear
  */
-void CodebookMatcher::clear()
-{
+void CodebookMatcher::clear() {
   max_view_index = 0;
   descs.clear();
   vk_indices.clear();
@@ -97,15 +81,13 @@ void CodebookMatcher::clear()
  * @param descriptors
  * @param view_idx
  */
-void CodebookMatcher::addView(const cv::Mat &descriptors, int view_idx)
-{
-  descs.reserve(descs.rows+descriptors.rows, descriptors.cols);
-  vk_indices.reserve(vk_indices.size()+descriptors.rows);
+void CodebookMatcher::addView(const cv::Mat &descriptors, int view_idx) {
+  descs.reserve(descs.rows + descriptors.rows, descriptors.cols);
+  vk_indices.reserve(vk_indices.size() + descriptors.rows);
 
-  for (unsigned i=0; i<(unsigned)descriptors.rows; i++)
-  {
-    descs.push_back(&descriptors.at<float>(i,0), descriptors.cols);
-    vk_indices.push_back(std::make_pair(view_idx,i));
+  for (unsigned i = 0; i < (unsigned)descriptors.rows; i++) {
+    descs.push_back(&descriptors.at<float>(i, 0), descriptors.cols);
+    vk_indices.push_back(std::make_pair(view_idx, i));
   }
 
   if (view_idx > max_view_index)
@@ -115,13 +97,12 @@ void CodebookMatcher::addView(const cv::Mat &descriptors, int view_idx)
 /**
  * @brief CodebookMatcher::createCodebook
  */
-void CodebookMatcher::createCodebook()
-{
+void CodebookMatcher::createCodebook() {
   pcl::ScopeTime t("CodebookMatcher::createCodebook");
 
   // rnn clustering
   v4r::DataMatrix2Df centers;
-  std::vector<std::vector<int> > clusters;
+  std::vector<std::vector<int>> clusters;
 
   rnn.param.dist_thr = param.thr_desc_rnn;
   rnn.cluster(descs);
@@ -132,29 +113,29 @@ void CodebookMatcher::createCodebook()
   cb_entries.resize(clusters.size());
   cb_centers = cv::Mat_<float>(clusters.size(), centers.cols);
 
-  for (unsigned i=0; i<clusters.size(); i++)
-  {
-    for (unsigned j=0; j<clusters[i].size(); j++)
+  for (unsigned i = 0; i < clusters.size(); i++) {
+    for (unsigned j = 0; j < clusters[i].size(); j++)
       cb_entries[i].push_back(vk_indices[clusters[i][j]]);
 
-    cv::Mat_<float>(1,centers.cols,&centers(i,0)).copyTo(cb_centers.row(i));
+    cv::Mat_<float>(1, centers.cols, &centers(i, 0)).copyTo(cb_centers.row(i));
   }
 
-  cout<<"codbeook.size()="<<clusters.size()<<"/"<<descs.rows<<endl;
+  cout << "codbeook.size()=" << clusters.size() << "/" << descs.rows << endl;
 
   // create flann for matching
-  { pcl::ScopeTime t("create FLANN");
-  matcher = new cv::FlannBasedMatcher(new cv::flann::KDTreeIndexParams(16), new cv::flann::SearchParams(150,0,true));
-  matcher->add(std::vector<cv::Mat>(1,cb_centers));
-  matcher->train();
+  {
+    pcl::ScopeTime t("create FLANN");
+    matcher =
+        new cv::FlannBasedMatcher(new cv::flann::KDTreeIndexParams(16), new cv::flann::SearchParams(150, 0, true));
+    matcher->add(std::vector<cv::Mat>(1, cb_centers));
+    matcher->train();
   }
 
   // once the codebook is created clear the temp containers
   rnn = ClusteringRNN();
   descs = DataMatrix2Df();
-  vk_indices = std::vector< std::pair<int,int> >();
-//  cb_centers.release(); // o.k. we could release them, but then we need to store the flann
-
+  vk_indices = std::vector<std::pair<int, int>>();
+  //  cb_centers.release(); // o.k. we could release them, but then we need to store the flann
 }
 
 /**
@@ -162,13 +143,12 @@ void CodebookMatcher::createCodebook()
  * @param _cb_centers
  * @param _cb_entries
  */
-void CodebookMatcher::createCodebook(cv::Mat &_cb_centers, std::vector< std::vector< std::pair<int,int> > > &_cb_entries)
-{
+void CodebookMatcher::createCodebook(cv::Mat &_cb_centers, std::vector<std::vector<std::pair<int, int>>> &_cb_entries) {
   pcl::ScopeTime t("CodebookMatcher::createCodebook");
 
   // rnn clustering
   v4r::DataMatrix2Df centers;
-  std::vector<std::vector<int> > clusters;
+  std::vector<std::vector<int>> clusters;
 
   rnn.param.dist_thr = param.thr_desc_rnn;
   rnn.cluster(descs);
@@ -179,21 +159,22 @@ void CodebookMatcher::createCodebook(cv::Mat &_cb_centers, std::vector< std::vec
   cb_entries.resize(clusters.size());
   cb_centers = cv::Mat_<float>(clusters.size(), centers.cols);
 
-  for (unsigned i=0; i<clusters.size(); i++)
-  {
-    for (unsigned j=0; j<clusters[i].size(); j++)
+  for (unsigned i = 0; i < clusters.size(); i++) {
+    for (unsigned j = 0; j < clusters[i].size(); j++)
       cb_entries[i].push_back(vk_indices[clusters[i][j]]);
 
-    cv::Mat_<float>(1,centers.cols,&centers(i,0)).copyTo(cb_centers.row(i));
+    cv::Mat_<float>(1, centers.cols, &centers(i, 0)).copyTo(cb_centers.row(i));
   }
 
-  cout<<"codbeook.size()="<<clusters.size()<<"/"<<descs.rows<<endl;
+  cout << "codbeook.size()=" << clusters.size() << "/" << descs.rows << endl;
 
   // create flann for matching
-  { pcl::ScopeTime t("create FLANN");
-  matcher = new cv::FlannBasedMatcher(new cv::flann::KDTreeIndexParams(16), new cv::flann::SearchParams(150,0,true));
-  matcher->add(std::vector<cv::Mat>(1,cb_centers));
-  matcher->train();
+  {
+    pcl::ScopeTime t("create FLANN");
+    matcher =
+        new cv::FlannBasedMatcher(new cv::flann::KDTreeIndexParams(16), new cv::flann::SearchParams(150, 0, true));
+    matcher->add(std::vector<cv::Mat>(1, cb_centers));
+    matcher->train();
   }
 
   // return codebook
@@ -203,7 +184,7 @@ void CodebookMatcher::createCodebook(cv::Mat &_cb_centers, std::vector< std::vec
   // once the codebook is created clear the temp containers
   rnn = ClusteringRNN();
   descs = DataMatrix2Df();
-  vk_indices = std::vector< std::pair<int,int> >();
+  vk_indices = std::vector<std::pair<int, int>>();
   cb_centers.release();
 }
 
@@ -212,28 +193,28 @@ void CodebookMatcher::createCodebook(cv::Mat &_cb_centers, std::vector< std::vec
  * @param _cb_centers
  * @param _cb_entries
  */
-void CodebookMatcher::setCodebook(const cv::Mat &_cb_centers, const std::vector< std::vector< std::pair<int,int> > > &_cb_entries)
-{
+void CodebookMatcher::setCodebook(const cv::Mat &_cb_centers,
+                                  const std::vector<std::vector<std::pair<int, int>>> &_cb_entries) {
   cb_centers = _cb_centers;
   cb_entries = _cb_entries;
 
   max_view_index = 0;
 
-  for (unsigned i=0; i<cb_entries.size(); i++)
-    for (unsigned j=0; j<cb_entries[i].size(); j++)
+  for (unsigned i = 0; i < cb_entries.size(); i++)
+    for (unsigned j = 0; j < cb_entries[i].size(); j++)
       if (cb_entries[i][j].first > max_view_index)
         max_view_index = cb_entries[i][j].first;
 
   max_view_index++;
 
   // create flann for matching
-  { pcl::ScopeTime t("create FLANN");
-  matcher = new cv::FlannBasedMatcher(new cv::flann::KDTreeIndexParams(16), new cv::flann::SearchParams(150,0,true));
-  matcher->add(std::vector<cv::Mat>(1,cb_centers));
-  matcher->train();
+  {
+    pcl::ScopeTime t("create FLANN");
+    matcher =
+        new cv::FlannBasedMatcher(new cv::flann::KDTreeIndexParams(16), new cv::flann::SearchParams(150, 0, true));
+    matcher->add(std::vector<cv::Mat>(1, cb_centers));
+    matcher->train();
   }
-
-
 }
 
 /**
@@ -241,35 +222,31 @@ void CodebookMatcher::setCodebook(const cv::Mat &_cb_centers, const std::vector<
  * @param descriptors
  * @param view_rank <view_index, rank_number>  sorted better first
  */
-void CodebookMatcher::queryViewRank(const cv::Mat &descriptors, std::vector< std::pair<int, int> > &view_rank_)
-{
-  std::vector< std::vector< cv::DMatch > > cb_matches;
+void CodebookMatcher::queryViewRank(const cv::Mat &descriptors, std::vector<std::pair<int, int>> &view_rank_) {
+  std::vector<std::vector<cv::DMatch>> cb_matches;
 
-  matcher->knnMatch( descriptors, cb_matches, 2 );
+  matcher->knnMatch(descriptors, cb_matches, 2);
 
-  view_rank_.resize(max_view_index+1);
+  view_rank_.resize(max_view_index + 1);
 
-  for (unsigned i=0; i<view_rank_.size(); i++)
-    view_rank_[i] = std::make_pair((int)i,0.);
+  for (unsigned i = 0; i < view_rank_.size(); i++)
+    view_rank_[i] = std::make_pair((int)i, 0.);
 
-  for (unsigned i=0; i<cb_matches.size(); i++)
-  {
-    if (cb_matches[i].size()>1)
-    {
+  for (unsigned i = 0; i < cb_matches.size(); i++) {
+    if (cb_matches[i].size() > 1) {
       cv::DMatch &ma0 = cb_matches[i][0];
 
-      if (ma0.distance/cb_matches[i][1].distance < param.nnr)
-      {
-        const std::vector< std::pair<int,int> > &occs = cb_entries[ma0.trainIdx];
+      if (ma0.distance / cb_matches[i][1].distance < param.nnr) {
+        const std::vector<std::pair<int, int>> &occs = cb_entries[ma0.trainIdx];
 
-        for (unsigned j=0; j<occs.size(); j++)
+        for (unsigned j = 0; j < occs.size(); j++)
           view_rank_[occs[j].first].second++;
       }
     }
   }
 
-  //sort
-  std::sort(view_rank_.begin(),view_rank_.end(),cmpViewRandDec);
+  // sort
+  std::sort(view_rank_.begin(), view_rank_.end(), cmpViewRandDec);
 }
 
 /**
@@ -277,56 +254,36 @@ void CodebookMatcher::queryViewRank(const cv::Mat &descriptors, std::vector< std
  * @param descriptors
  * @param matches
  */
-void CodebookMatcher::queryMatches(const cv::Mat &descriptors, std::vector< std::vector< cv::DMatch > > &matches, bool sort_view_rank)
-{
-  std::vector< std::vector< cv::DMatch > > cb_matches;
+void CodebookMatcher::queryMatches(const cv::Mat &descriptors, std::vector<std::vector<cv::DMatch>> &matches,
+                                   bool sort_view_rank) {
+  std::vector<std::vector<cv::DMatch>> cb_matches;
 
-  matcher->knnMatch( descriptors, cb_matches, 2 );
+  matcher->knnMatch(descriptors, cb_matches, 2);
 
   matches.clear();
   matches.resize(descriptors.rows);
-  view_rank.resize(max_view_index+1);
+  view_rank.resize(max_view_index + 1);
 
-  for (unsigned i=0; i<view_rank.size(); i++)
-    view_rank[i] = std::make_pair((int)i,0.);
+  for (unsigned i = 0; i < view_rank.size(); i++)
+    view_rank[i] = std::make_pair((int)i, 0.);
 
-  for (unsigned i=0; i<cb_matches.size(); i++)
-  {
-    if (cb_matches[i].size()>1)
-    {
+  for (unsigned i = 0; i < cb_matches.size(); i++) {
+    if (cb_matches[i].size() > 1) {
       cv::DMatch &ma0 = cb_matches[i][0];
-      if (ma0.distance < param.max_dist && ma0.distance/cb_matches[i][1].distance < param.nnr)
-      {
-        std::vector< cv::DMatch > &ms = matches[ma0.queryIdx];
-        const std::vector< std::pair<int,int> > &occs = cb_entries[ma0.trainIdx];
+      if (ma0.distance < param.max_dist && ma0.distance / cb_matches[i][1].distance < param.nnr) {
+        std::vector<cv::DMatch> &ms = matches[ma0.queryIdx];
+        const std::vector<std::pair<int, int>> &occs = cb_entries[ma0.trainIdx];
 
-        for (unsigned j=0; j<occs.size(); j++)
-        {
-          ms.push_back(cv::DMatch(ma0.queryIdx,occs[j].second,occs[j].first,ma0.distance));
+        for (unsigned j = 0; j < occs.size(); j++) {
+          ms.push_back(cv::DMatch(ma0.queryIdx, occs[j].second, occs[j].first, ma0.distance));
           view_rank[occs[j].first].second++;
         }
       }
     }
   }
 
-  //sort
+  // sort
   if (sort_view_rank)
-    std::sort(view_rank.begin(),view_rank.end(),cmpViewRandDec);
+    std::sort(view_rank.begin(), view_rank.end(), cmpViewRandDec);
 }
-
-
-
-
 }
-
-
-
-
-
-
-
-
-
-
-
-

@@ -37,7 +37,6 @@
 **
 ****************************************************************************/
 
-
 /**
  * @file   segmenter_euclidean.h
  * @author Thomas Faeulhammer (faeulhammer@acin.tuwien.ac.at)
@@ -48,52 +47,46 @@
 
 #pragma once
 
-#include <v4r/core/macros.h>
+#include <glog/logging.h>
 #include <v4r/common/pcl_utils.h>
+#include <v4r/core/macros.h>
 #include <v4r/segmentation/segmenter.h>
 #include <boost/program_options.hpp>
-#include <glog/logging.h>
 
 namespace po = boost::program_options;
 
-namespace v4r
-{
+namespace v4r {
 
+class V4R_EXPORTS EuclideanSegmenterParameter : public SegmenterParameter {
+ public:
+  using SegmenterParameter::min_cluster_size_;
+  using SegmenterParameter::max_cluster_size_;
+  using SegmenterParameter::cluster_tolerance_;
 
-class V4R_EXPORTS EuclideanSegmenterParameter : public SegmenterParameter
-{
-public:
-    using SegmenterParameter::min_cluster_size_;
-    using SegmenterParameter::max_cluster_size_;
-    using SegmenterParameter::cluster_tolerance_;
-
-    EuclideanSegmenterParameter ()
-    {
-        cluster_tolerance_ = 0.035f;
-    }
+  EuclideanSegmenterParameter() {
+    cluster_tolerance_ = 0.035f;
+  }
 };
 
 template <typename PointT>
-class V4R_EXPORTS EuclideanSegmenter : public Segmenter<PointT>
-{
-    using Segmenter<PointT>::clusters_;
-    using Segmenter<PointT>::scene_;
+class V4R_EXPORTS EuclideanSegmenter : public Segmenter<PointT> {
+  using Segmenter<PointT>::clusters_;
+  using Segmenter<PointT>::scene_;
 
-    EuclideanSegmenterParameter param_;
+  EuclideanSegmenterParameter param_;
 
-public:
-    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+ public:
+  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-    EuclideanSegmenter(const EuclideanSegmenterParameter &p = EuclideanSegmenterParameter() ) : param_(p)
-    { }
+  EuclideanSegmenter(const EuclideanSegmenterParameter &p = EuclideanSegmenterParameter()) : param_(p) {}
 
-    bool getRequiresNormals() { return false; }
+  bool getRequiresNormals() {
+    return false;
+  }
 
-    void
-    segment();
+  void segment();
 
-    typedef boost::shared_ptr< EuclideanSegmenter<PointT> > Ptr;
-    typedef boost::shared_ptr< EuclideanSegmenter<PointT> const> ConstPtr;
+  typedef boost::shared_ptr<EuclideanSegmenter<PointT>> Ptr;
+  typedef boost::shared_ptr<EuclideanSegmenter<PointT> const> ConstPtr;
 };
-
 }

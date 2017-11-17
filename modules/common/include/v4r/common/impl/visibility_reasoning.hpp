@@ -8,109 +8,99 @@
 #ifndef V4R_REGISTRATION_VISIBILITY_REASONING_HPP_
 #define V4R_REGISTRATION_VISIBILITY_REASONING_HPP_
 
-#include <v4r/common/visibility_reasoning.h>
-#include <pcl/common/transforms.h>
 #include <pcl/common/angles.h>
+#include <pcl/common/transforms.h>
+#include <v4r/common/visibility_reasoning.h>
 
-namespace v4r
-{
+namespace v4r {
 
-template<typename PointT>
-  int
-  VisibilityReasoning<PointT>::computeRangeDifferencesWhereObserved (const typename pcl::PointCloud<PointT>::ConstPtr & im1,
-                                                                                             const typename pcl::PointCloud<PointT>::ConstPtr & im2,
-                                                                                                 std::vector<float> & range_diff)
-  {
-    float cx, cy;
-    cx = static_cast<float> (cx_) / 2.f; //- 0.5f;
-    cy = static_cast<float> (cy_) / 2.f; // - 0.5f;
+template <typename PointT>
+int VisibilityReasoning<PointT>::computeRangeDifferencesWhereObserved(
+    const typename pcl::PointCloud<PointT>::ConstPtr& im1, const typename pcl::PointCloud<PointT>::ConstPtr& im2,
+    std::vector<float>& range_diff) {
+  float cx, cy;
+  cx = static_cast<float>(cx_) / 2.f;  //- 0.5f;
+  cy = static_cast<float>(cy_) / 2.f;  // - 0.5f;
 
-    range_diff.resize (im2->points.size ());
-    int keep = 0;
-    for (size_t i = 0; i < im2->points.size (); i++)
-    {
-      if (!pcl_isfinite(im2->points[i].z))
-        continue;
+  range_diff.resize(im2->points.size());
+  int keep = 0;
+  for (size_t i = 0; i < im2->points.size(); i++) {
+    if (!pcl_isfinite(im2->points[i].z))
+      continue;
 
-      float x = im2->points[i].x;
-      float y = im2->points[i].y;
-      float z = im2->points[i].z;
-      int u = static_cast<int> (focal_length_ * x / z + cx);
-      int v = static_cast<int> (focal_length_ * y / z + cy);
+    float x = im2->points[i].x;
+    float y = im2->points[i].y;
+    float z = im2->points[i].z;
+    int u = static_cast<int>(focal_length_ * x / z + cx);
+    int v = static_cast<int>(focal_length_ * y / z + cy);
 
-      if (u >= cx_ || v >= cy_ || u < 0 || v < 0)
-        continue;
+    if (u >= cx_ || v >= cy_ || u < 0 || v < 0)
+      continue;
 
-      //Check if point depth (distance to camera) is greater than the (u,v) meaning that the point is not visible
-      if (!pcl_isfinite(im1->at(u,v).z))
-        continue;
+    // Check if point depth (distance to camera) is greater than the (u,v) meaning that the point is not visible
+    if (!pcl_isfinite(im1->at(u, v).z))
+      continue;
 
-      range_diff[keep] = (im1->at (u, v).z - z);
-      keep++;
-    }
-
-    range_diff.resize (keep);
-    return keep;
+    range_diff[keep] = (im1->at(u, v).z - z);
+    keep++;
   }
 
-  template<typename PointT>
-    int
-    VisibilityReasoning<PointT>::computeRangeDifferencesWhereObservedWithIndicesBack (const typename pcl::PointCloud<PointT>::ConstPtr & im1,
-                                                                                                              const typename pcl::PointCloud<PointT>::ConstPtr & im2,
-                                                                                                              std::vector<float> & range_diff,
-                                                                                                              std::vector<int> & indices)
-    {
-      float cx, cy;
-      cx = static_cast<float> (cx_) / 2.f; //- 0.5f;
-      cy = static_cast<float> (cy_) / 2.f; // - 0.5f;
+  range_diff.resize(keep);
+  return keep;
+}
 
-      range_diff.resize (im2->points.size ());
-      indices.resize (im2->points.size ());
-      int keep = 0;
-      for (size_t i = 0; i < im2->points.size (); i++)
-      {
-        if (!pcl_isfinite(im2->points[i].z))
-          continue;
-
-        float x = im2->points[i].x;
-        float y = im2->points[i].y;
-        float z = im2->points[i].z;
-        int u = static_cast<int> (focal_length_ * x / z + cx);
-        int v = static_cast<int> (focal_length_ * y / z + cy);
-
-        if (u >= cx_ || v >= cy_ || u < 0 || v < 0)
-          continue;
-
-        //Check if point depth (distance to camera) is greater than the (u,v) meaning that the point is not visible
-        if (!pcl_isfinite(im1->at(u,v).z))
-          continue;
-
-        range_diff[keep] = (im1->at (u, v).z - z);
-        indices[keep] = static_cast<int>(i);
-        keep++;
-      }
-
-      range_diff.resize (keep);
-      indices.resize (keep);
-      return keep;
-    }
-
-template<typename PointT>
-float
-VisibilityReasoning<PointT>::computeFocalLength (int width, int height, const typename pcl::PointCloud<PointT>::ConstPtr & scene)
-{
+template <typename PointT>
+int VisibilityReasoning<PointT>::computeRangeDifferencesWhereObservedWithIndicesBack(
+    const typename pcl::PointCloud<PointT>::ConstPtr& im1, const typename pcl::PointCloud<PointT>::ConstPtr& im2,
+    std::vector<float>& range_diff, std::vector<int>& indices) {
   float cx, cy;
-  cx = static_cast<float> (width) / 2.f - 0.5f;
-  cy = static_cast<float> (height) / 2.f - 0.5f;
+  cx = static_cast<float>(cx_) / 2.f;  //- 0.5f;
+  cy = static_cast<float>(cy_) / 2.f;  // - 0.5f;
+
+  range_diff.resize(im2->points.size());
+  indices.resize(im2->points.size());
+  int keep = 0;
+  for (size_t i = 0; i < im2->points.size(); i++) {
+    if (!pcl_isfinite(im2->points[i].z))
+      continue;
+
+    float x = im2->points[i].x;
+    float y = im2->points[i].y;
+    float z = im2->points[i].z;
+    int u = static_cast<int>(focal_length_ * x / z + cx);
+    int v = static_cast<int>(focal_length_ * y / z + cy);
+
+    if (u >= cx_ || v >= cy_ || u < 0 || v < 0)
+      continue;
+
+    // Check if point depth (distance to camera) is greater than the (u,v) meaning that the point is not visible
+    if (!pcl_isfinite(im1->at(u, v).z))
+      continue;
+
+    range_diff[keep] = (im1->at(u, v).z - z);
+    indices[keep] = static_cast<int>(i);
+    keep++;
+  }
+
+  range_diff.resize(keep);
+  indices.resize(keep);
+  return keep;
+}
+
+template <typename PointT>
+float VisibilityReasoning<PointT>::computeFocalLength(int width, int height,
+                                                      const typename pcl::PointCloud<PointT>::ConstPtr& scene) {
+  float cx, cy;
+  cx = static_cast<float>(width) / 2.f - 0.5f;
+  cy = static_cast<float>(height) / 2.f - 0.5f;
   (void)cy;
   float f;
-  //compute the focal length
+  // compute the focal length
   float max_u, max_v, min_u, min_v;
-  max_u = max_v = std::numeric_limits<float>::max () * -1;
-  min_u = min_v = std::numeric_limits<float>::max ();
+  max_u = max_v = std::numeric_limits<float>::max() * -1;
+  min_u = min_v = std::numeric_limits<float>::max();
 
-  for (size_t i = 0; i < scene->points.size (); i++)
-  {
+  for (size_t i = 0; i < scene->points.size(); i++) {
     float b_x = scene->points[i].x / scene->points[i].z;
     if (b_x > max_u)
       max_u = b_x;
@@ -124,55 +114,50 @@ VisibilityReasoning<PointT>::computeFocalLength (int width, int height, const ty
       min_v = b_y;
   }
 
-  float maxC = std::max (std::max (std::abs (max_u), std::abs (max_v)), std::max (std::abs (min_u), std::abs (min_v)));
+  float maxC = std::max(std::max(std::abs(max_u), std::abs(max_v)), std::max(std::abs(min_u), std::abs(min_v)));
   f = (cx) / maxC;
   return f;
 }
 
-template<typename PointT>
-void
-VisibilityReasoning<PointT>::computeRangeImage (int width, int height, float f_, const typename pcl::PointCloud<PointT>::ConstPtr & cloud,
-                                                                            typename pcl::PointCloud<PointT>::Ptr & range_image)
-{
+template <typename PointT>
+void VisibilityReasoning<PointT>::computeRangeImage(int width, int height, float f_,
+                                                    const typename pcl::PointCloud<PointT>::ConstPtr& cloud,
+                                                    typename pcl::PointCloud<PointT>::Ptr& range_image) {
   float cx, cy;
-  cx = static_cast<float> (width) / 2.f; //- 0.5f;
-  cy = static_cast<float> (height) / 2.f; // - 0.5f;
+  cx = static_cast<float>(width) / 2.f;   //- 0.5f;
+  cy = static_cast<float>(height) / 2.f;  // - 0.5f;
 
-  float * depth_;
+  float* depth_;
   depth_ = new float[width * height];
   for (int i = 0; i < (width * height); i++)
-    depth_[i] = std::numeric_limits<float>::quiet_NaN ();
+    depth_[i] = std::numeric_limits<float>::quiet_NaN();
 
   range_image.reset(new pcl::PointCloud<PointT>);
   range_image->width = width;
   range_image->height = height;
   range_image->points.resize(width * height);
 
-  for(int u=0; u < width; u++)
-  {
-    for(int v=0; v < height; v++)
-    {
-      range_image->at(u,v).x = std::numeric_limits<float>::quiet_NaN();
-      range_image->at(u,v).y = std::numeric_limits<float>::quiet_NaN();
-      range_image->at(u,v).z = std::numeric_limits<float>::quiet_NaN();
+  for (int u = 0; u < width; u++) {
+    for (int v = 0; v < height; v++) {
+      range_image->at(u, v).x = std::numeric_limits<float>::quiet_NaN();
+      range_image->at(u, v).y = std::numeric_limits<float>::quiet_NaN();
+      range_image->at(u, v).z = std::numeric_limits<float>::quiet_NaN();
     }
   }
 
-  for (size_t i = 0; i < cloud->points.size (); i++)
-  {
+  for (size_t i = 0; i < cloud->points.size(); i++) {
     float x = cloud->points[i].x;
     float y = cloud->points[i].y;
     float z = cloud->points[i].z;
-    int u = static_cast<int> (f_ * x / z + cx);
-    int v = static_cast<int> (f_ * y / z + cy);
+    int u = static_cast<int>(f_ * x / z + cx);
+    int v = static_cast<int>(f_ * y / z + cy);
 
     if (u >= width || v >= height || u < 0 || v < 0)
       continue;
 
-    if ((z < depth_[u * height + v]) || (!pcl_isfinite(depth_[u * height + v])))
-    {
+    if ((z < depth_[u * height + v]) || (!pcl_isfinite(depth_[u * height + v]))) {
       depth_[u * width + v] = z;
-      range_image->at(u,v) = cloud->points[i];
+      range_image->at(u, v) = cloud->points[i];
     }
   }
 
@@ -215,141 +200,124 @@ VisibilityReasoning<PointT>::computeRangeImage (int width, int height, float f_,
   }*/
 }
 
-template<typename PointT>
-float VisibilityReasoning<PointT>::computeOSV(const typename pcl::PointCloud<PointT>::ConstPtr & im1,
-                                                                      const typename pcl::PointCloud<PointT>::ConstPtr & im2,
-                                                                      Eigen::Matrix4f pose_2_to_1)
-{
-  //check for OSV violation, a surface is observed by sensor2
-  //and not observed by sensor1, even though it is in the FOV of sensor1
+template <typename PointT>
+float VisibilityReasoning<PointT>::computeOSV(const typename pcl::PointCloud<PointT>::ConstPtr& im1,
+                                              const typename pcl::PointCloud<PointT>::ConstPtr& im2,
+                                              Eigen::Matrix4f pose_2_to_1) {
+  // check for OSV violation, a surface is observed by sensor2
+  // and not observed by sensor1, even though it is in the FOV of sensor1
   PointCloudPtr im2_trans;
-//  if (pose_2_to_1.isIdentity (0.00001f))
-//  {
-//    im2_trans = im2;
-//  }
-//  else
-//  {
-    im2_trans.reset (new pcl::PointCloud<PointT>);
-    pcl::transformPointCloud (*im2, *im2_trans, pose_2_to_1);
-//  }
+  //  if (pose_2_to_1.isIdentity (0.00001f))
+  //  {
+  //    im2_trans = im2;
+  //  }
+  //  else
+  //  {
+  im2_trans.reset(new pcl::PointCloud<PointT>);
+  pcl::transformPointCloud(*im2, *im2_trans, pose_2_to_1);
+  //  }
 
   float cx, cy;
-  cx = static_cast<float> (cx_) / 2.f - 0.5f;
-  cy = static_cast<float> (cy_) / 2.f - 0.5f;
+  cx = static_cast<float>(cx_) / 2.f - 0.5f;
+  cy = static_cast<float>(cy_) / 2.f - 0.5f;
 
   int osv = 0;
-  for (size_t i = 0; i < im2_trans->points.size (); i++)
-  {
+  for (size_t i = 0; i < im2_trans->points.size(); i++) {
     float x = im2_trans->points[i].x;
     float y = im2_trans->points[i].y;
     float z = im2_trans->points[i].z;
-    int u = static_cast<int> (focal_length_ * x / z + cx);
-    int v = static_cast<int> (focal_length_ * y / z + cy);
+    int u = static_cast<int>(focal_length_ * x / z + cx);
+    int v = static_cast<int>(focal_length_ * y / z + cy);
 
     if (u >= cx_ || v >= cy_ || u < 0 || v < 0)
       continue;
 
-    //TODO: Probably not only if its finite but also if behind by some threhsold
-    //although this will be covered by FSV (INVERSE)
-    if (!pcl_isfinite(im1->at(u,v).z))
-    {
-      //point not observed in sensor1 but observed in sensor2
+    // TODO: Probably not only if its finite but also if behind by some threhsold
+    // although this will be covered by FSV (INVERSE)
+    if (!pcl_isfinite(im1->at(u, v).z)) {
+      // point not observed in sensor1 but observed in sensor2
       osv++;
     }
   }
 
-  //std::cout << osv / static_cast<float>(im2_trans->points.size ()) << std::endl;
-  return (osv / static_cast<float>(im2_trans->points.size ()));
+  // std::cout << osv / static_cast<float>(im2_trans->points.size ()) << std::endl;
+  return (osv / static_cast<float>(im2_trans->points.size()));
 }
 
-template<typename PointT>
-  float
-  VisibilityReasoning<PointT>::computeFSV (const typename pcl::PointCloud<PointT>::ConstPtr & im1,
-                                                                   const typename pcl::PointCloud<PointT>::ConstPtr & im2,
-                                                                   Eigen::Matrix4f pose_2_to_1)
-  {
-    std::vector<float> range_diff_1_to_2;
+template <typename PointT>
+float VisibilityReasoning<PointT>::computeFSV(const typename pcl::PointCloud<PointT>::ConstPtr& im1,
+                                              const typename pcl::PointCloud<PointT>::ConstPtr& im2,
+                                              Eigen::Matrix4f pose_2_to_1) {
+  std::vector<float> range_diff_1_to_2;
 
-    if (pose_2_to_1.isIdentity (0.00001f))
-    {
-      fsv_used_ = computeRangeDifferencesWhereObserved (im1, im2, range_diff_1_to_2);
+  if (pose_2_to_1.isIdentity(0.00001f)) {
+    fsv_used_ = computeRangeDifferencesWhereObserved(im1, im2, range_diff_1_to_2);
+  } else {
+    PointCloudPtr im2_trans(new pcl::PointCloud<PointT>);
+    pcl::transformPointCloud(*im2, *im2_trans, pose_2_to_1);
+    fsv_used_ = computeRangeDifferencesWhereObserved(im1, im2_trans, range_diff_1_to_2);
+  }
+
+  float tss, fsv_val;
+  int xss, xfsv;
+  tss = tss_;
+  xss = 0;
+  xfsv = 0;
+  for (size_t i = 0; i < range_diff_1_to_2.size(); i++) {
+    if (std::abs(range_diff_1_to_2[i]) <= tss) {
+      xss++;
     }
-    else
-    {
-      PointCloudPtr im2_trans (new pcl::PointCloud<PointT>);
-      pcl::transformPointCloud (*im2, *im2_trans, pose_2_to_1);
-      fsv_used_ = computeRangeDifferencesWhereObserved (im1, im2_trans, range_diff_1_to_2);
+
+    if (range_diff_1_to_2[i] > tss) {
+      xfsv++;
+    }
+  }
+
+  fsv_used_ = xss;
+
+  fsv_val = xfsv / (static_cast<float>(xfsv + xss));
+  return fsv_val;
+}
+
+template <typename PointT>
+float VisibilityReasoning<PointT>::computeFSVWithNormals(const typename pcl::PointCloud<PointT>::ConstPtr& im1,
+                                                         const typename pcl::PointCloud<PointT>::ConstPtr& im2,
+                                                         pcl::PointCloud<pcl::Normal>::Ptr& normals) {
+  std::vector<float> range_diff_1_to_2;
+  std::vector<int> im2_indices_observed;
+  fsv_used_ = computeRangeDifferencesWhereObservedWithIndicesBack(im1, im2, range_diff_1_to_2, im2_indices_observed);
+
+  float tss, fsv_val;
+  float xss, xfsv;
+  tss = tss_;
+  xss = 0;
+  xfsv = 0;
+  for (size_t i = 0; i < range_diff_1_to_2.size(); i++) {
+    if (std::abs(range_diff_1_to_2[i]) <= tss) {
+      xss++;
     }
 
-    float tss, fsv_val;
-    int xss, xfsv;
-    tss = tss_;
-    xss = 0;
-    xfsv = 0;
-    for (size_t i = 0; i < range_diff_1_to_2.size (); i++)
-    {
-      if (std::abs (range_diff_1_to_2[i]) <= tss)
-      {
-        xss++;
-      }
+    if (range_diff_1_to_2[i] > tss) {
+      Eigen::Vector3f normal_p = normals->points[im2_indices_observed[i]].getNormalVector3fMap();
+      Eigen::Vector3f normal_vp = Eigen::Vector3f::UnitZ() * -1.f;
+      normal_p.normalize();
+      normal_vp.normalize();
 
-      if (range_diff_1_to_2[i] > tss)
-      {
+      float dot = normal_vp.dot(normal_p);
+      float angle = pcl::rad2deg(acos(dot));
+      if (angle < 60.f) {
         xfsv++;
       }
     }
-
-    fsv_used_ = xss;
-
-    fsv_val = xfsv / (static_cast<float> (xfsv + xss));
-    return fsv_val;
   }
 
-  template<typename PointT>
-    float
-    VisibilityReasoning<PointT>::computeFSVWithNormals (const typename pcl::PointCloud<PointT>::ConstPtr & im1,
-                                                                                const typename pcl::PointCloud<PointT>::ConstPtr & im2,
-                                                                                pcl::PointCloud<pcl::Normal>::Ptr & normals)
-    {
-      std::vector<float> range_diff_1_to_2;
-      std::vector<int> im2_indices_observed;
-      fsv_used_ = computeRangeDifferencesWhereObservedWithIndicesBack (im1, im2, range_diff_1_to_2, im2_indices_observed);
+  fsv_used_ = xss;
 
-      float tss, fsv_val;
-      float xss, xfsv;
-      tss = tss_;
-      xss = 0;
-      xfsv = 0;
-      for (size_t i = 0; i < range_diff_1_to_2.size (); i++)
-      {
-        if (std::abs (range_diff_1_to_2[i]) <= tss)
-        {
-          xss++;
-        }
+  fsv_val = xfsv / (static_cast<float>(xfsv + xss));
+  if ((xfsv + xss) == 0)
+    return -1;
 
-        if (range_diff_1_to_2[i] > tss)
-        {
-            Eigen::Vector3f normal_p = normals->points[im2_indices_observed[i]].getNormalVector3fMap();
-            Eigen::Vector3f normal_vp = Eigen::Vector3f::UnitZ() * -1.f;
-            normal_p.normalize ();
-            normal_vp.normalize ();
-
-            float dot = normal_vp.dot(normal_p);
-            float angle = pcl::rad2deg(acos(dot));
-            if (angle < 60.f)
-            {
-                xfsv++;
-            }
-        }
-      }
-
-      fsv_used_ = xss;
-
-      fsv_val = xfsv / (static_cast<float> (xfsv + xss));
-      if( (xfsv + xss) == 0)
-          return -1;
-
-      return fsv_val;
-    }
+  return fsv_val;
+}
 }
 #endif /* VISIBILITY_REASONING_HPP_ */

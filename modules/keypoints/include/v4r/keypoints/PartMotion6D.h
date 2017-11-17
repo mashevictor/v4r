@@ -37,42 +37,39 @@
 **
 ****************************************************************************/
 
-
 /**
  * @file main.cpp
  * @author Johann Prankl (prankl@acin.tuwien.ac.at)
  * @date 2017
  * @brief
  *
- */ 
+ */
 
 #ifndef KP_PART_MOTION_6D_HH
 #define KP_PART_MOTION_6D_HH
 
-#include <iostream>
-#include <fstream>
 #include <float.h>
-#include <vector>
-#include <Eigen/Dense>
-#include <v4r/keypoints/Part.h>
 #include <v4r/common/rotation.h>
+#include <v4r/keypoints/Part.h>
+#include <Eigen/Dense>
+#include <fstream>
+#include <iostream>
+#include <vector>
 
-namespace v4r 
-{
+namespace v4r {
 
 /**
  * free moving part
  */
-class V4R_EXPORTS PartMotion6D : public Part
-{
-public:
-  Eigen::Matrix<double, 6, 1> rt; // 6D motion [angle axis, translation] (parameter)
+class V4R_EXPORTS PartMotion6D : public Part {
+ public:
+  Eigen::Matrix<double, 6, 1> rt;  // 6D motion [angle axis, translation] (parameter)
 
   PartMotion6D();
   ~PartMotion6D();
 
-  typedef SmartPtr< ::v4r::PartMotion6D> Ptr;
-  typedef SmartPtr< ::v4r::PartMotion6D const> ConstPtr;
+  typedef SmartPtr<::v4r::PartMotion6D> Ptr;
+  typedef SmartPtr<::v4r::PartMotion6D const> ConstPtr;
 
   virtual void initParameter();
   virtual void setParameter(const Eigen::VectorXd &_param);
@@ -81,13 +78,8 @@ public:
   virtual void getDeltaPose(Eigen::Matrix4f &delta_pose);
 };
 
-
-
 /*************************** INLINE METHODES **************************/
 
-
-
-} //--END--
+}  //--END--
 
 #endif
-

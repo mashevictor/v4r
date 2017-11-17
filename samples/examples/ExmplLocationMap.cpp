@@ -1,5 +1,5 @@
 /**
- *  Copyright (C) 2012  
+ *  Copyright (C) 2012
  *    Ekaterina Potapova
  *    Automation and Control Institute
  *    Vienna University of Technology
@@ -21,126 +21,105 @@
  *  along with this program.  If not, see http://www.gnu.org/licenses/
  */
 
-
 #include "v4r/attention_segmentation/AttentionModule.h"
 
 // This program shows the use of Color Saliency Map on one image
 
-int main(int argc, char** argv)
-{
-  if(argc != 2)
-  {
+int main(int argc, char** argv) {
+  if (argc != 2) {
     std::cerr << "Usage: image" << std::endl;
-    return(0);
+    return (0);
   }
-  
+
   // read image
   std::string image_name(argv[1]);
-  cv::Mat image = cv::imread(image_name,-1);
-    
+  cv::Mat image = cv::imread(image_name, -1);
+
   // start creating parameters
   v4r::LocationSaliencyMap locationSaliencyMap;
   locationSaliencyMap.setWidth(image.cols);
   locationSaliencyMap.setHeight(image.rows);
 
   cv::Mat map;
-  
+
   locationSaliencyMap.setLocation(v4r::AM_TOP);
   printf("[INFO]: Computing location map AM_TOP.\n");
   locationSaliencyMap.calculate();
-  
-  if(locationSaliencyMap.getMap(map))
-  {
+
+  if (locationSaliencyMap.getMap(map)) {
     printf("[INFO]: Computation completed.\n");
-    cv::imshow("Location Map",map);
+    cv::imshow("Location Map", map);
     printf("[INFO]: Press any key to continue.\n");
     cv::waitKey();
-  }
-  else
-  {
+  } else {
     printf("[INFO]: Computation failed.\n");
   }
 
   locationSaliencyMap.setLocation(v4r::AM_CENTER);
   printf("[INFO]: Computing location map AM_CENTER.\n");
   locationSaliencyMap.calculate();
-  
-  if(locationSaliencyMap.getMap(map))
-  {
+
+  if (locationSaliencyMap.getMap(map)) {
     printf("[INFO]: Computation completed.\n");
-    cv::imshow("Location Map",map);
+    cv::imshow("Location Map", map);
     printf("[INFO]: Press any key to continue.\n");
     cv::waitKey();
-  }
-  else
-  {
+  } else {
     printf("[INFO]: Computation failed.\n");
   }
 
   locationSaliencyMap.setLocation(v4r::AM_RIGHT_CENTER);
   printf("[INFO]: Computing location map AM_RIGHT_CENTER.\n");
   locationSaliencyMap.calculate();
-  
-  if(locationSaliencyMap.getMap(map))
-  {
+
+  if (locationSaliencyMap.getMap(map)) {
     printf("[INFO]: Computation completed.\n");
-    cv::imshow("Location Map",map);
+    cv::imshow("Location Map", map);
     printf("[INFO]: Press any key to continue.\n");
     cv::waitKey();
-  }
-  else
-  {
+  } else {
     printf("[INFO]: Computation failed.\n");
   }
 
   locationSaliencyMap.setLocation(v4r::AM_BOTTOM_CENTER);
   printf("[INFO]: Computing location map AM_BOTTOM_CENTER.\n");
   locationSaliencyMap.calculate();
-  
-  if(locationSaliencyMap.getMap(map))
-  {
+
+  if (locationSaliencyMap.getMap(map)) {
     printf("[INFO]: Computation completed.\n");
-    cv::imshow("Location Map",map);
+    cv::imshow("Location Map", map);
     printf("[INFO]: Press any key to continue.\n");
     cv::waitKey();
-  }
-  else
-  {
+  } else {
     printf("[INFO]: Computation failed.\n");
   }
 
   locationSaliencyMap.setLocation(v4r::AM_RIGHT);
   printf("[INFO]: Computing location map AM_RIGHT.\n");
   locationSaliencyMap.calculate();
-  
-  if(locationSaliencyMap.getMap(map))
-  {
+
+  if (locationSaliencyMap.getMap(map)) {
     printf("[INFO]: Computation completed.\n");
-    cv::imshow("Location Map",map);
+    cv::imshow("Location Map", map);
     printf("[INFO]: Press any key to continue.\n");
     cv::waitKey();
-  }
-  else
-  {
+  } else {
     printf("[INFO]: Computation failed.\n");
   }
 
   locationSaliencyMap.setLocation(v4r::AM_LOCATION_CUSTOM);
-  locationSaliencyMap.setCenter(cv::Point(50,50));
+  locationSaliencyMap.setCenter(cv::Point(50, 50));
   printf("[INFO]: Computing location map AM_LOCATION_CUSTOM, cv::Point(50,50).\n");
   locationSaliencyMap.calculate();
-  
-  if(locationSaliencyMap.getMap(map))
-  {
+
+  if (locationSaliencyMap.getMap(map)) {
     printf("[INFO]: Computation completed.\n");
-    cv::imshow("Location Map",map);
+    cv::imshow("Location Map", map);
     printf("[INFO]: Press any key to continue.\n");
     cv::waitKey();
-  }
-  else
-  {
+  } else {
     printf("[INFO]: Computation failed.\n");
   }
-  
-  return(0);
+
+  return (0);
 }

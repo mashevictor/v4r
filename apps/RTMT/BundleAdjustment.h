@@ -37,7 +37,6 @@
 **
 ****************************************************************************/
 
-
 /**
  * @file BundleAdjustment.h
  * @author Johann Prankl (prankl@acin.tuwien.ac.at), Aitor Aldoma (aldoma@acin.tuwien.ac.at)
@@ -46,41 +45,31 @@
  *
  */
 
-
-
 #ifndef _BUNDLE_ADJUSTMENT_H
 #define _BUNDLE_ADJUSTMENT_H
 
 #ifndef Q_MOC_RUN
-#include <QThread>
 #include <QMutex>
-#include <queue>
-#include <opencv2/opencv.hpp>
+#include <QThread>
+#include <pcl/common/transforms.h>
 #include <pcl/point_cloud.h>
 #include <pcl/point_types.h>
+#include <v4r/reconstruction/ProjBundleAdjuster.h>
 #include <boost/shared_ptr.hpp>
-#include <pcl/common/transforms.h>
+#include <opencv2/opencv.hpp>
+#include <queue>
+#include <v4r/common/impl/SmartPtr.hpp>
+#include <v4r/keypoints/impl/Object.hpp>
+#include <v4r/keypoints/impl/invPose.hpp>
 #include "params.h"
 #include "sensor.h"
-#include <v4r/keypoints/impl/Object.hpp>
-#include <v4r/common/impl/SmartPtr.hpp>
-#include <v4r/keypoints/impl/invPose.hpp>
-#include <v4r/reconstruction/ProjBundleAdjuster.h>
 #endif
 
-
-
-class BundleAdjustment : public QThread
-{
+class BundleAdjustment : public QThread {
   Q_OBJECT
 
-public:
-  enum Command
-  {
-    PROJ_BA_CAM_STRUCT,
-    MAX_COMMAND,
-    UNDEF = MAX_COMMAND
-  };
+ public:
+  enum Command { PROJ_BA_CAM_STRUCT, MAX_COMMAND, UNDEF = MAX_COMMAND };
 
   BundleAdjustment();
   ~BundleAdjustment();
@@ -89,26 +78,27 @@ public:
   void stop();
   bool isRunning();
 
-  void optimizeCamStructProj(v4r::Object::Ptr &_model, boost::shared_ptr< std::vector<Sensor::CameraLocation> > &_cam_trajectory,
-                             boost::shared_ptr< std::vector<std::pair<int, pcl::PointCloud<pcl::PointXYZRGB>::ConstPtr> > > &_log_clouds,
-                             boost::shared_ptr< Sensor::AlignedPointXYZRGBVector > &_oc_cloud);
+  void optimizeCamStructProj(
+      v4r::Object::Ptr &_model, boost::shared_ptr<std::vector<Sensor::CameraLocation>> &_cam_trajectory,
+      boost::shared_ptr<std::vector<std::pair<int, pcl::PointCloud<pcl::PointXYZRGB>::ConstPtr>>> &_log_clouds,
+      boost::shared_ptr<Sensor::AlignedPointXYZRGBVector> &_oc_cloud);
   bool restoreCameras();
 
-
-public slots:
+ public slots:
   void cam_tracker_params_changed(const CamaraTrackerParameter &_cam_tracker_params);
 
-signals:
+ signals:
   void printStatus(const std::string &_txt);
-  void update_model_cloud(const boost::shared_ptr< Sensor::AlignedPointXYZRGBVector > &_oc_cloud);
-  void update_cam_trajectory(const boost::shared_ptr< std::vector<Sensor::CameraLocation> > &_cam_trajectory);
+  void update_model_cloud(const boost::shared_ptr<Sensor::AlignedPointXYZRGBVector> &_oc_cloud);
+  void update_cam_trajectory(const boost::shared_ptr<std::vector<Sensor::CameraLocation>> &_cam_trajectory);
   void update_visualization();
   void finishedOptimizeCameras(int num_cameras);
 
-private:
+ private:
   void run();
   void optimizeCamStructProj();
-  void renewPrevCloud(const std::vector<Eigen::Matrix4f, Eigen::aligned_allocator<Eigen::Matrix4f> > &poses, const std::vector<std::pair<int, pcl::PointCloud<pcl::PointXYZRGB>::ConstPtr> > &clouds);
+  void renewPrevCloud(const std::vector<Eigen::Matrix4f, Eigen::aligned_allocator<Eigen::Matrix4f>> &poses,
+                      const std::vector<std::pair<int, pcl::PointCloud<pcl::PointXYZRGB>::ConstPtr>> &clouds);
 
   Command cmd;
   bool m_run;
@@ -116,14 +106,13 @@ private:
   CamaraTrackerParameter cam_tracker_params;
 
   v4r::Object::Ptr model;
-  boost::shared_ptr< std::vector<Sensor::CameraLocation> > cam_trajectory;
-  boost::shared_ptr< std::vector<std::pair<int, pcl::PointCloud<pcl::PointXYZRGB>::ConstPtr> > > log_clouds;
-  boost::shared_ptr< Sensor::AlignedPointXYZRGBVector > oc_cloud;
+  boost::shared_ptr<std::vector<Sensor::CameraLocation>> cam_trajectory;
+  boost::shared_ptr<std::vector<std::pair<int, pcl::PointCloud<pcl::PointXYZRGB>::ConstPtr>>> log_clouds;
+  boost::shared_ptr<Sensor::AlignedPointXYZRGBVector> oc_cloud;
 
-  std::vector<Eigen::Matrix4f, Eigen::aligned_allocator<Eigen::Matrix4f> > stored_cameras;
-  std::vector< std::vector<double> > stored_camera_parameter;
+  std::vector<Eigen::Matrix4f, Eigen::aligned_allocator<Eigen::Matrix4f>> stored_cameras;
+  std::vector<std::vector<double>> stored_camera_parameter;
   std::vector<v4r::GlobalPoint> stored_points;
-
 };
 
 #endif

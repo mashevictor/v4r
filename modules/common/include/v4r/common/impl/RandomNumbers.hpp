@@ -1,6 +1,6 @@
 /**
  * $Id$
- * 
+ *
  * Software License Agreement (GNU General Public License)
  *
  *  Copyright (C) 2015:
@@ -33,14 +33,11 @@
 #ifndef V4R_RANDOM_NUMBERS_HPP
 #define V4R_RANDOM_NUMBERS_HPP
 
+namespace v4r {
 
-namespace v4r
-{
-
-inline bool contains(const std::vector<int> &idx, int num)
-{
-  for (unsigned i=0; i<idx.size(); i++)
-    if (idx[i]==num)
+inline bool contains(const std::vector<int> &idx, int num) {
+  for (unsigned i = 0; i < idx.size(); i++)
+    if (idx[i] == num)
       return true;
   return false;
 }
@@ -48,49 +45,43 @@ inline bool contains(const std::vector<int> &idx, int num)
 /**
  * @brief Returns a pseudo random number in [0.0, 1.0]
  */
-inline float frand()
-{
-  return rand()/((float)RAND_MAX + 1.);
+inline float frand() {
+  return rand() / ((float)RAND_MAX + 1.);
 }
 
-inline float expPdf(float lambda)
-{
+inline float expPdf(float lambda) {
   float dum;
   do
     dum = frand();
   while (dum == 0.);
-  return -log(dum)/lambda;
+  return -log(dum) / lambda;
 }
-
 
 /**
  * expSelect
  */
-inline int expSelect(int max)
-{
+inline int expSelect(int max) {
   int i;
   /* we want 99% probability of getting with expdev() a number smaller max
    * this requires a lambda of the exponential distribution:
    * lambda = -log(0.01)/max;    (-log(0.01) = 4.6) */
-  float lambda = 4.6/(float)max;
+  float lambda = 4.6 / (float)max;
   do
     i = (int)(expPdf(lambda));
-  while(i > max);
+  while (i > max);
   return i;
 }
 
 /**
  * getRandIdx
  */
-inline void getRandIdx(int size, int num, std::vector<int> &idx)
-{
+inline void getRandIdx(int size, int num, std::vector<int> &idx) {
   int temp;
   idx.clear();
-  for (int i=0; i<num; i++)
-  {
-    do{
-      temp = rand()%size;
-    }while(contains(idx,temp));
+  for (int i = 0; i < num; i++) {
+    do {
+      temp = rand() % size;
+    } while (contains(idx, temp));
     idx.push_back(temp);
   }
 }
@@ -98,25 +89,17 @@ inline void getRandIdx(int size, int num, std::vector<int> &idx)
 /**
  * getExpRandIdx
  */
-inline void getExpRandIdx(int size, int num, std::vector<int> &idx)
-{
+inline void getExpRandIdx(int size, int num, std::vector<int> &idx) {
   int temp;
   idx.clear();
-  for (int i=0; i<num; i++)
-  {
-    do{
+  for (int i = 0; i < num; i++) {
+    do {
       temp = expSelect(size);
-    }while(contains(idx,temp));
+    } while (contains(idx, temp));
     idx.push_back(temp);
   }
 }
 
-
-
-} //--END--
+}  //--END--
 
 #endif
-
-
-
-

@@ -37,7 +37,6 @@
 **
 ****************************************************************************/
 
-
 /**
  * @file BoundaryRelationsBase.h
  * @author Potapova
@@ -60,16 +59,11 @@
 
 #include "v4r/attention_segmentation//SurfaceModel.h"
 
+namespace v4r {
 
-namespace v4r
-{
-
-class V4R_EXPORTS BoundaryRelationsBase
-{
-public:
-
-protected:
-
+class V4R_EXPORTS BoundaryRelationsBase {
+ public:
+ protected:
   bool computed;
   bool have_cloud;
   bool have_normals;
@@ -77,25 +71,20 @@ protected:
 
   pcl::PointIndices::Ptr indices;
 
-  pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud;               ///< Input cloud
-  pcl::PointCloud<pcl::Normal>::Ptr normals;                  ///< Normals (set from outside or from surfaces)
+  pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud;  ///< Input cloud
+  pcl::PointCloud<pcl::Normal>::Ptr normals;     ///< Normals (set from outside or from surfaces)
   std::vector<v4r::neighboringPair> boundary;
 
   int width, height;
 
-  bool checkNaN(const pcl::PointXYZRGB p)
-  {
-    if(std::isnan(p.x) ||
-       std::isnan(p.y) ||
-       std::isnan(p.z))
-    {
-      return(true);
+  bool checkNaN(const pcl::PointXYZRGB p) {
+    if (std::isnan(p.x) || std::isnan(p.y) || std::isnan(p.z)) {
+      return (true);
     }
-    return(false);
+    return (false);
   }
-  
-public:
 
+ public:
   typedef boost::shared_ptr<BoundaryRelationsBase> Ptr;
 
   BoundaryRelationsBase();
@@ -103,7 +92,7 @@ public:
 
   /** Set input point cloud **/
   void V4R_EXPORTS setInputCloud(pcl::PointCloud<pcl::PointXYZRGB>::Ptr _cloud);
-  //sets normals
+  // sets normals
   void V4R_EXPORTS setNormals(pcl::PointCloud<pcl::Normal>::Ptr _normals);
 
   // sets indices
@@ -111,10 +100,7 @@ public:
 
   /** Compare patches **/
   virtual v4r::meanVal compute();
-
 };
-
 }
 
-#endif //BOUNDARY_RELATIONS_BASE_H
-
+#endif  // BOUNDARY_RELATIONS_BASE_H

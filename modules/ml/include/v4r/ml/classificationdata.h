@@ -25,48 +25,42 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-
 #ifndef CLASSIFICATIONDATA_H
 #define CLASSIFICATIONDATA_H
 
-#include <vector>
-#include <string>
-#include <map>
 #include <math.h>
-#include <algorithm>
 #include <stdlib.h>
-#include <time.h>
 #include <string.h>
-#include <iostream>
-#include <fstream>
-#include <sstream>
+#include <time.h>
+#include <algorithm>
 #include <algorithm>
 #include <boost/format.hpp>
 #include <boost/random.hpp>
+#include <fstream>
+#include <iostream>
+#include <map>
+#include <sstream>
+#include <string>
+#include <vector>
 
 #include <v4r/core/macros.h>
 
-namespace v4r{
-namespace RandomForest{
+namespace v4r {
+namespace RandomForest {
 
-enum LabelStatus{
-    LABELED,
-    UNLABELED,
-    PARTIALLY_LABELED
-  };
-  
-class V4R_EXPORTS ClassificationData
-{
-private:
+enum LabelStatus { LABELED, UNLABELED, PARTIALLY_LABELED };
+
+class V4R_EXPORTS ClassificationData {
+ private:
   std::string directory;
   std::vector<float> data;
   std::vector<int> trainingLabels;
   std::vector<float> labelWeights;
   std::vector<int> availableLabels;
-  std::map<int, long long int > trainingDataFilePos;
+  std::map<int, long long int> trainingDataFilePos;
   int fieldWidth;
   int dimensions;
-  void ClearHistogram(std::vector< float >& hist);
+  void ClearHistogram(std::vector<float>& hist);
   LabelStatus labelStatus;
   std::vector<unsigned int> generateRandomIndices(unsigned int n, unsigned int totalPoints);
   void swap(std::vector<unsigned int>& array, unsigned int idx1, unsigned int idx2);
@@ -74,30 +68,34 @@ private:
   std::map<int, unsigned int> pointsPerLabel;
   unsigned int totalPoints;
   boost::mt19937 randomGenerator;
-  
-public:
-    
+
+ public:
   ClassificationData();
   std::vector<unsigned int> NewBag(float baggingRatio);
   int LoadChunkForLabel(int labelID, int nPoints);
   int GetDimensions();
-  std::map< int, unsigned int >& GetCountPerLabel();
+  std::map<int, unsigned int>& GetCountPerLabel();
   int GetCount();
   std::vector<int>& GetAvailableLabels();
-  std::pair<float, float> GetMinMax(std::vector< unsigned int >::iterator startidx, std::vector< unsigned int >::iterator stopidx, int dimension);
+  std::pair<float, float> GetMinMax(std::vector<unsigned int>::iterator startidx,
+                                    std::vector<unsigned int>::iterator stopidx, int dimension);
   std::pair<float, float> GetMinMax(int dimension);
-  std::vector< unsigned int >::iterator Partition(std::vector< unsigned int >::iterator startidx, std::vector< unsigned int >::iterator stopidx, int dimension, float threshold);
+  std::vector<unsigned int>::iterator Partition(std::vector<unsigned int>::iterator startidx,
+                                                std::vector<unsigned int>::iterator stopidx, int dimension,
+                                                float threshold);
   float GetFeature(int pointIdx, int featureIdx);
   std::vector<float> GetFeatures(int pointIdx);
-  float GetInformationGain(std::vector< unsigned int >::const_iterator startidx, std::vector< unsigned int >::const_iterator stopidx, std::vector< unsigned int >::const_iterator divider);
-  std::pair<std::vector<unsigned int >, std::vector< float > > CalculateNormalizedHistogram(std::vector<unsigned int>::const_iterator startidx, std::vector<unsigned int>::const_iterator stopidx);
+  float GetInformationGain(std::vector<unsigned int>::const_iterator startidx,
+                           std::vector<unsigned int>::const_iterator stopidx,
+                           std::vector<unsigned int>::const_iterator divider);
+  std::pair<std::vector<unsigned int>, std::vector<float>> CalculateNormalizedHistogram(
+      std::vector<unsigned int>::const_iterator startidx, std::vector<unsigned int>::const_iterator stopidx);
   void LoadDemoSpiral(int nPoints, float noise);
   void SaveToFile(std::string filepath);
-  void LoadFromFile(std::string trainingFilePath, std::string categoryFilePath);
-  unsigned int LoadFromDirectory(std::string directory, std::vector< int > labelIDs);
+  void LoadFromFile(std::string trainingFilePath);
+  unsigned int LoadFromDirectory(std::string directory, std::vector<int> labelIDs);
   virtual ~ClassificationData();
 };
-
 }
 }
-#endif // CLASSIFICATIONDATA_H
+#endif  // CLASSIFICATIONDATA_H

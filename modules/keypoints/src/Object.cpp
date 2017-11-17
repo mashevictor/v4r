@@ -1,80 +1,86 @@
 
 #include <v4r/keypoints/impl/Object.hpp>
 
-
-namespace v4r
-{
-
-
+namespace v4r {
 
 /******************** impl ObjectView **************************/
 /** get global 3d points **/
-void ObjectView::getPoints(std::vector<Eigen::Vector3f> &pts)
-{
+void ObjectView::getPoints(std::vector<Eigen::Vector3f> &pts) {
   pts.resize(points.size());
-  for (unsigned i=0; i<pts.size(); i++)
+  for (unsigned i = 0; i < pts.size(); i++)
     pts[i] = getPt(i).pt.cast<float>();
 }
 
- 
 /** get global normals **/
-void ObjectView::getNormals(std::vector<Eigen::Vector3f> &normals)
-{
+void ObjectView::getNormals(std::vector<Eigen::Vector3f> &normals) {
   normals.resize(points.size());
-  for (unsigned i=0; i<normals.size(); i++)
+  for (unsigned i = 0; i < normals.size(); i++)
     normals[i] = getPt(i).n.cast<float>();
 }
 
-
 /* add a keypoint */
-void ObjectView::add(const cv::KeyPoint &key, float *d, int dsize, const Eigen::Vector3f &pt3, const Eigen::Vector3f &n, const Eigen::Vector3f &vr, const Eigen::Vector3f &cam_pt, const int &part_idx) {
+void ObjectView::add(const cv::KeyPoint &key, float *d, int dsize, const Eigen::Vector3f &pt3, const Eigen::Vector3f &n,
+                     const Eigen::Vector3f &vr, const Eigen::Vector3f &cam_pt, const int &part_idx) {
   keys.push_back(key);
-  if (descs.empty()) cv::Mat(1,dsize,CV_32F,d).copyTo(descs);
-  else descs.push_back(cv::Mat(1,dsize,CV_32F,d));
-  if (object==0) std::runtime_error("[ObjectView::add] No object membership available!");
-  else points.push_back(object->addPt(pt3,n));
+  if (descs.empty())
+    cv::Mat(1, dsize, CV_32F, d).copyTo(descs);
+  else
+    descs.push_back(cv::Mat(1, dsize, CV_32F, d));
+  if (object == 0)
+    std::runtime_error("[ObjectView::add] No object membership available!");
+  else
+    points.push_back(object->addPt(pt3, n));
   viewrays.push_back(vr);
   cam_points.push_back(cam_pt);
   part_indices.push_back(part_idx);
 }
 
 /* add a keypoint */
-void ObjectView::add(const cv::KeyPoint &key, float *d, int dsize, unsigned glob_idx, const Eigen::Vector3f &vr, const Eigen::Vector3f &cam_pt, const int &part_idx) {
+void ObjectView::add(const cv::KeyPoint &key, float *d, int dsize, unsigned glob_idx, const Eigen::Vector3f &vr,
+                     const Eigen::Vector3f &cam_pt, const int &part_idx) {
   keys.push_back(key);
-  if (descs.empty()) cv::Mat(1,dsize,CV_32F,d).copyTo(descs);
-  else descs.push_back(cv::Mat(1,dsize,CV_32F,d));
-  if (object==0) std::runtime_error("[ObjectView::add] No object membership available!");
-  else points.push_back(object->incPt(glob_idx)); 
+  if (descs.empty())
+    cv::Mat(1, dsize, CV_32F, d).copyTo(descs);
+  else
+    descs.push_back(cv::Mat(1, dsize, CV_32F, d));
+  if (object == 0)
+    std::runtime_error("[ObjectView::add] No object membership available!");
+  else
+    points.push_back(object->incPt(glob_idx));
   viewrays.push_back(vr);
   cam_points.push_back(cam_pt);
   part_indices.push_back(part_idx);
 }
 
 /** delete a complete entry **/
-void ObjectView::del(unsigned idx_)
-{
-  if (idx_<keys.size()) keys.erase(keys.begin()+idx_);
-  if (idx_<points.size()) {
+void ObjectView::del(unsigned idx_) {
+  if (idx_ < keys.size())
+    keys.erase(keys.begin() + idx_);
+  if (idx_ < points.size()) {
     object->decPt(points[idx_]);
-    points.erase(points.begin()+idx_);
+    points.erase(points.begin() + idx_);
   }
-  if (idx_<viewrays.size()) viewrays.erase(viewrays.begin()+idx_);
-  if (idx_<cam_points.size()) cam_points.erase(cam_points.begin()+idx_);
-  if (idx_<projs.size()) projs.erase(projs.begin()+idx_);
-  if (idx_<part_indices.size()) part_indices.erase(part_indices.begin()+idx_);
+  if (idx_ < viewrays.size())
+    viewrays.erase(viewrays.begin() + idx_);
+  if (idx_ < cam_points.size())
+    cam_points.erase(cam_points.begin() + idx_);
+  if (idx_ < projs.size())
+    projs.erase(projs.begin() + idx_);
+  if (idx_ < part_indices.size())
+    part_indices.erase(part_indices.begin() + idx_);
 
-  std::cout<<"[ObjectView::delPt] TODO: delete the descriptor!"<<std::endl;
+  std::cout << "[ObjectView::delPt] TODO: delete the descriptor!" << std::endl;
 }
- 
 
 /* compute center */
 void ObjectView::computeCenter() {
-  if (points.size()>0 && object!=0) {
-    center = Eigen::Vector3f(0.,0.,0.);
-    for (unsigned i=0; i<points.size(); i++)
+  if (points.size() > 0 && object != 0) {
+    center = Eigen::Vector3f(0., 0., 0.);
+    for (unsigned i = 0; i < points.size(); i++)
       center += getPt(i).pt.cast<float>();
     center /= float(points.size());
-  } else center = Eigen::Vector3f::Zero();
+  } else
+    center = Eigen::Vector3f::Zero();
 }
 
 /* copy to (projs are not copied!) */
@@ -105,7 +111,4 @@ void ObjectView::clear() {
   part_indices.clear();
 }
 
-
-
-} //--END--
-
+}  //--END--

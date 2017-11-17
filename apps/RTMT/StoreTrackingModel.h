@@ -37,7 +37,6 @@
 **
 ****************************************************************************/
 
-
 /**
  * @file StoreTrackingModel.h
  * @author Johann Prankl (prankl@acin.tuwien.ac.at), Aitor Aldoma (aldoma@acin.tuwien.ac.at)
@@ -46,46 +45,36 @@
  *
  */
 
-
-
 #ifndef _STORE_TRACKING_MODEL_H
 #define _STORE_TRACKING_MODEL_H
 
-#include <QThread>
-#include <QMutex>
-#include <queue>
-#include <opencv2/opencv.hpp>
+#include <pcl/common/transforms.h>
 #include <pcl/point_cloud.h>
 #include <pcl/point_types.h>
-#include <boost/shared_ptr.hpp>
-#include <pcl/common/transforms.h>
-#include "params.h"
-#include <v4r/keypoints/impl/Object.hpp>
-#include <v4r/common/impl/DataMatrix2D.hpp>
+#include <v4r/common/ZAdaptiveNormals.h>
 #include <v4r/common/convertCloud.h>
-#include <v4r/keypoints/ArticulatedObject.h>
-#include <v4r/common/impl/SmartPtr.hpp>
-#include <v4r/keypoints/RigidTransformationRANSAC.h>
-#include <v4r/reconstruction/impl/projectPointToImage.hpp>
-#include <v4r/keypoints/impl/invPose.hpp>
 #include <v4r/common/convertImage.h>
 #include <v4r/features/FeatureDetectorHeaders.h>
+#include <v4r/keypoints/ArticulatedObject.h>
+#include <v4r/keypoints/RigidTransformationRANSAC.h>
 #include <v4r/keypoints/io.h>
-#include <v4r/common/ZAdaptiveNormals.h>
+#include <QMutex>
+#include <QThread>
+#include <boost/shared_ptr.hpp>
+#include <opencv2/opencv.hpp>
+#include <queue>
+#include <v4r/common/impl/DataMatrix2D.hpp>
+#include <v4r/common/impl/SmartPtr.hpp>
+#include <v4r/keypoints/impl/Object.hpp>
+#include <v4r/keypoints/impl/invPose.hpp>
+#include <v4r/reconstruction/impl/projectPointToImage.hpp>
+#include "params.h"
 
-
-
-class StoreTrackingModel : public QThread
-{
+class StoreTrackingModel : public QThread {
   Q_OBJECT
 
-public:
-  enum Command
-  {
-    STORE_TRACKING_MODEL,
-    MAX_COMMAND,
-    UNDEF = MAX_COMMAND
-  };
+ public:
+  enum Command { STORE_TRACKING_MODEL, MAX_COMMAND, UNDEF = MAX_COMMAND };
 
   StoreTrackingModel();
   ~StoreTrackingModel();
@@ -94,24 +83,23 @@ public:
   void stop();
   bool isRunning();
 
-  void storeTrackingModel(const std::string &_folder,
-                          const std::string &_objectname,
-                          const std::vector<Eigen::Matrix4f, Eigen::aligned_allocator<Eigen::Matrix4f> > &_cameras,
-                          const boost::shared_ptr<std::vector<std::pair<int, pcl::PointCloud<pcl::PointXYZRGB>::ConstPtr> > > &_clouds,
-                          const std::vector< cv::Mat_<unsigned char> > &_masks,
-                          const Eigen::Matrix4f &_object_base_transform=Eigen::Matrix4f::Identity());
+  void storeTrackingModel(
+      const std::string &_folder, const std::string &_objectname,
+      const std::vector<Eigen::Matrix4f, Eigen::aligned_allocator<Eigen::Matrix4f>> &_cameras,
+      const boost::shared_ptr<std::vector<std::pair<int, pcl::PointCloud<pcl::PointXYZRGB>::ConstPtr>>> &_clouds,
+      const std::vector<cv::Mat_<unsigned char>> &_masks,
+      const Eigen::Matrix4f &_object_base_transform = Eigen::Matrix4f::Identity());
 
-
-public slots:
+ public slots:
   void cam_params_changed(const RGBDCameraParameter &_cam_params);
   void set_object_base_transform(const Eigen::Matrix4f &_object_base_transform);
   void set_cb_param(bool create_cb, float rnn_thr);
 
-signals:
+ signals:
   void printStatus(const std::string &_txt);
   void finishedStoreTrackingModel();
 
-private:
+ private:
   void run();
 
   void createTrackingModel();
@@ -130,9 +118,9 @@ private:
   // data to compute the tracking model
   std::string folder;
   std::string objectname;
-  std::vector<Eigen::Matrix4f, Eigen::aligned_allocator<Eigen::Matrix4f> > cameras;
-  boost::shared_ptr< std::vector<std::pair<int, pcl::PointCloud<pcl::PointXYZRGB>::ConstPtr> > > clouds;
-  std::vector< cv::Mat_<unsigned char> > masks;
+  std::vector<Eigen::Matrix4f, Eigen::aligned_allocator<Eigen::Matrix4f>> cameras;
+  boost::shared_ptr<std::vector<std::pair<int, pcl::PointCloud<pcl::PointXYZRGB>::ConstPtr>>> clouds;
+  std::vector<cv::Mat_<unsigned char>> masks;
 
   Eigen::Matrix4f object_base_transform;
 
@@ -142,7 +130,6 @@ private:
   v4r::ArticulatedObject::Ptr model;
   v4r::FeatureDetector::Ptr keyDet;
   v4r::FeatureDetector::Ptr keyDesc;
-
 };
 
 #endif

@@ -37,59 +37,49 @@
 **
 ****************************************************************************/
 
-
 /**
  * @file main.cpp
  * @author Johann Prankl (prankl@acin.tuwien.ac.at)
  * @date 2017
  * @brief
  *
- */ 
+ */
 
 #ifndef KP_CONVERT_NORMALS_HPP
 #define KP_CONVERT_NORMALS_HPP
 
 #include <float.h>
-#include <opencv2/core/core.hpp>
-#include <opencv2/imgproc/imgproc.hpp>
 #include <pcl/point_cloud.h>
 #include <pcl/point_types.h>
-#include <v4r/common/impl/DataMatrix2D.hpp>
 #include <v4r/common/PointTypes.h>
+#include <opencv2/core/core.hpp>
+#include <opencv2/imgproc/imgproc.hpp>
+#include <v4r/common/impl/DataMatrix2D.hpp>
 
+namespace v4r {
 
-namespace v4r 
-{
-
-
-inline void convertNormals(const v4r::DataMatrix2D<Eigen::Vector3f> &kp_normals, pcl::PointCloud<pcl::Normal> &pcl_normals)
-{
+inline void convertNormals(const v4r::DataMatrix2D<Eigen::Vector3f> &kp_normals,
+                           pcl::PointCloud<pcl::Normal> &pcl_normals) {
   pcl_normals.points.resize(kp_normals.data.size());
   pcl_normals.width = kp_normals.cols;
   pcl_normals.height = kp_normals.rows;
   pcl_normals.is_dense = false;
 
-  for (unsigned i=0; i<pcl_normals.points.size(); i++)
-  {
+  for (unsigned i = 0; i < pcl_normals.points.size(); i++) {
     pcl_normals.points[i].getNormalVector3fMap() = kp_normals.data[i];
   }
 }
 
-inline void convertNormals(const pcl::PointCloud<pcl::Normal> &pcl_normals, v4r::DataMatrix2D<Eigen::Vector3f> &kp_normals)
-{
+inline void convertNormals(const pcl::PointCloud<pcl::Normal> &pcl_normals,
+                           v4r::DataMatrix2D<Eigen::Vector3f> &kp_normals) {
   kp_normals.data.resize(pcl_normals.points.size());
   kp_normals.cols = pcl_normals.width;
   kp_normals.rows = pcl_normals.height;
 
-  for (unsigned i=0; i<pcl_normals.points.size(); i++)
-  {
+  for (unsigned i = 0; i < pcl_normals.points.size(); i++) {
     kp_normals.data[i] = pcl_normals.points[i].getNormalVector3fMap();
   }
-
-
 }
 
-
-} //--END--
+}  //--END--
 #endif
-

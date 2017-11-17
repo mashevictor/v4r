@@ -25,13 +25,12 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-
 #ifndef NODE_H
 #define NODE_H
 
-#include <vector>
-#include <memory>
 #include <map>
+#include <memory>
+#include <vector>
 
 #include <boost/archive/text_iarchive.hpp>
 #include <boost/archive/text_oarchive.hpp>
@@ -42,85 +41,76 @@
 namespace v4r {
 namespace RandomForest {
 
-class V4R_EXPORTS Node
-{
-private:
+class V4R_EXPORTS Node {
+ private:
   friend class boost::serialization::access;
-  template<class Archive>
-  void serialize(Archive & ar, const unsigned int version)
-  {
-      (void)version;
-    ar & isSplitNode_;
-    ar & splitOnFeatureIdx_;
-    ar & threshold_;
-    ar & labelDistribution_;
-    ar & leftChildIdx_;
-    ar & rightChildIdx_;
+  template <class Archive>
+  void serialize(Archive& ar, const unsigned int version) {
+    (void)version;
+    ar& isSplitNode_;
+    ar& splitOnFeatureIdx_;
+    ar& threshold_;
+    ar& labelDistribution_;
+    ar& leftChildIdx_;
+    ar& rightChildIdx_;
   }
-  
+
   bool isSplitNode_;
   int splitOnFeatureIdx_;
   float threshold_;
   std::vector<float> labelDistribution_;
-  std::vector<unsigned int > absLabelDistribution_;
+  std::vector<unsigned int> absLabelDistribution_;
   int leftChildIdx_;
   int rightChildIdx_;
-  
-public:
+
+ public:
   Node();
   Node(int splitOnFeature, float threshold_, int leftChildIdx_, int rightChildIdx_);
-  Node(int splitOnFeature, float threshold_, int leftChildIdx_, int rightChildIdx_, std::pair< std::vector< unsigned int >, std::vector< float > > labelDistribution_);
-  Node(std::pair< std::vector< unsigned int >, std::vector< float > > labelDistribution_);
+  Node(int splitOnFeature, float threshold_, int leftChildIdx_, int rightChildIdx_,
+       std::pair<std::vector<unsigned int>, std::vector<float>> labelDistribution_);
+  Node(std::pair<std::vector<unsigned int>, std::vector<float>> labelDistribution_);
   void ResetLabelDistribution();
   void ClearSplitNodeLabelDistribution();
   void AddToAbsLabelDistribution(int labelIdx);
-  void UpdateLabelDistribution(std::vector< int > labels, std::map< int, unsigned int >& pointsPerLabel);
+  void UpdateLabelDistribution(std::vector<int> labels, std::map<int, unsigned int>& pointsPerLabel);
   inline int GetLeftChildIdx();
   inline int GetRightChildIdx();
   inline std::vector<float>& GetLabelDistribution();
   inline float GetThreshold();
   inline int GetSplitFeatureIdx();
   inline bool IsSplitNode();
-  inline int EvaluateNode(std::vector< float >& point);
+  inline int EvaluateNode(std::vector<float>& point);
   virtual ~Node();
 };
 
-inline std::vector< float >& Node::GetLabelDistribution()
-{
+inline std::vector<float>& Node::GetLabelDistribution() {
   return labelDistribution_;
 }
 
-inline bool Node::IsSplitNode()
-{
+inline bool Node::IsSplitNode() {
   return isSplitNode_;
 }
- 
+
 // for testing, does point go left or right?
-inline int Node::EvaluateNode(std::vector< float >& point)
-{  
+inline int Node::EvaluateNode(std::vector<float>& point) {
   return point[splitOnFeatureIdx_] > threshold_ ? rightChildIdx_ : leftChildIdx_;
 }
 
-inline int Node::GetLeftChildIdx()
-{
+inline int Node::GetLeftChildIdx() {
   return leftChildIdx_;
 }
 
-inline int Node::GetRightChildIdx()
-{
+inline int Node::GetRightChildIdx() {
   return rightChildIdx_;
 }
 
-inline int Node::GetSplitFeatureIdx()
-{
+inline int Node::GetSplitFeatureIdx() {
   return splitOnFeatureIdx_;
 }
 
-inline float Node::GetThreshold()
-{
+inline float Node::GetThreshold() {
   return threshold_;
 }
-
 }
 }
-#endif // NODE_H
+#endif  // NODE_H

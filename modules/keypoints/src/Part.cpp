@@ -37,75 +37,39 @@
 **
 ****************************************************************************/
 
-
 /**
  * @file main.cpp
  * @author Johann Prankl (prankl@acin.tuwien.ac.at)
  * @date 2017
  * @brief
  *
- */ 
+ */
 
 #include <v4r/keypoints/Part.h>
 
 #include <stdexcept>
 
-
-
-namespace v4r 
-{
-
+namespace v4r {
 
 using namespace std;
 
-
-double Part::pi_2 = M_PI/2.;
-
-
+double Part::pi_2 = M_PI / 2.;
 
 /************************************************************************************
  * Constructor/Destructor
  */
-Part::Part()
- : type(STATIC), idx(-1), is_hyp(false),
-   pose(Eigen::Matrix4f::Identity())
-{ 
-}
+Part::Part() : type(STATIC), idx(-1), is_hyp(false), pose(Eigen::Matrix4f::Identity()) {}
 
-Part::Part(Type _type)
- : type(_type), idx(-1), is_hyp(false),
-   pose(Eigen::Matrix4f::Identity())
-{ 
-}
+Part::Part(Type _type) : type(_type), idx(-1), is_hyp(false), pose(Eigen::Matrix4f::Identity()) {}
 
-
-Part::~Part()
-{
-}
+Part::~Part() {}
 
 /***************************************************************************************/
-
 
 /**
  * updatePose
  */
-void Part::updatePose(const Eigen::Matrix4f &_pose)
-{
+void Part::updatePose(const Eigen::Matrix4f &_pose) {
   pose = _pose;
 }
-
-
-
 }
-
-
-
-
-
-
-
-
-
-
-
-

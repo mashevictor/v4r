@@ -37,26 +37,23 @@
 **
 ****************************************************************************/
 
-
-
 #ifndef MSR_HPP
 #define MSR_HPP
 
-#include "v4r/attention_segmentation/headers.h"
 #include <v4r/core/macros.h>
+#include "v4r/attention_segmentation/headers.h"
 
-namespace v4r
-{
+namespace v4r {
 
 struct MRSParams {
   float th;
   int mapLevel;
-  bool  useMorphologyOpenning;
-};  
+  bool useMorphologyOpenning;
+};
 
 void V4R_EXPORTS defaultParamsMSR(MRSParams &params);
 void V4R_EXPORTS detectMSR(std::vector<cv::Point> &centers, cv::Mat map_, MRSParams params);
-  
-} //namespace v4r
 
-#endif //MSR_HPP
+}  // namespace v4r
+
+#endif  // MSR_HPP

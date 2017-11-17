@@ -37,14 +37,13 @@
 **
 ****************************************************************************/
 
-
 /**
  * @file main.cpp
  * @author Johann Prankl (prankl@acin.tuwien.ac.at)
  * @date 2017
  * @brief
  *
- */ 
+ */
 
 #include <v4r/features/FeatureDetector_KD_FAST_IMGD.h>
 
@@ -54,51 +53,48 @@
 #include <opencv2/core/ocl.hpp>
 #endif
 
-namespace v4r 
-{
-
+namespace v4r {
 
 using namespace std;
-
 
 /************************************************************************************
  * Constructor/Destructor
  */
 FeatureDetector_KD_FAST_IMGD::FeatureDetector_KD_FAST_IMGD(const Parameter &_p)
- : FeatureDetector(KD_FAST_IMGD), param(_p)
-{ 
-  //orb = new cv::ORB(10000, 1.2, 6, 13, 0, 2, cv::ORB::HARRIS_SCORE, 13); //31
-  //orb = new cv::ORB(1000, 1.44, 2, 17, 0, 2, cv::ORB::HARRIS_SCORE, 17);
-  #ifdef HAVE_OCV_2
-  orb = new cv::ORB(param.nfeatures, param.scaleFactor, param.nlevels, param.patchSize, 0, 2, cv::ORB::HARRIS_SCORE, param.patchSize);
-  #else
-  orb = cv::ORB::create( param.nfeatures, param.scaleFactor, param.nlevels, 31, 0, 2, cv::ORB::HARRIS_SCORE, param.patchSize);
-  #endif
+: FeatureDetector(KD_FAST_IMGD), param(_p) {
+// orb = new cv::ORB(10000, 1.2, 6, 13, 0, 2, cv::ORB::HARRIS_SCORE, 13); //31
+// orb = new cv::ORB(1000, 1.44, 2, 17, 0, 2, cv::ORB::HARRIS_SCORE, 17);
+#ifdef HAVE_OCV_2
+  orb = new cv::ORB(param.nfeatures, param.scaleFactor, param.nlevels, param.patchSize, 0, 2, cv::ORB::HARRIS_SCORE,
+                    param.patchSize);
+#else
+  orb = cv::ORB::create(param.nfeatures, param.scaleFactor, param.nlevels, 31, 0, 2, cv::ORB::HARRIS_SCORE,
+                        param.patchSize);
+#endif
 
   imGDesc.reset(new ComputeImGradientDescriptors(param.gdParam));
 
-  fs.reset( new FeatureSelection(FeatureSelection::Parameter(2.,0.5)) );
+  fs.reset(new FeatureSelection(FeatureSelection::Parameter(2., 0.5)));
 }
 
-FeatureDetector_KD_FAST_IMGD::~FeatureDetector_KD_FAST_IMGD()
-{
-}
+FeatureDetector_KD_FAST_IMGD::~FeatureDetector_KD_FAST_IMGD() {}
 
 /***************************************************************************************/
 
 /**
  * detect
  */
-void FeatureDetector_KD_FAST_IMGD::detect(const cv::Mat &image, std::vector<cv::KeyPoint> &keys, cv::Mat &descriptors)
-{
-  if( image.type() != CV_8U ) cv::cvtColor( image, im_gray, CV_RGB2GRAY );
-  else im_gray = image;  
+void FeatureDetector_KD_FAST_IMGD::detect(const cv::Mat &image, std::vector<cv::KeyPoint> &keys, cv::Mat &descriptors) {
+  if (image.type() != CV_8U)
+    cv::cvtColor(image, im_gray, CV_RGB2GRAY);
+  else
+    im_gray = image;
 
-  #ifndef HAVE_OCV_2
+#ifndef HAVE_OCV_2
   cv::ocl::setUseOpenCL(false);
-  #endif
+#endif
 
-  orb->detect(im_gray,keys);
+  orb->detect(im_gray, keys);
 
   imGDesc->compute(im_gray, keys, descriptors);
 }
@@ -106,81 +102,66 @@ void FeatureDetector_KD_FAST_IMGD::detect(const cv::Mat &image, std::vector<cv::
 /**
  * detect
  */
-void FeatureDetector_KD_FAST_IMGD::detect(const cv::Mat &image, std::vector<cv::KeyPoint> &keys)
-{
+void FeatureDetector_KD_FAST_IMGD::detect(const cv::Mat &image, std::vector<cv::KeyPoint> &keys) {
   keys.clear();
 
-  if( image.type() != CV_8U ) cv::cvtColor( image, im_gray, CV_RGB2GRAY );
-  else im_gray = image;  
+  if (image.type() != CV_8U)
+    cv::cvtColor(image, im_gray, CV_RGB2GRAY);
+  else
+    im_gray = image;
 
-  #ifndef HAVE_OCV_2
+#ifndef HAVE_OCV_2
   cv::ocl::setUseOpenCL(false);
-  #endif
+#endif
 
-  if (param.tiles>1)
-  {
+  if (param.tiles > 1) {
     cv::Rect rect;
     cv::Point2f pt_offs;
     std::vector<cv::KeyPoint> tmp_keys;
 
-    tile_size_w = image.cols/param.tiles;
-    tile_size_h = image.rows/param.tiles;
+    tile_size_w = image.cols / param.tiles;
+    tile_size_h = image.rows / param.tiles;
 
-    for (int v=0; v<param.tiles; v++)
-    { 
-      for (int u=0; u<param.tiles; u++)
-      {
-        getExpandedRect(u,v, image.rows, image.cols, rect);
+    for (int v = 0; v < param.tiles; v++) {
+      for (int u = 0; u < param.tiles; u++) {
+        getExpandedRect(u, v, image.rows, image.cols, rect);
 
-        orb->detect(im_gray(rect),tmp_keys);
-    
+        orb->detect(im_gray(rect), tmp_keys);
+
         pt_offs = cv::Point2f(rect.x, rect.y);
 
-        for (unsigned i=0; i<tmp_keys.size(); i++)
+        for (unsigned i = 0; i < tmp_keys.size(); i++)
           tmp_keys[i].pt += pt_offs;
 
         keys.insert(keys.end(), tmp_keys.begin(), tmp_keys.end());
-        //cout<<"tile "<<v*param.tiles+u<<": "<<tmp_keys.size()<<" features"<<endl;  //DEBUG!!!!
-      } 
+        // cout<<"tile "<<v*param.tiles+u<<": "<<tmp_keys.size()<<" features"<<endl;  //DEBUG!!!!
+      }
     }
-  } else orb->detect(im_gray,keys);
+  } else
+    orb->detect(im_gray, keys);
 }
 
 /**
  * detect
  */
-void FeatureDetector_KD_FAST_IMGD::extract(const cv::Mat &image, std::vector<cv::KeyPoint> &keys, cv::Mat &descriptors)
-{
-  if( image.type() != CV_8U ) cv::cvtColor( image, im_gray, CV_RGB2GRAY );
-  else im_gray = image;  
+void FeatureDetector_KD_FAST_IMGD::extract(const cv::Mat &image, std::vector<cv::KeyPoint> &keys,
+                                           cv::Mat &descriptors) {
+  if (image.type() != CV_8U)
+    cv::cvtColor(image, im_gray, CV_RGB2GRAY);
+  else
+    im_gray = image;
 
-  #ifndef HAVE_OCV_2
+#ifndef HAVE_OCV_2
   cv::ocl::setUseOpenCL(false);
-  #endif
+#endif
 
   imGDesc->compute(im_gray, keys, descriptors);
 
-  if (param.do_feature_selection)
-  {
-    fs->dbg = image; 
-    //cout<<"[FeatureDetector_KD_FAST_IMGD::extract] num detected: "<<keys.size()<<", "<<descriptors.rows<<endl;
-    fs->compute(keys, descriptors); 
-    //cout<<"[FeatureDetector_KD_FAST_IMGD::extract] num selected: "<<keys.size()<<", "<<descriptors.rows<<endl;
+  if (param.do_feature_selection) {
+    fs->dbg = image;
+    // cout<<"[FeatureDetector_KD_FAST_IMGD::extract] num detected: "<<keys.size()<<", "<<descriptors.rows<<endl;
+    fs->compute(keys, descriptors);
+    // cout<<"[FeatureDetector_KD_FAST_IMGD::extract] num selected: "<<keys.size()<<", "<<descriptors.rows<<endl;
   }
 }
-
-
-
 }
-
-
-
-
-
-
-
-
-
-
-
-

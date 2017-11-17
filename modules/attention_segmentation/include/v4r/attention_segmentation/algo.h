@@ -37,28 +37,31 @@
 **
 ****************************************************************************/
 
-
-
 #ifndef EPALGO_H
 #define EPALGO_H
 
 #include <v4r/core/macros.h>
 #include "v4r/attention_segmentation/eputils_headers.h"
 
-namespace v4r
-{
-//ep:begin: revision at 17-07-2014
+namespace v4r {
+// ep:begin: revision at 17-07-2014
 V4R_EXPORTS void filterGaussian(cv::Mat &input, cv::Mat &output, cv::Mat &mask);
-V4R_EXPORTS void buildDepthPyramid(cv::Mat &image, std::vector<cv::Mat> &pyramid, cv::Mat &mask, unsigned int levelNumber);
-V4R_EXPORTS void createPointCloudPyramid(std::vector<cv::Mat> &pyramidX, std::vector<cv::Mat> &pyramidY, std::vector<cv::Mat> &pyramidZ, 
-			     std::vector<cv::Mat> &pyramidIndices, std::vector<pcl::PointCloud<pcl::PointXYZRGB>::Ptr > &pyramidCloud);
-V4R_EXPORTS void createNormalPyramid(std::vector<cv::Mat> &pyramidNx, std::vector<cv::Mat> &pyramidNy, std::vector<cv::Mat> &pyramidNz, std::vector<cv::Mat> &pyramidIndices, std::vector<pcl::PointCloud<pcl::Normal>::Ptr > &pyramidNormal);
-V4R_EXPORTS void createIndicesPyramid(std::vector<cv::Mat> &pyramidIndices, std::vector<pcl::PointIndices::Ptr> &pyramidIndiceSets);
+V4R_EXPORTS void buildDepthPyramid(cv::Mat &image, std::vector<cv::Mat> &pyramid, cv::Mat &mask,
+                                   unsigned int levelNumber);
+V4R_EXPORTS void createPointCloudPyramid(std::vector<cv::Mat> &pyramidX, std::vector<cv::Mat> &pyramidY,
+                                         std::vector<cv::Mat> &pyramidZ, std::vector<cv::Mat> &pyramidIndices,
+                                         std::vector<pcl::PointCloud<pcl::PointXYZRGB>::Ptr> &pyramidCloud);
+V4R_EXPORTS void createNormalPyramid(std::vector<cv::Mat> &pyramidNx, std::vector<cv::Mat> &pyramidNy,
+                                     std::vector<cv::Mat> &pyramidNz, std::vector<cv::Mat> &pyramidIndices,
+                                     std::vector<pcl::PointCloud<pcl::Normal>::Ptr> &pyramidNormal);
+V4R_EXPORTS void createIndicesPyramid(std::vector<cv::Mat> &pyramidIndices,
+                                      std::vector<pcl::PointIndices::Ptr> &pyramidIndiceSets);
 V4R_EXPORTS void upscaleImage(cv::Mat &input, cv::Mat &output);
 V4R_EXPORTS void downscaleImage(cv::Mat &input, cv::Mat &output, unsigned int width, unsigned int height);
-V4R_EXPORTS void scaleImage(std::vector<cv::Mat> &inputPyramid, cv::Mat &input, cv::Mat &output, int inLevel, int outLevel);
-//ep:end: revision at 17-07-2014
-  
+V4R_EXPORTS void scaleImage(std::vector<cv::Mat> &inputPyramid, cv::Mat &input, cv::Mat &output, int inLevel,
+                            int outLevel);
+// ep:end: revision at 17-07-2014
+
 /**
  * checks if point in the polygon
  * */
@@ -66,18 +69,18 @@ bool inPoly(std::vector<cv::Point> &poly, cv::Point p);
 /**
  * creates polygon map
  * */
-V4R_EXPORTS void buildPolygonMap(cv::Mat &polygonMap, std::vector<std::vector<cv::Point> > &polygons);
+V4R_EXPORTS void buildPolygonMap(cv::Mat &polygonMap, std::vector<std::vector<cv::Point>> &polygons);
 /**
  * builds contour map
  * */
-V4R_EXPORTS void buildCountourMap(cv::Mat &polygonMap, std::vector<std::vector<cv::Point> > &polygons,
-                      cv::Scalar color = cv::Scalar(255,255,255));
+V4R_EXPORTS void buildCountourMap(cv::Mat &polygonMap, std::vector<std::vector<cv::Point>> &polygons,
+                                  cv::Scalar color = cv::Scalar(255, 255, 255));
 /**
  * adds noise to the image
  * */
-V4R_EXPORTS void addNoise(cv::Mat &image, cv::Mat &nImage, cv::RNG &rng,float min, float max);
+V4R_EXPORTS void addNoise(cv::Mat &image, cv::Mat &nImage, cv::RNG &rng, float min, float max);
 /**
- * returns number of the point in the cammulative distribution for 
+ * returns number of the point in the cammulative distribution for
  * given x value
  * */
 long commulativeFunctionArgValue(float x, std::vector<float> &A);
@@ -102,7 +105,7 @@ float getStd(std::vector<float> dist, float mean, float total_num = 1);
 /**
  * creates contours from masks
  * */
-V4R_EXPORTS void createContoursFromMasks(std::vector<cv::Mat> &masks, std::vector<std::vector<cv::Point> > &contours);
+V4R_EXPORTS void createContoursFromMasks(std::vector<cv::Mat> &masks, std::vector<std::vector<cv::Point>> &contours);
 /**
  * checks transitions from 0 to 1 in the neighbourhood
  * */
@@ -138,56 +141,48 @@ V4R_EXPORTS void get2DNeighbors(const cv::Mat &patches, cv::Mat &neighbors, int 
 #ifndef NOT_USE_PCL
 
 template <typename T>
-V4R_EXPORTS void get3DNeighbors(const cv::Mat &patches, cv::Mat &neighbors, int patchesNumber, 
-                    typename pcl::PointCloud<T>::Ptr cloud, double z_max_dist)
-{
-  neighbors = cv::Mat_<bool>(patchesNumber,patchesNumber);
+V4R_EXPORTS void get3DNeighbors(const cv::Mat &patches, cv::Mat &neighbors, int patchesNumber,
+                                typename pcl::PointCloud<T>::Ptr cloud, double z_max_dist) {
+  neighbors = cv::Mat_<bool>(patchesNumber, patchesNumber);
   neighbors.setTo(false);
-  
+
   int width = patches.cols;
   int height = patches.rows;
-  
+
   //@ep TODO: uncomment?
-//   int dr[4] = {-1,-1, 0, 1};
-//   int dc[4] = { 0,-1,-1,-1};
-  
-  int dr[4] = {-1,0,-1};
-  int dc[4] = { 0,-1,-1};
-  
-  for(int r = 1; r < patches.rows-1; r++) 
-  {
-    for(int c = 1; c < patches.cols-1; c++) 
-    {
+  //   int dr[4] = {-1,-1, 0, 1};
+  //   int dc[4] = { 0,-1,-1,-1};
+
+  int dr[4] = {-1, 0, -1};
+  int dc[4] = {0, -1, -1};
+
+  for (int r = 1; r < patches.rows - 1; r++) {
+    for (int c = 1; c < patches.cols - 1; c++) {
       // if the patch exist
-      if(patches.at<int>(r,c) != -1) 
-      {
-	
-	int patchIdx =  patches.at<int>(r,c);
-	
-	//@ep: why we did not use 1,-1 shift???
-	for(int i = 0; i < 3; ++i) //@ep: TODO 3->4
-	{
-	
-	  int nr = r + dr[i];
-	  int nc = c + dc[i];
-	  
-	  int currentPatchIdx =  patches.at<int>(nr,nc);
-	  if(currentPatchIdx == -1)
-	    continue;
-	  
-	  if(patchIdx != currentPatchIdx)
-	  {
-	    int idx0 =  r*width+c;
-            int idx1 = nr*width+nc;
+      if (patches.at<int>(r, c) != -1) {
+        int patchIdx = patches.at<int>(r, c);
+
+        //@ep: why we did not use 1,-1 shift???
+        for (int i = 0; i < 3; ++i)  //@ep: TODO 3->4
+        {
+          int nr = r + dr[i];
+          int nc = c + dc[i];
+
+          int currentPatchIdx = patches.at<int>(nr, nc);
+          if (currentPatchIdx == -1)
+            continue;
+
+          if (patchIdx != currentPatchIdx) {
+            int idx0 = r * width + c;
+            int idx1 = nr * width + nc;
             // @ep:: are we wure that this should be distance only in z direction, and not Euclidean distance???
-	    double dis = fabs(cloud->points.at(idx0).z - cloud->points.at(idx1).z);
-            if( dis < z_max_dist ) 
-	    {
-              neighbors.at<bool>(currentPatchIdx,patchIdx) = true;
-              neighbors.at<bool>(patchIdx,currentPatchIdx) = true;
+            double dis = fabs(cloud->points.at(idx0).z - cloud->points.at(idx1).z);
+            if (dis < z_max_dist) {
+              neighbors.at<bool>(currentPatchIdx, patchIdx) = true;
+              neighbors.at<bool>(patchIdx, currentPatchIdx) = true;
             }
-	  }
-	}   
+          }
+        }
       }
     }
   }
@@ -195,6 +190,6 @@ V4R_EXPORTS void get3DNeighbors(const cv::Mat &patches, cv::Mat &neighbors, int 
 
 #endif
 
-} // namespace v4r
+}  // namespace v4r
 
-#endif // EPALGO_H
+#endif  // EPALGO_H

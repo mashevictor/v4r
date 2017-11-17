@@ -37,25 +37,21 @@
 **
 ****************************************************************************/
 
-
 /**
  * @file main.cpp
  * @author Johann Prankl (prankl@acin.tuwien.ac.at)
  * @date 2017
  * @brief
  *
- */ 
+ */
 
 #include <v4r/keypoints/io.h>
 
-namespace v4r
-{
-namespace io
-{
+namespace v4r {
+namespace io {
 
-bool write(const std::string &file, const ArticulatedObject::Ptr &model)
-{
-  if (model.get()==0)
+bool write(const std::string &file, const ArticulatedObject::Ptr &model) {
+  if (model.get() == 0)
     return false;
 
   std::ofstream ofs(file.c_str());
@@ -65,23 +61,16 @@ bool write(const std::string &file, const ArticulatedObject::Ptr &model)
   return true;
 }
 
-
-bool read(const std::string &file, ArticulatedObject::Ptr &model)
-{
+bool read(const std::string &file, ArticulatedObject::Ptr &model) {
   model.reset(new ArticulatedObject());
 
   std::ifstream ifs(file.c_str());
-  if (ifs.is_open())
-  {
+  if (ifs.is_open()) {
     boost::archive::binary_iarchive ia(ifs);
     ia >> model;
     return true;
   }
   return false;
 }
-
-
 }
-} //--END--
-
-
+}  //--END--

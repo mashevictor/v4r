@@ -37,7 +37,6 @@
 **
 ****************************************************************************/
 
-
 /**
  * @file Fourier.h
  * @author Richtsfeld
@@ -49,47 +48,41 @@
 #ifndef SURFACE_FOURIER_H
 #define SURFACE_FOURIER_H
 
-#include <vector>
-#include <iostream>
-#include <stdio.h>
 #include <omp.h>
+#include <stdio.h>
+#include <iostream>
+#include <vector>
 
 #include <opencv2/opencv.hpp>
 
 #include "v4r/attention_segmentation//SurfaceModel.h"
 
-namespace v4r
-{
+namespace v4r {
 
-class V4R_EXPORTS Fourier
-{
-public:
-  
-protected:
-
-private:
-  
+class V4R_EXPORTS Fourier {
+ public:
+ protected:
+ private:
   bool computed;
   bool have_image;
   cv::Mat image;
   bool have_indices;
   pcl::PointIndices::Ptr indices;
-  
+
   int width, height;
-  
-  int N;            // Number of neighbors
-  int kmax;         // maximum number of discrete fourier transformation coefficient
-  int nbins;        // number of histogram bins
-  int binWidth;     // Width of one bin (32 width => 8x32 = 256)
-  int binStretch;   // Stretch factor for bins of higher order (k=1,...)
-  
-public:
-  
+
+  int N;           // Number of neighbors
+  int kmax;        // maximum number of discrete fourier transformation coefficient
+  int nbins;       // number of histogram bins
+  int binWidth;    // Width of one bin (32 width => 8x32 = 256)
+  int binStretch;  // Stretch factor for bins of higher order (k=1,...)
+
+ public:
   typedef boost::shared_ptr<Fourier> Ptr;
-  
+
   Fourier();
   ~Fourier();
-  
+
   /** Set input point cloud **/
   // sets input cloud
   //
@@ -99,26 +92,26 @@ public:
   void setIndices(std::vector<int> &_indices);
   void setIndices(cv::Rect rect);
 
-  bool getComputed() {return computed;};
-  
+  bool getComputed() {
+    return computed;
+  };
+
   /** Compute the texture **/
   void compute();
-  
+
   /** Compare surface texture **/
   V4R_EXPORTS double compare(Fourier::Ptr f);
 
   /** Check the results visually on images for each dft-component **/
-//   void check();
+  //   void check();
 
   double *bins;
-  uchar *dft;         // dft results for kmax = 5 coefficients
+  uchar *dft;  // dft results for kmax = 5 coefficients
   bool *used;
-  
 };
 
 /*************************** INLINE METHODES **************************/
 
-} //--END--
+}  //--END--
 
 #endif
-

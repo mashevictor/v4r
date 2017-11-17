@@ -37,33 +37,30 @@
 **
 ****************************************************************************/
 
-
 #ifndef TIMEUTILS_H
 #define TIMEUTILS_H
 
-#include "v4r/attention_segmentation/eputils_headers.h"
 #include <v4r/core/macros.h>
+#include "v4r/attention_segmentation/eputils_headers.h"
 
-namespace v4r
-{
-  
-class V4R_EXPORTS TimeEstimationClass
-{
-private:
+namespace v4r {
+
+class V4R_EXPORTS TimeEstimationClass {
+ private:
   bool isCounterStarted;
   bool isCounterWorkComplete;
-    
+
   clockid_t clockID;
   timespec startTime, endTime;
-    
-public:
+
+ public:
   TimeEstimationClass(clockid_t clockID = CLOCK_REALTIME);
   virtual ~TimeEstimationClass(){};
-    
+
   void setClockID(clockid_t clockID);
   void countingStart();
   void countingEnd();
-  
+
   unsigned long long getRealNanosecondsCount(timespec time);
   unsigned long long getCurrentTimeInNanoseconds();
   unsigned long getCurrentTimeInSeconds();
@@ -71,6 +68,6 @@ public:
   unsigned long getWorkTimeInSeconds();
 };
 
-} //namespace v4r
+}  // namespace v4r
 
-#endif //TIMEUTILS_H
+#endif  // TIMEUTILS_H

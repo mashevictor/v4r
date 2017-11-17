@@ -37,19 +37,16 @@
 **
 ****************************************************************************/
 
-
-
 #ifndef ATTENTION_MODULE_HEADERS_HPP
 #define ATTENTION_MODULE_HEADERS_HPP
-
 
 // opencv library
 #include <opencv2/opencv.hpp>
 
 // standart libraries
+#include <stdio.h>
 #include <algorithm>
 #include <vector>
-#include <stdio.h>
 
 #include "v4r/attention_segmentation/AttentionModuleErrors.h"
 
@@ -59,4 +56,4 @@
 // pcl
 //#include <pcl/visualization/pcl_visualizer.h>
 
-#endif //ATTENTION_MODULE_HEADERS_HPP
+#endif  // ATTENTION_MODULE_HEADERS_HPP

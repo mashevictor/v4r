@@ -37,7 +37,6 @@
 **
 ****************************************************************************/
 
-
 /**
  * @file local_rec_object_hypotheses.h
  * @author Aitor Aldoma (aldoma@acin.tuwien.ac.at), Thomas Faeulhammer (faeulhammer@acin.tuwien.ac.at)
@@ -49,53 +48,51 @@
 #ifndef LOCAL_REC_OBJECT_HYPOTHESES_H_
 #define LOCAL_REC_OBJECT_HYPOTHESES_H_
 
-#include <v4r/core/macros.h>
-#include <v4r/recognition/model.h>
 #include <pcl/correspondence.h>
 #include <pcl/visualization/pcl_visualizer.h>
+#include <v4r/core/macros.h>
+#include <v4r/recognition/model.h>
 
-namespace v4r{
+namespace v4r {
 
 /**
  * @brief This class represents object hypotheses coming from local feature correspondences
  * @author Thomas Faeulhammer, Aitor Aldoma
  */
-template<typename PointT>
-class V4R_EXPORTS LocalObjectHypothesis
-{
-  private:
-    mutable boost::shared_ptr<pcl::visualization::PCLVisualizer> vis_;
+template <typename PointT>
+class V4R_EXPORTS LocalObjectHypothesis {
+ private:
+  mutable boost::shared_ptr<pcl::visualization::PCLVisualizer> vis_;
 
-  public:
-    std::string model_id_; ///< object model identifier
-    pcl::CorrespondencesPtr model_scene_corresp_; ///< indices between model keypoints (index query) and scene cloud (index match)
+ public:
+  std::string model_id_;  ///< object model identifier
+  pcl::CorrespondencesPtr
+      model_scene_corresp_;  ///< indices between model keypoints (index query) and scene cloud (index match)
 
-    LocalObjectHypothesis() { }
+  LocalObjectHypothesis() {}
 
-    LocalObjectHypothesis( const LocalObjectHypothesis& other )
-        :model_id_(other.model_id_)
-    {
-        model_scene_corresp_.reset( new pcl::Correspondences);
-        *model_scene_corresp_ = * other.model_scene_corresp_;
-    }
+  LocalObjectHypothesis(const LocalObjectHypothesis& other) : model_id_(other.model_id_) {
+    model_scene_corresp_.reset(new pcl::Correspondences);
+    *model_scene_corresp_ = *other.model_scene_corresp_;
+  }
 
-    LocalObjectHypothesis& operator=(LocalObjectHypothesis other)
-    {
-        model_id_ = other.model_id_;
-        model_scene_corresp_.reset( new pcl::Correspondences);
-        *model_scene_corresp_ = * other.model_scene_corresp_;
-        return *this;
-    }
+  LocalObjectHypothesis& operator=(LocalObjectHypothesis other) {
+    model_id_ = other.model_id_;
+    model_scene_corresp_.reset(new pcl::Correspondences);
+    *model_scene_corresp_ = *other.model_scene_corresp_;
+    return *this;
+  }
 
-    void visualize(const pcl::PointCloud<pcl::PointXYZRGB> &scene, const pcl::PointCloud<pcl::PointXYZRGB> &scene_kp) const;
+  void visualize(const pcl::PointCloud<pcl::PointXYZRGB>& scene,
+                 const pcl::PointCloud<pcl::PointXYZRGB>& scene_kp) const;
 
-    static bool
-    gcGraphCorrespSorter (pcl::Correspondence i, pcl::Correspondence j) { return i.distance < j.distance; }
+  static bool gcGraphCorrespSorter(pcl::Correspondence i, pcl::Correspondence j) {
+    return i.distance < j.distance;
+  }
 
-    typedef boost::shared_ptr<LocalObjectHypothesis<PointT> > Ptr;
-    typedef boost::shared_ptr<const LocalObjectHypothesis<PointT> > ConstPtr;
+  typedef boost::shared_ptr<LocalObjectHypothesis<PointT>> Ptr;
+  typedef boost::shared_ptr<const LocalObjectHypothesis<PointT>> ConstPtr;
 };
-
 }
 
 #endif

@@ -37,7 +37,6 @@
 **
 ****************************************************************************/
 
-
 /**
  * @file AddGroundTruth.h
  * @author Richtsfeld, Potapova
@@ -58,27 +57,24 @@
 
 #include "v4r/attention_segmentation/SurfaceModel.h"
 
-namespace v4r
-{
+namespace v4r {
 
-class AddGroundTruth
-{
-public:
-
-private:
-  pcl::PointCloud<pcl::PointXYZRGBL>::Ptr cloud;            ///< Input cloud
+class AddGroundTruth {
+ public:
+ private:
+  pcl::PointCloud<pcl::PointXYZRGBL>::Ptr cloud;  ///< Input cloud
   bool have_cloud;
   int width, height;
 
   std::vector<SurfaceModel::Ptr> surfaces;
   bool have_surfaces;
-  
+
   std::vector<Relation> relations;
   bool have_relations;
-  
+
   bool computed;
-  
-public:
+
+ public:
   AddGroundTruth();
   ~AddGroundTruth();
 
@@ -87,7 +83,7 @@ public:
 
   /** Set relations **/
   void setSurfaces(std::vector<SurfaceModel::Ptr> _surfaces);
-  
+
   /** Set relations **/
   void setRelations(std::vector<v4r::Relation> _relations);
 
@@ -99,20 +95,16 @@ public:
 
   /** Add ground truth of 'type' to the relations **/
   void compute(int type = 1);
-  
 };
 
-inline std::vector<SurfaceModel::Ptr> AddGroundTruth::getSurfaces()
-{
+inline std::vector<SurfaceModel::Ptr> AddGroundTruth::getSurfaces() {
   return surfaces;
 }
 
-inline std::vector<Relation> AddGroundTruth::getRelations()
-{
+inline std::vector<Relation> AddGroundTruth::getRelations() {
   return relations;
 }
 
-} //--END--
+}  //--END--
 
 #endif
-

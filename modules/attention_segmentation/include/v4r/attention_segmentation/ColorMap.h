@@ -37,56 +37,54 @@
 **
 ****************************************************************************/
 
-
-
 #ifndef COLOR_MAP_HPP
 #define COLOR_MAP_HPP
 
 #include <v4r/core/macros.h>
 #include "v4r/attention_segmentation/BaseMap.h"
 
-namespace v4r
-{
+namespace v4r {
 
 /**
  * parameters for color saliency map
  * */
 
-class V4R_EXPORTS ColorSaliencyMap: public BaseMap
-{
-public:
+class V4R_EXPORTS ColorSaliencyMap : public BaseMap {
+ public:
   ColorSaliencyMap();
   ~ColorSaliencyMap();
-  
+
   void setUseLAB(bool useLAB_);
   bool getUseLAB();
-  
+
   void setColor(cv::Scalar color_);
   cv::Scalar getColor();
-/**
-* calculates single color map
-* */
+  /**
+  * calculates single color map
+  * */
   virtual int calculate();
   virtual void reset();
   virtual void print();
-  
-private:
-  bool              useLAB;
-  cv::Scalar        color;
-  
-  float getMaxColorDistance(float &r_color, float &g_color, float &b_color, float &a_color);
-  void LabColorMap(cv::Mat &image_cur, int image_width, int image_height, float max_dist, float a_color, float b_color, cv::Mat &map_cur);
-  void RGBColorMap(cv::Mat &image_cur, int image_width, int image_height, float max_dist, float r_color, float g_color, float b_color, cv::Mat &map_cur);
 
-protected:  
+ private:
+  bool useLAB;
+  cv::Scalar color;
+
+  float getMaxColorDistance(float &r_color, float &g_color, float &b_color, float &a_color);
+  void LabColorMap(cv::Mat &image_cur, int image_width, int image_height, float max_dist, float a_color, float b_color,
+                   cv::Mat &map_cur);
+  void RGBColorMap(cv::Mat &image_cur, int image_width, int image_height, float max_dist, float r_color, float g_color,
+                   float b_color, cv::Mat &map_cur);
+
+ protected:
   virtual int checkParameters();
   virtual int calculatePyramidSimple();
   virtual int calculatePyramidItti();
   virtual int calculatePyramidFrintrop();
-  
+
   virtual int combinePyramid(BasePyramid::Ptr pyramid);
 };
 
-} // namespace v4r
+}  // namespace v4r
 
-#endif //COLOR_MAP_HPP
+#endif  // COLOR_MAP_HPP

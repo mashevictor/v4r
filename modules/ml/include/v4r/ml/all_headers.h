@@ -37,7 +37,6 @@
 **
 ****************************************************************************/
 
-
 /**
  * @file all_headers.h
  * @author Thomas Faeulhammer (faeulhammer@acin.tuwien.ac.at)
@@ -52,35 +51,27 @@
 #include <v4r/ml/nearestNeighbor.h>
 #include <v4r/ml/svmWrapper.h>
 
-namespace v4r
-{
+namespace v4r {
 
-Classifier::Ptr
-initClassifier(int method, std::vector<std::string> &params )
-{
-    Classifier::Ptr classifier;
+Classifier::Ptr initClassifier(int, std::vector<std::string> &);
 
-    if(method == ClassifierType::KNN )
-    {
-        NearestNeighborClassifierParameter param;
-        params = param.init(params);
-        NearestNeighborClassifier::Ptr nn (new NearestNeighborClassifier (param));
-        classifier = boost::dynamic_pointer_cast<Classifier > (nn);
-    }
-    else if(method == ClassifierType::SVM)
-    {
-        SVMParameter param;
-        params = param.init(params);
-        svmClassifier::Ptr nn (new svmClassifier (param));
-        classifier = boost::dynamic_pointer_cast<Classifier > (nn);
-    }
-    else
-    {
-        std::cerr << "Classifier method " << method << " is not implemented! " << std::endl;
-    }
+Classifier::Ptr initClassifier(int method, std::vector<std::string> &params) {
+  Classifier::Ptr classifier;
 
-    return classifier;
+  if (method == ClassifierType::KNN) {
+    NearestNeighborClassifierParameter param;
+    params = param.init(params);
+    NearestNeighborClassifier::Ptr nn(new NearestNeighborClassifier(param));
+    classifier = boost::dynamic_pointer_cast<Classifier>(nn);
+  } else if (method == ClassifierType::SVM) {
+    SVMParameter param;
+    params = param.init(params);
+    svmClassifier::Ptr nn(new svmClassifier(param));
+    classifier = boost::dynamic_pointer_cast<Classifier>(nn);
+  } else {
+    std::cerr << "Classifier method " << method << " is not implemented! " << std::endl;
+  }
+
+  return classifier;
 }
-
-
 }

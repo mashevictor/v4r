@@ -37,56 +37,52 @@
 **
 ****************************************************************************/
 
-
-
 #ifndef ORIENTATION_MAP_HPP
 #define ORIENTATION_MAP_HPP
 
 #include <v4r/core/macros.h>
 #include "v4r/attention_segmentation/BaseMap.h"
 
-namespace v4r
-{
+namespace v4r {
 
 /**
  * parameters for orientation saliency map
  * */
 
-class V4R_EXPORTS OrientationSaliencyMap: public BaseMap
-{
-public:
-  OrientationSaliencyMap();//
-  ~OrientationSaliencyMap();//
-  
-  void setAngle(float angle_);//
-  float getAngle();//
-  
-  void setBandwidth(float bandwidth_);//
-  float getBandwidth();//
-  
-  float getMaxSum();//
-  
+class V4R_EXPORTS OrientationSaliencyMap : public BaseMap {
+ public:
+  OrientationSaliencyMap();   //
+  ~OrientationSaliencyMap();  //
+
+  void setAngle(float angle_);  //
+  float getAngle();             //
+
+  void setBandwidth(float bandwidth_);  //
+  float getBandwidth();                 //
+
+  float getMaxSum();  //
+
   virtual int calculate();
-  virtual void reset();//
-  virtual void print();//
-  
-private:
+  virtual void reset();  //
+  virtual void print();  //
+
+ private:
   float angle;
   float max_sum;
   float bandwidth;
-  
-  void orientationMap(cv::Mat &image_cur, int image_width, int image_height, float angle, float max_sum, float bandwidth, cv::Mat &map_cur);
-  
-protected:  
-  virtual int checkParameters();//
+
+  void orientationMap(cv::Mat &image_cur, int image_width, int image_height, float angle, float max_sum,
+                      float bandwidth, cv::Mat &map_cur);
+
+ protected:
+  virtual int checkParameters();  //
   virtual int calculatePyramidSimple();
   virtual int calculatePyramidItti();
   virtual int calculatePyramidFrintrop();
-  
-  virtual int combinePyramid(BasePyramid::Ptr pyramid);
 
+  virtual int combinePyramid(BasePyramid::Ptr pyramid);
 };
 
-} // namespace v4r
+}  // namespace v4r
 
-#endif //ORIENTATION_MAP_HPP
+#endif  // ORIENTATION_MAP_HPP

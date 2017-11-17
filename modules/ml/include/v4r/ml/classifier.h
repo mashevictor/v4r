@@ -37,7 +37,6 @@
 **
 ****************************************************************************/
 
-
 /**
  * @file classifier.h
  * @author Thomas Faeulhammer (faeulhammer@acin.tuwien.ac.at)
@@ -50,48 +49,42 @@
 
 #include <v4r/core/macros.h>
 #include <v4r/ml/types.h>
-#include <boost/shared_ptr.hpp>
 #include <Eigen/Eigen>
+#include <boost/shared_ptr.hpp>
 #include <iostream>
 #include <vector>
 
-namespace v4r
-{
-class V4R_EXPORTS Classifier
-{
-public:
-    Classifier()
-    {}
+namespace v4r {
+class V4R_EXPORTS Classifier {
+ public:
+  Classifier() {}
 
-    /**
-     * @brief train the classifer
-     * @param training_data (each training data point is a row entry, the feature dimensions are equal to the number of columns)
-     * @param training_label (the label for each training data point)
-     */
-    virtual void
-    train( const Eigen::MatrixXf &training_data, const Eigen::VectorXi & training_label) = 0;
+  /**
+   * @brief train the classifer
+   * @param training_data (each training data point is a row entry, the feature dimensions are equal to the number of
+   * columns)
+   * @param training_label (the label for each training data point)
+   */
+  virtual void train(const Eigen::MatrixXf &training_data, const Eigen::VectorXi &training_label) = 0;
 
-    /**
-     * @brief predict the target value of a query feature
-     * @param query_data (each query is a row entry, the feature dimensions are equal to the number of columns)
-     * @param predicted_label (each query produces a row of predicted labels, the columns of the predicted labels correspond to the most probable predictions. Predictions are sorted - most likely one is on the left)
-     */
-    virtual void
-    predict(const Eigen::MatrixXf &query_data, Eigen::MatrixXi &predicted_label) const = 0;
+  /**
+   * @brief predict the target value of a query feature
+   * @param query_data (each query is a row entry, the feature dimensions are equal to the number of columns)
+   * @param predicted_label (each query produces a row of predicted labels, the columns of the predicted labels
+   * correspond to the most probable predictions. Predictions are sorted - most likely one is on the left)
+   */
+  virtual void predict(const Eigen::MatrixXf &query_data, Eigen::MatrixXi &predicted_label) const = 0;
 
-    virtual void
-    getTrainingSampleIDSforPredictions(Eigen::MatrixXi &predicted_training_sample_indices, Eigen::MatrixXf &distances)
-    {
-        (void)predicted_training_sample_indices;
-        (void)distances;
-        std::cerr << "getTrainingSampleIDSforPredictions is not implemented right now." << std::endl;
-    }
+  virtual void getTrainingSampleIDSforPredictions(Eigen::MatrixXi &predicted_training_sample_indices,
+                                                  Eigen::MatrixXf &distances) {
+    (void)predicted_training_sample_indices;
+    (void)distances;
+    std::cerr << "getTrainingSampleIDSforPredictions is not implemented right now." << std::endl;
+  }
 
-    virtual int
-    getType() const = 0;
+  virtual int getType() const = 0;
 
-    typedef boost::shared_ptr< Classifier > Ptr;
-    typedef boost::shared_ptr< Classifier const> ConstPtr;
+  typedef boost::shared_ptr<Classifier> Ptr;
+  typedef boost::shared_ptr<Classifier const> ConstPtr;
 };
-
 }

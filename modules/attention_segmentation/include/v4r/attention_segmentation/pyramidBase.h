@@ -37,20 +37,16 @@
 **
 ****************************************************************************/
 
-
-
 #ifndef PYRAMID_BASE_HPP
 #define PYRAMID_BASE_HPP
 
 #include <v4r/core/macros.h>
 #include "v4r/attention_segmentation/headers.h"
 
-namespace v4r
-{
-  
-class V4R_EXPORTS BasePyramid
-{
-public:
+namespace v4r {
+
+class V4R_EXPORTS BasePyramid {
+ public:
   BasePyramid();
   typedef boost::shared_ptr<BasePyramid> Ptr;
 
@@ -73,22 +69,22 @@ public:
   void setHeight(int height_);
   int getHeight();
   int getHeight(unsigned int level);
-  
+
   void setCombinationType(int combination_type_);
   int getCombinationType();
 
   void setImage(cv::Mat &image_);
   bool getImage(cv::Mat &image_);
   bool getImage(unsigned int level, cv::Mat &image_);
-  
+
   void setCloud(pcl::PointCloud<pcl::PointXYZRGB>::Ptr &cloud_);
   bool getCloud(pcl::PointCloud<pcl::PointXYZRGB>::Ptr &cloud_);
   bool getCloud(unsigned int level, pcl::PointCloud<pcl::PointXYZRGB>::Ptr &cloud_);
-  
+
   void setIndices(pcl::PointIndices::Ptr &indices_);
   bool getIndices(pcl::PointIndices::Ptr &indices_);
   bool getIndices(unsigned int level, pcl::PointIndices::Ptr &indices_);
-  
+
   void setNormals(pcl::PointCloud<pcl::Normal>::Ptr &normals_);
   bool getNormals(pcl::PointCloud<pcl::Normal>::Ptr &normals_);
   bool getNormals(unsigned int level, pcl::PointCloud<pcl::Normal>::Ptr &normals_);
@@ -111,17 +107,17 @@ public:
   int buildDepthPyramid();
   virtual void combinePyramid(bool standard = false);
 
-protected:
-  int                  start_level;
-  int                  max_level;
-  int                  sm_level;
-  int                  normalization_type;
-  int                  width;
-  int                  height;
-  int                  combination_type;
+ protected:
+  int start_level;
+  int max_level;
+  int sm_level;
+  int normalization_type;
+  int width;
+  int height;
+  int combination_type;
 
-  cv::Mat              image;
-  
+  cv::Mat image;
+
   pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud;
   pcl::PointIndices::Ptr indices;
   pcl::PointCloud<pcl::Normal>::Ptr normals;
@@ -134,12 +130,12 @@ protected:
   std::vector<cv::Mat> pyramidNy;
   std::vector<cv::Mat> pyramidNz;
   std::vector<pcl::PointIndices::Ptr> pyramidIndices;
-  std::vector<pcl::PointCloud<pcl::PointXYZRGB>::Ptr > pyramidCloud;
-  std::vector<pcl::PointCloud<pcl::Normal>::Ptr > pyramidNormals;
-  
+  std::vector<pcl::PointCloud<pcl::PointXYZRGB>::Ptr> pyramidCloud;
+  std::vector<pcl::PointCloud<pcl::Normal>::Ptr> pyramidNormals;
+
   std::vector<cv::Mat> pyramidFeatures;
-  float                max_map_value;
-  cv::Mat              map;
+  float max_map_value;
+  cv::Mat map;
 
   bool calculated;
 
@@ -158,6 +154,5 @@ protected:
   virtual void checkLevels();
   virtual void combineConspicuityMaps(cv::Mat &sm_map, cv::Mat &consp_map);
 };
-
 }
-#endif //PYRAMID_BASE_HPP
+#endif  // PYRAMID_BASE_HPP

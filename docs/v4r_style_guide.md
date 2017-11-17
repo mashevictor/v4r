@@ -3,18 +3,18 @@
 
 All files should be *under_scored*.
 
-* Header files have the extension .h
-* Templated implementation files have the extension .hpp
-* Source files have the extension .cpp
+* Header files have the extension `.h`
+* Templated implementation files have the extension `.hpp`
+* Source files have the extension `.cpp`
 
 
 ## 1.2. Directories
 
 All directories and subdirectories should be under_scored.
 
-* Header files should go under include/v4r/module_name/
-* Templated implementation files should go under include/v4r/module_name/impl/
-* Source files should go under src/
+* Header files should go under `include/v4r/module_name/.`
+* Templated implementation files should go under `include/v4r/module_name/impl/.`
+* Source files should go under `src/.`
 
 ## 1.3. Includes
 
@@ -101,89 +101,15 @@ int example_int_;
 
 # 2. Indentation and Formatting
 
-V4R uses a variant of the Qt style formatting. The standard indentation for each block is 4 spaces. If possible, apply this measure for your tabs and other spacings.
-## 2.1. Namespaces
+V4R uses the [**Google style guide**](https://google.github.io/styleguide/cppguide.html) (with some minor allowed modifations stated in [.clang-format](../.clang-format)). To apply the style guide in your IDE, please do the following:
+## CLion:
+Go to "File -> Settings -> Editor -> Code Style -> C/C++" and click on "Set from..." -> Predefined Style --> Google and click Apply/OK.
 
-In a header file, the contents of a namespace should be indented, e.g.:
+## QtCreator:
+Use the beautifier plugin (should be integrated in QtCreator 3.*.*). To enable it, go to "Help -> About plugins..." and there check "Beautifier" box in "C++" group.
+Then set the beautifier tool to use the Google style. Go to "Tools -> Options -> Beautifier", then go to Clang Format  and select "Use predefined style: Google". OK
 
-```cpp
-namespace v4r
-{
-    class Foo
-    {
-        ...
-    };
-}
-```
-## 2.2. Classes
-
-The template parameters of a class should be declared on a different line, e.g.:
-
-```cpp
-template <typename T>
-class Foo
-{
-    ...
-}
-```
-
-## 2.3. Functions / Methods
-
-The return type of each function declaration must be placed on a different line, e.g.:
-
-```cpp
-void
-bar ();
-```
-
-Same for the implementation/definition, e.g.:
-
-```cpp
-void
-bar ()
-{
-  ...
-}
-```
-
-or
-```cpp
-void
-Foo::bar ()
-{
-  ...
-}
-```
-
-or
-
-```cpp
-template <typename T> void
-Foo<T>::bar ()
-{
-  ...
-}
-```
-
-## 2.4. Braces
-
-Braces, both open and close, go on their own lines, e.g.:
-```cpp
-if (a < b)
-{
-    ...
-}
-else
-{
-    ...
-}
-```
-Braces can be omitted if the enclosed block is a single-line statement, e.g.:
-```cpp
-if (a < b)
-    x = 2 * a;
-```
-
+To re-format exisiting files, you can use `clang-format` (install via aptitude). Just run `clang-format -i style=file yourfile.cpp` from the V4R root directory (this applies the style in the `.clang-format` file). If this does not work, just apply the normal Google style `clang-format -i style=google yourfile.cpp`.
 
 # 3. Structuring
 ## 3.1. Classes and API

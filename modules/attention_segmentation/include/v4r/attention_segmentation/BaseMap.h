@@ -37,8 +37,6 @@
 **
 ****************************************************************************/
 
-
-
 #ifndef BASE_MAP_HPP
 #define BASE_MAP_HPP
 
@@ -46,94 +44,89 @@
 #include "v4r/attention_segmentation/headers.h"
 
 #include "v4r/attention_segmentation/pyramidBase.h"
-#include "v4r/attention_segmentation/pyramidSimple.h"
-#include "v4r/attention_segmentation/pyramidItti.h"
 #include "v4r/attention_segmentation/pyramidFrintrop.h"
+#include "v4r/attention_segmentation/pyramidItti.h"
+#include "v4r/attention_segmentation/pyramidSimple.h"
 
-namespace v4r
-{
+namespace v4r {
 
-enum PyramidType
-{
-  SIMPLE_PYRAMID  = 0,
-  ITTI_PYRAMID    = 1,
+enum PyramidType {
+  SIMPLE_PYRAMID = 0,
+  ITTI_PYRAMID = 1,
   FRINTROP_PYRAMID,
 };
-  
-class V4R_EXPORTS BaseMap
-{
-public:
-  
+
+class V4R_EXPORTS BaseMap {
+ public:
   BaseMap();
   virtual ~BaseMap();
-  
+
   void setImage(const cv::Mat &image_);
   bool getImage(cv::Mat &image_);
-  
+
   void setCloud(pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud_);
   bool getCloud(pcl::PointCloud<pcl::PointXYZRGB>::Ptr &cloud_);
 
   void setNormals(pcl::PointCloud<pcl::Normal>::Ptr normals_);
   bool getNormals(pcl::PointCloud<pcl::Normal>::Ptr &normals_);
-  
+
   void setIndices(pcl::PointIndices::Ptr indices_);
   bool getIndices(pcl::PointIndices::Ptr &indices_);
-  
+
   void setMask(const cv::Mat &mask_);
   bool getMask(cv::Mat &mask_);
-  
+
   void setNormalizationType(int normalization_type_);
-  int  getNormalizationType();
-  
+  int getNormalizationType();
+
   void setCombinationType(int combination_type_);
-  int  getCombinationType();
-  
+  int getCombinationType();
+
   void setFilterSize(int filter_size_);
-  int  getFilterSize();
-  
+  int getFilterSize();
+
   void setWidth(int width_);
-  int  getWidth();
-  
+  int getWidth();
+
   void setHeight(int height_);
-  int  getHeight();
-  
+  int getHeight();
+
   void setRefine(bool refine_);
   bool getRefine();
 
   void setMapName(std::string mapName_);
   std::string getMapName();
-  
+
   virtual int calculate() = 0;
   virtual int calculatePyramid(int pyramidType = SIMPLE_PYRAMID);
-  
+
   bool getMap(cv::Mat &map_);
-  
+
   virtual void reset();
   virtual void print();
 
-protected:
+ protected:
+  /**
+   * parameters for base map
+   * */
 
-/**
- * parameters for base map
- * */
-
-  cv::Mat                                  mask;//
-  cv::Mat                                  image;//
-  pcl::PointCloud<pcl::PointXYZRGB>::Ptr   cloud;//
-  pcl::PointCloud<pcl::Normal>::Ptr        normals;//
-  pcl::PointIndices::Ptr                   indices;//
-  int                                      filter_size;//
-  int                                      normalization_type;//
-  int                                      combination_type;//
-  int                                      width;//
-  int                                      height;//
-  bool                                     calculated;//
-  cv::Mat                                  map;//
-  bool                                     refine;
-  //BasePyramid::Ptr                         pyramid;
+  cv::Mat mask;                                  //
+  cv::Mat image;                                 //
+  pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud;  //
+  pcl::PointCloud<pcl::Normal>::Ptr normals;     //
+  pcl::PointIndices::Ptr indices;                //
+  int filter_size;                               //
+  int normalization_type;                        //
+  int combination_type;                          //
+  int width;                                     //
+  int height;                                    //
+  bool calculated;                               //
+  cv::Mat map;                                   //
+  bool refine;
+  // BasePyramid::Ptr                         pyramid;
 
   std::string mapName;
-  
+
   bool haveImage;
   bool haveCloud;
   bool haveNormals;
@@ -141,17 +134,16 @@ protected:
   bool haveMask;
 
   virtual int checkParameters();
-  
+
   virtual int calculatePyramidSimple();
   virtual int calculatePyramidItti();
   virtual int calculatePyramidFrintrop();
-  
-  virtual int combinePyramid(BasePyramid::Ptr pyramid);
-  
-  virtual void refineMap();
 
+  virtual int combinePyramid(BasePyramid::Ptr pyramid);
+
+  virtual void refineMap();
 };
 
-} // namespace v4r
+}  // namespace v4r
 
-#endif //BASE_MAP_HPP
+#endif  // BASE_MAP_HPP

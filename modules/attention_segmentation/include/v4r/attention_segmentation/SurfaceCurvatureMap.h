@@ -37,57 +37,50 @@
 **
 ****************************************************************************/
 
-
-
 #ifndef SURFACE_CURVATURE_HPP
 #define SURFACE_CURVATURE_HPP
 
 #include <v4r/core/macros.h>
 #include "v4r/attention_segmentation/BaseMap.h"
 
-namespace v4r
-{
+namespace v4r {
 
 /**
  * surface curvature saliency map
  * */
 
-enum CurvatureTypes
-{
-  AM_FLAT      = 0,
+enum CurvatureTypes {
+  AM_FLAT = 0,
   AM_CONVEX,
 };
 
-class V4R_EXPORTS SurfaceCurvatureMap: public BaseMap
-{
-public:
+class V4R_EXPORTS SurfaceCurvatureMap : public BaseMap {
+ public:
   SurfaceCurvatureMap();
   ~SurfaceCurvatureMap();
-  
+
   void setCurvatureType(int curvatureType_);
   int getCurvatureType();
-  
+
   /**
    * calculates single curvature map
    * */
-  
+
   virtual int calculate();
-  
-  virtual void reset();//
-  virtual void print();//
-  
-private:
-  
+
+  virtual void reset();  //
+  virtual void print();  //
+
+ private:
   int curvatureType;
   float getCurvatureCoefficient(int curvatureType_);
-  void curvatureMap(pcl::PointCloud<pcl::Normal>::Ptr normals_cur, pcl::PointIndices::Ptr indices_cur, int image_width, int image_height, 
-	           float curvatureCoefficient, cv::Mat &map_cur);
-  
-protected:
-  
-  virtual int checkParameters();//
+  void curvatureMap(pcl::PointCloud<pcl::Normal>::Ptr normals_cur, pcl::PointIndices::Ptr indices_cur, int image_width,
+                    int image_height, float curvatureCoefficient, cv::Mat &map_cur);
+
+ protected:
+  virtual int checkParameters();  //
 };
 
-} // namespace v4r
+}  // namespace v4r
 
-#endif //SURFACE_CURVATURE_HPP
+#endif  // SURFACE_CURVATURE_HPP

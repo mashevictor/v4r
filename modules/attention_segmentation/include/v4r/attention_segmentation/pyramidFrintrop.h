@@ -37,41 +37,35 @@
 **
 ****************************************************************************/
 
-
-
 #ifndef PYRAMID_FRINTROP_HPP
 #define PYRAMID_FRINTROP_HPP
 
 #include <v4r/core/macros.h>
 #include "v4r/attention_segmentation/pyramidBase.h"
 
-namespace v4r
-{
+namespace v4r {
 
-class V4R_EXPORTS FrintropPyramid: public BasePyramid
-{
-public:
+class V4R_EXPORTS FrintropPyramid : public BasePyramid {
+ public:
   FrintropPyramid();
   virtual ~FrintropPyramid();
   typedef boost::shared_ptr<FrintropPyramid> Ptr;
 
   void setR(std::vector<int> &R_);
   std::vector<int> getR();
-  
+
   void setOnSwitch(bool onSwitch_);
   bool getOnSwitch();
-  
+
   virtual void reset();
   virtual void print();
   virtual void combinePyramid(bool standard = false);
-  
-private:
-  std::vector<int>     R;
-  bool                 onSwitch;
-  
+
+ private:
+  std::vector<int> R;
+  bool onSwitch;
+
   std::vector<cv::Mat> pyramidConspicuities;
-
 };
-
 }
 #endif

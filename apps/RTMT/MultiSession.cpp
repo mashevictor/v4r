@@ -37,7 +37,6 @@
 **
 ****************************************************************************/
 
-
 /**
  * @file MultiSession.cpp
  * @author Johann Prankl (prankl@acin.tuwien.ac.at), Aitor Aldoma (aldoma@acin.tuwien.ac.at)
@@ -46,26 +45,24 @@
  *
  */
 
-
-
 #ifndef Q_MOC_RUN
 #include "MultiSession.h"
 
-#include <cmath>
+#include <pcl/features/normal_3d_omp.h>
+#include <pcl/filters/voxel_grid.h>
+#include <pcl/io/pcd_io.h>
 #include <pcl/sample_consensus/ransac.h>
 #include <pcl/sample_consensus/sac_model_plane.h>
-#include <pcl/filters/voxel_grid.h>
-#include <v4r/common/noise_models.h>
-#include <v4r/registration/MvLMIcp.h>
-#include <v4r/registration/MultiSessionModelling.h>
-#include <v4r/registration/FeatureBasedRegistration.h>
-#include <v4r/registration/StablePlanesRegistration.h>
-#include <v4r/common/convertImage.h>
-#include <pcl/features/normal_3d_omp.h>
-#include <v4r/keypoints/impl/invPose.hpp>
-#include <v4r/keypoints/impl/PoseIO.hpp>
-#include <pcl/io/pcd_io.h>
 #include <pcl/segmentation/extract_clusters.h>
+#include <v4r/common/convertImage.h>
+#include <v4r/common/noise_models.h>
+#include <v4r/registration/FeatureBasedRegistration.h>
+#include <v4r/registration/MultiSessionModelling.h>
+#include <v4r/registration/MvLMIcp.h>
+#include <v4r/registration/StablePlanesRegistration.h>
+#include <cmath>
+#include <v4r/keypoints/impl/PoseIO.hpp>
+#include <v4r/keypoints/impl/invPose.hpp>
 //#include <pcl/visualization/pcl_visualizer.h>
 #endif
 
@@ -74,16 +71,14 @@ using namespace std;
 /**
  * @brief MultiSession::MultiSession
  */
-MultiSession::MultiSession()
- : cmd(UNDEF), m_run(false)
-{
+MultiSession::MultiSession() : cmd(UNDEF), m_run(false) {
   oc_cloud.reset(new Sensor::AlignedPointXYZRGBVector());
-  clouds.reset(new std::vector<std::pair<int, pcl::PointCloud<pcl::PointXYZRGB>::ConstPtr> >() );
+  clouds.reset(new std::vector<std::pair<int, pcl::PointCloud<pcl::PointXYZRGB>::ConstPtr>>());
   use_stable_planes_ = true;
   use_features_ = true;
 
   ncloud_filt.reset(new pcl::PointCloud<pcl::PointXYZRGBNormal>());
-  max_point_dist = 0.03;         // ec clustering threshold
+  max_point_dist = 0.03;  // ec clustering threshold
 
   vx_size = 0.005;
   max_dist = 0.01f;
@@ -94,12 +89,7 @@ MultiSession::MultiSession()
 /**
  * @brief MultiSession::~MultiSession
  */
-MultiSession::~MultiSession()
-{
-
-}
-
-
+MultiSession::~MultiSession() {}
 
 /******************************** public *******************************/
 
@@ -107,18 +97,15 @@ MultiSession::~MultiSession()
  * @brief MultiSession::start
  * @param cam_id
  */
-void MultiSession::start()
-{
+void MultiSession::start() {
   QThread::start();
 }
 
 /**
  * @brief MultiSession::stop
  */
-void MultiSession::stop()
-{
-  if(m_run)
-  {
+void MultiSession::stop() {
+  if (m_run) {
     m_run = false;
     this->wait();
   }
@@ -128,8 +115,7 @@ void MultiSession::stop()
  * @brief MultiSession::isRunning
  * @return
  */
-bool MultiSession::isRunning()
-{
+bool MultiSession::isRunning() {
   return m_run;
 }
 
@@ -139,10 +125,11 @@ bool MultiSession::isRunning()
  * _clouds point cloud and an index to the corresponding camera
  * _object_indices
  */
-void MultiSession::addSequences(const std::vector<Eigen::Matrix4f, Eigen::aligned_allocator<Eigen::Matrix4f> > &_cameras, const boost::shared_ptr< std::vector<std::pair<int, pcl::PointCloud<pcl::PointXYZRGB>::ConstPtr> > > &_clouds, const std::vector<std::vector<int> > &_object_indices, const Eigen::Matrix4f &_object_base_transform)
-{
-  if (_clouds.get()==0 || _clouds->size()==0)
-  {
+void MultiSession::addSequences(
+    const std::vector<Eigen::Matrix4f, Eigen::aligned_allocator<Eigen::Matrix4f>> &_cameras,
+    const boost::shared_ptr<std::vector<std::pair<int, pcl::PointCloud<pcl::PointXYZRGB>::ConstPtr>>> &_clouds,
+    const std::vector<std::vector<int>> &_object_indices, const Eigen::Matrix4f &_object_base_transform) {
+  if (_clouds.get() == 0 || _clouds->size() == 0) {
     emit printStatus("No segmented point clouds available!");
     return;
   }
@@ -151,13 +138,11 @@ void MultiSession::addSequences(const std::vector<Eigen::Matrix4f, Eigen::aligne
   this_session.first = sessions_clouds_.size();
   this_session.second = this_session.first + _clouds->size() - 1;
 
-
-  for(size_t i=0; i < _clouds->size(); i++)
-  {
-      Eigen::Matrix4f inv = (_cameras[_clouds->at(i).first]*_object_base_transform).inverse();
-      sessions_cloud_poses_.push_back(inv);
-      sessions_clouds_.push_back(_clouds->at(i).second);
-      sessions_cloud_indices_.push_back(_object_indices[i]);
+  for (size_t i = 0; i < _clouds->size(); i++) {
+    Eigen::Matrix4f inv = (_cameras[_clouds->at(i).first] * _object_base_transform).inverse();
+    sessions_cloud_poses_.push_back(inv);
+    sessions_clouds_.push_back(_clouds->at(i).second);
+    sessions_cloud_indices_.push_back(_object_indices[i]);
   }
 
   if (this_session.second >= this_session.first)
@@ -169,39 +154,32 @@ void MultiSession::addSequences(const std::vector<Eigen::Matrix4f, Eigen::aligne
 /**
  * @brief MultiSession::clear
  */
-void MultiSession::clear()
-{
+void MultiSession::clear() {
   session_ranges_.clear();
   sessions_cloud_poses_.clear();
   sessions_cloud_indices_.clear();
   sessions_clouds_.clear();
 }
 
-
-
 /**
  * @brief MultiSession::alignSequences
  */
-void MultiSession::alignSequences()
-{
+void MultiSession::alignSequences() {
   emit printStatus("Status: Aligning multiple sequences... Please be patient...");
   cmd = MULTI_SESSION_ALIGNMENT;
   start();
 }
 
-void MultiSession::optimizeSequences()
-{
+void MultiSession::optimizeSequences() {
   cmd = MULTI_SESSION_MULTI_VIEW;
   start();
 }
-
 
 /**
  * @brief ObjectSegmentation::object_modelling_parameter_changed
  * @param param
  */
-void MultiSession::object_modelling_parameter_changed(const ObjectModelling& param)
-{
+void MultiSession::object_modelling_parameter_changed(const ObjectModelling &param) {
   om_params = param;
 }
 
@@ -212,14 +190,14 @@ void MultiSession::object_modelling_parameter_changed(const ObjectModelling& par
  * @return
  * TODO: same code in ObjectSegmentation -> move...
  */
-bool MultiSession::savePointClouds(const std::string &_folder, const std::string &_modelname)
-{
-  if (octree_cloud.get()==0 || big_normals.get()==0 || clouds.get()==0 || clouds->empty() ||
-      octree_cloud->empty() || octree_cloud->points.size()!=big_normals->points.size() || clouds->size()!=sessions_cloud_indices_.size())
+bool MultiSession::savePointClouds(const std::string &_folder, const std::string &_modelname) {
+  if (octree_cloud.get() == 0 || big_normals.get() == 0 || clouds.get() == 0 || clouds->empty() ||
+      octree_cloud->empty() || octree_cloud->points.size() != big_normals->points.size() ||
+      clouds->size() != sessions_cloud_indices_.size())
     return false;
 
   char filename[PATH_MAX];
-  boost::filesystem::create_directories(_folder + "/models/" + _modelname + "/views" );
+  boost::filesystem::create_directories(_folder + "/models/" + _modelname + "/views");
 
   pcl::io::savePCDFileBinary(_folder + "/models/" + _modelname + "/3D_model.pcd", *ncloud_filt);
 
@@ -232,15 +210,15 @@ bool MultiSession::savePointClouds(const std::string &_folder, const std::string
   std::string mask_names = _folder + "/models/" + _modelname + "/views/mask_%08d.png";
   std::string idx_names = _folder + "/models/" + _modelname + "/views/object_indices_%08d.txt";
 
-  for (unsigned i=0; i<clouds->size(); i++)
-  {
-    if (sessions_cloud_indices_[i].empty()) continue;
+  for (unsigned i = 0; i < clouds->size(); i++) {
+    if (sessions_cloud_indices_[i].empty())
+      continue;
 
     // store indices
     snprintf(filename, PATH_MAX, idx_names.c_str(), i);
-    std::ofstream mask_f (filename);
-    for(unsigned j=0; j < sessions_cloud_indices_[i].size(); j++)
-        mask_f << sessions_cloud_indices_[i][j] << std::endl;
+    std::ofstream mask_f(filename);
+    for (unsigned j = 0; j < sessions_cloud_indices_[i].size(); j++)
+      mask_f << sessions_cloud_indices_[i][j] << std::endl;
     mask_f.close();
 
     // store cloud
@@ -264,138 +242,122 @@ bool MultiSession::savePointClouds(const std::string &_folder, const std::string
   return true;
 }
 
-
-
-
-
-
 /*********************************** private *******************************************/
 /**
  * @brief MultiSession::run
  * main loop
  */
-void MultiSession::run()
-{
-  m_run=true;
+void MultiSession::run() {
+  m_run = true;
 
-  switch (cmd)
-  {
-  case MULTI_SESSION_ALIGNMENT:
-  {
-    if (session_ranges_.size()>0)
-    {
-      for(size_t k=0; k < session_ranges_.size(); k++)
+  switch (cmd) {
+    case MULTI_SESSION_ALIGNMENT: {
+      if (session_ranges_.size() > 0) {
+        for (size_t k = 0; k < session_ranges_.size(); k++) {
+          std::cout << session_ranges_[k].first << " up to " << session_ranges_[k].second << std::endl;
+        }
+
+        // compute normals
+        normals.resize(sessions_clouds_.size());
+
+        for (size_t i = 0; i < sessions_clouds_.size(); i++) {
+          pcl::PointCloud<pcl::Normal>::Ptr normal(new pcl::PointCloud<pcl::Normal>);
+          pcl::NormalEstimationOMP<pcl::PointXYZRGB, pcl::Normal> ne;
+          ne.setRadiusSearch(0.01f);
+          ne.setInputCloud(sessions_clouds_[i]);
+          ne.compute(*normal);
+          normals[i] = normal;
+        }
+
+        // instantiate stuff
+        v4r::Registration::MultiSessionModelling<pcl::PointXYZRGB> msm;
+        msm.setInputData(sessions_clouds_, sessions_cloud_poses_, sessions_cloud_indices_, session_ranges_);
+        msm.setInputNormals(normals);
+
+        // define registration algorithms
+        if (use_features_) {
+          boost::shared_ptr<v4r::Registration::FeatureBasedRegistration<pcl::PointXYZRGB>> fbr;
+          fbr.reset(new v4r::Registration::FeatureBasedRegistration<pcl::PointXYZRGB>);
+
+          // TODO: extract parameters
+          fbr->setDoCG(true);
+          fbr->setGCThreshold(15);
+          fbr->setInlierThreshold(0.015);
+
+          boost::shared_ptr<v4r::Registration::PartialModelRegistrationBase<pcl::PointXYZRGB>> cast_alg;
+          cast_alg = boost::static_pointer_cast<v4r::Registration::PartialModelRegistrationBase<pcl::PointXYZRGB>>(fbr);
+
+          msm.addRegAlgorithm(cast_alg);
+        }
+
+        if (use_stable_planes_) {
+          boost::shared_ptr<v4r::Registration::StablePlanesRegistration<pcl::PointXYZRGB>> fbr;
+          fbr.reset(new v4r::Registration::StablePlanesRegistration<pcl::PointXYZRGB>);
+          boost::shared_ptr<v4r::Registration::PartialModelRegistrationBase<pcl::PointXYZRGB>> cast_alg;
+          cast_alg = boost::static_pointer_cast<v4r::Registration::PartialModelRegistrationBase<pcl::PointXYZRGB>>(fbr);
+
+          msm.addRegAlgorithm(cast_alg);
+        }
+
+        msm.compute();
+
+        // std::vector<Eigen::Matrix4f, Eigen::aligned_allocator<Eigen::Matrix4f> > output_poses;
+        msm.getOutputPoses(output_poses);
+
+        cameras.resize(output_poses.size());
+        clouds->resize(output_poses.size());
+        masks.resize(output_poses.size());
+
+        for (unsigned i = 0; i < cameras.size(); i++) {
+          v4r::invPose(output_poses[i], cameras[i]);
+          clouds->at(i) = make_pair(i, sessions_clouds_[i]);
+          createMask(sessions_cloud_indices_[i], masks[i], clouds->at(i).second->width, clouds->at(i).second->height);
+        }
+
+        /*pcl::PointCloud<pcl::PointXYZRGB>::Ptr merged_cloud (new pcl::PointCloud<pcl::PointXYZRGB>);
+
+      for(size_t i=0; i < output_poses.size(); i++)
       {
-        std::cout << session_ranges_[k].first << " up to " << session_ranges_[k].second << std::endl;
+
+          std::cout << output_poses[i] << std::endl;
+
+          pcl::PointCloud<pcl::PointXYZRGB>::Ptr trans (new pcl::PointCloud<pcl::PointXYZRGB> ());
+          pcl::copyPointCloud(*sessions_clouds_[i], sessions_cloud_indices_[i], *trans);
+          pcl::transformPointCloud(*trans, *trans, output_poses[i]);
+          *merged_cloud += *trans;
       }
 
-      //compute normals
-      normals.resize(sessions_clouds_.size());
+      pcl::visualization::PCLVisualizer vis("merged model");
+      pcl::visualization::PointCloudColorHandlerRGBField<pcl::PointXYZRGB> handler(merged_cloud);
+      vis.addPointCloud<pcl::PointXYZRGB>(merged_cloud, handler, "merged_cloud");
+      vis.spin();*/
 
-      for(size_t i=0; i < sessions_clouds_.size(); i++)
-      {
-          pcl::PointCloud<pcl::Normal>::Ptr normal (new pcl::PointCloud<pcl::Normal>);
-        pcl::NormalEstimationOMP<pcl::PointXYZRGB, pcl::Normal> ne;
-        ne.setRadiusSearch(0.01f);
-        ne.setInputCloud (sessions_clouds_[i]);
-        ne.compute (*normal);
-        normals[i] = normal;
+        createObjectCloudFiltered();
+
+        emit update_model_cloud(oc_cloud);
+        emit update_visualization();
+
+        emit printStatus("Status: Finished the alignment of multiple sequences!");
+        emit finishedAlignment(true);
+      } else {
+        emit printStatus("Status: No data available!");
+
+        emit finishedAlignment(false);
       }
 
-      //instantiate stuff
-      v4r::Registration::MultiSessionModelling<pcl::PointXYZRGB> msm;
-      msm.setInputData(sessions_clouds_, sessions_cloud_poses_, sessions_cloud_indices_, session_ranges_);
-      msm.setInputNormals(normals);
-
-      //define registration algorithms
-      if(use_features_)
-      {
-        boost::shared_ptr< v4r::Registration::FeatureBasedRegistration<pcl::PointXYZRGB> > fbr;
-        fbr.reset(new v4r::Registration::FeatureBasedRegistration<pcl::PointXYZRGB>);
-
-        //TODO: extract parameters
-        fbr->setDoCG(true);
-        fbr->setGCThreshold(15);
-        fbr->setInlierThreshold(0.015);
-
-        boost::shared_ptr< v4r::Registration::PartialModelRegistrationBase<pcl::PointXYZRGB > > cast_alg;
-        cast_alg = boost::static_pointer_cast< v4r::Registration::PartialModelRegistrationBase<pcl::PointXYZRGB > > (fbr);
-
-        msm.addRegAlgorithm(cast_alg);
-      }
-
-      if(use_stable_planes_)
-      {
-        boost::shared_ptr< v4r::Registration::StablePlanesRegistration<pcl::PointXYZRGB> > fbr;
-        fbr.reset(new v4r::Registration::StablePlanesRegistration<pcl::PointXYZRGB>);
-        boost::shared_ptr< v4r::Registration::PartialModelRegistrationBase<pcl::PointXYZRGB > > cast_alg;
-        cast_alg = boost::static_pointer_cast< v4r::Registration::PartialModelRegistrationBase<pcl::PointXYZRGB > > (fbr);
-
-        msm.addRegAlgorithm(cast_alg);
-      }
-
-      msm.compute();
-
-      //std::vector<Eigen::Matrix4f, Eigen::aligned_allocator<Eigen::Matrix4f> > output_poses;
-      msm.getOutputPoses(output_poses);
-
-      cameras.resize(output_poses.size());
-      clouds->resize(output_poses.size());
-      masks.resize(output_poses.size());
-
-      for (unsigned i=0; i<cameras.size(); i++)
-      {
-        v4r::invPose(output_poses[i], cameras[i]);
-        clouds->at(i) = make_pair(i,sessions_clouds_[i]);
-        createMask(sessions_cloud_indices_[i], masks[i], clouds->at(i).second->width, clouds->at(i).second->height);
-      }
-
-      /*pcl::PointCloud<pcl::PointXYZRGB>::Ptr merged_cloud (new pcl::PointCloud<pcl::PointXYZRGB>);
-
-    for(size_t i=0; i < output_poses.size(); i++)
-    {
-
-        std::cout << output_poses[i] << std::endl;
-
-        pcl::PointCloud<pcl::PointXYZRGB>::Ptr trans (new pcl::PointCloud<pcl::PointXYZRGB> ());
-        pcl::copyPointCloud(*sessions_clouds_[i], sessions_cloud_indices_[i], *trans);
-        pcl::transformPointCloud(*trans, *trans, output_poses[i]);
-        *merged_cloud += *trans;
+      break;
     }
 
-    pcl::visualization::PCLVisualizer vis("merged model");
-    pcl::visualization::PointCloudColorHandlerRGBField<pcl::PointXYZRGB> handler(merged_cloud);
-    vis.addPointCloud<pcl::PointXYZRGB>(merged_cloud, handler, "merged_cloud");
-    vis.spin();*/
+    case MULTI_SESSION_MULTI_VIEW:
+      optimizeDenseMultiview();
+      break;
 
-      createObjectCloudFiltered();
-
-      emit update_model_cloud(oc_cloud);
-      emit update_visualization();
-
-      emit printStatus("Status: Finished the alignment of multiple sequences!");
-      emit finishedAlignment(true);
-    }
-    else
-    {
-      emit printStatus("Status: No data available!");
-
-      emit finishedAlignment(false);
-    }
-
-    break;
-  }
-
-  case MULTI_SESSION_MULTI_VIEW:
-    optimizeDenseMultiview();
-    break;
-
-  default:
-    break;
+    default:
+      break;
   }
 
   cmd = UNDEF;
-  m_run=false;
+  m_run = false;
 }
 
 /**
@@ -405,26 +367,23 @@ void MultiSession::run()
  * @param width
  * @param height
  */
-void MultiSession::createMask(const std::vector<int> &indices, cv::Mat_<unsigned char> &mask, int width, int height)
-{
-  mask = cv::Mat_<unsigned char>::zeros(height,width);
+void MultiSession::createMask(const std::vector<int> &indices, cv::Mat_<unsigned char> &mask, int width, int height) {
+  mask = cv::Mat_<unsigned char>::zeros(height, width);
 
-  for (unsigned i=0; i<indices.size(); i++)
+  for (unsigned i = 0; i < indices.size(); i++)
     mask(indices[i]) = 255;
 }
 
 /**
  * @brief MultiSession::optimizeDenseMultiview
  */
-void MultiSession::optimizeDenseMultiview()
-{
+void MultiSession::optimizeDenseMultiview() {
   emit printStatus("Status: Dense multiview optimization ... Please be patient...");
 
   pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud_segmented(new pcl::PointCloud<pcl::PointXYZRGB>);
   std::vector<pcl::PointCloud<pcl::PointXYZRGB>::Ptr> clouds_filtered(sessions_clouds_.size());
 
-  for (unsigned i=0; i<sessions_clouds_.size(); i++)
-  {
+  for (unsigned i = 0; i < sessions_clouds_.size(); i++) {
     clouds_filtered[i].reset(new pcl::PointCloud<pcl::PointXYZRGB>());
 
     pcl::copyPointCloud(*sessions_clouds_[i], sessions_cloud_indices_[i], *cloud_segmented);
@@ -432,7 +391,7 @@ void MultiSession::optimizeDenseMultiview()
     pcl::VoxelGrid<pcl::PointXYZRGB> filter;
     filter.setInputCloud(cloud_segmented);
     filter.setDownsampleAllData(true);
-    filter.setLeafSize(vx_size,vx_size,vx_size);
+    filter.setLeafSize(vx_size, vx_size, vx_size);
     filter.filter(*clouds_filtered[i]);
   }
 
@@ -446,8 +405,7 @@ void MultiSession::optimizeDenseMultiview()
 
   output_poses = nl_icp.getFinalPoses();
 
-  for (unsigned i=0; i<output_poses.size(); i++)
-  {
+  for (unsigned i = 0; i < output_poses.size(); i++) {
     v4r::invPose(output_poses[i], cameras[i]);
   }
 
@@ -457,26 +415,22 @@ void MultiSession::optimizeDenseMultiview()
   emit update_visualization();
 }
 
-
 /**
  * @brief MultiSession::createObjectCloudFiltered
  * TODO: same code is in ObjectSegmentation -> move to somewhere
  */
-void MultiSession::createObjectCloudFiltered()
-{
+void MultiSession::createObjectCloudFiltered() {
   oc_cloud->clear();
 
-  if (clouds->size()==0 || masks.size()!=clouds->size())
+  if (clouds->size() == 0 || masks.size() != clouds->size())
     return;
 
   v4r::NguyenNoiseModelParameter nmparam;
   v4r::NguyenNoiseModel<pcl::PointXYZRGB> nm(nmparam);
-  std::vector< std::vector<std::vector<float> > > pt_properties (sessions_clouds_.size());
+  std::vector<std::vector<std::vector<float>>> pt_properties(sessions_clouds_.size());
 
-  if (!sessions_clouds_.empty())
-  {
-    for (unsigned i=0; i<sessions_clouds_.size(); i++)
-    {
+  if (!sessions_clouds_.empty()) {
+    for (unsigned i = 0; i < sessions_clouds_.size(); i++) {
       nm.setInputCloud(sessions_clouds_[i]);
       nm.setInputNormals(normals[i]);
       nm.compute();
@@ -494,7 +448,7 @@ void MultiSession::createObjectCloudFiltered()
     nmIntegration.setPointProperties(pt_properties);
     nmIntegration.setTransformations(output_poses);
     nmIntegration.setInputNormals(normals);
-    nmIntegration.setIndices( sessions_cloud_indices_ );
+    nmIntegration.setIndices(sessions_cloud_indices_);
     nmIntegration.compute(octree_cloud);
     nmIntegration.getOutputNormals(big_normals);
 
@@ -504,44 +458,41 @@ void MultiSession::createObjectCloudFiltered()
     pcl::concatenateFields(*octree_cloud, *big_normals, *ncloud);
 
     // filter ec
-    pcl::search::KdTree<pcl::PointXYZRGBNormal>::Ptr tree (new pcl::search::KdTree<pcl::PointXYZRGBNormal>);
-    tree->setInputCloud (ncloud);
+    pcl::search::KdTree<pcl::PointXYZRGBNormal>::Ptr tree(new pcl::search::KdTree<pcl::PointXYZRGBNormal>);
+    tree->setInputCloud(ncloud);
 
     std::vector<pcl::PointIndices> cluster_indices;
     pcl::EuclideanClusterExtraction<pcl::PointXYZRGBNormal> ec;
-    ec.setClusterTolerance (max_point_dist);
-    ec.setMinClusterSize (50);
-    ec.setSearchMethod (tree);
-    ec.setInputCloud (ncloud);
-    ec.extract (cluster_indices);
+    ec.setClusterTolerance(max_point_dist);
+    ec.setMinClusterSize(50);
+    ec.setSearchMethod(tree);
+    ec.setInputCloud(ncloud);
+    ec.extract(cluster_indices);
 
     int cnt_max = 0;
     std::vector<pcl::PointIndices>::const_iterator it_max = cluster_indices.end();
-    for (std::vector<pcl::PointIndices>::const_iterator it = cluster_indices.begin (); it != cluster_indices.end (); ++it)
-    {
-      if (it->indices.size()>(unsigned)cnt_max)
-      {
+    for (std::vector<pcl::PointIndices>::const_iterator it = cluster_indices.begin(); it != cluster_indices.end();
+         ++it) {
+      if (it->indices.size() > (unsigned)cnt_max) {
         it_max = it;
         cnt_max = it->indices.size();
       }
     }
-    cout<<"found "<<cluster_indices.size()<<" clusters"<<endl;
-    if (it_max!=cluster_indices.end())
-    {
-      cout<<"use "<<it_max->indices.size()<<" of ";
-      for (unsigned i=0;i<cluster_indices.size(); i++)
-        cout<<cluster_indices[i].indices.size()<<" ";
-      cout<<endl;
+    cout << "found " << cluster_indices.size() << " clusters" << endl;
+    if (it_max != cluster_indices.end()) {
+      cout << "use " << it_max->indices.size() << " of ";
+      for (unsigned i = 0; i < cluster_indices.size(); i++)
+        cout << cluster_indices[i].indices.size() << " ";
+      cout << endl;
       Sensor::AlignedPointXYZRGBVector &ref_oc = *oc_cloud;
       ref_oc.resize(it_max->indices.size());
-      for (unsigned i=0; i < it_max->indices.size(); i++)
-      {
+      for (unsigned i = 0; i < it_max->indices.size(); i++) {
         const pcl::PointXYZRGBNormal &pt = ncloud->points[it_max->indices[i]];
-        ncloud_filt->points.push_back (pt);
+        ncloud_filt->points.push_back(pt);
         ref_oc[i].getVector4fMap() = pt.getVector4fMap();
         ref_oc[i].rgb = pt.rgb;
       }
-      ncloud_filt->width = ncloud_filt->points.size ();
+      ncloud_filt->width = ncloud_filt->points.size();
       ncloud_filt->height = 1;
       ncloud_filt->is_dense = true;
     }

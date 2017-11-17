@@ -18,7 +18,6 @@
 # V4R_MODULE_${the_module}_PRIVATE_REQ_DEPS
 # V4R_MODULE_${the_module}_PRIVATE_OPT_DEPS
 # V4R_MODULE_${the_module}_CUDA_OBJECTS - compiled CUDA objects list
-# V4R_MODULE_${the_module}_CHILDREN - list of submodules for compound modules (cmake >= 2.8.8)
 # V4R_MODULE_${the_module}_WRAPPERS - list of wrappers supporting this module
 # HAVE_${the_module} - for fast check of module availability
 
@@ -26,7 +25,6 @@
 # the_description - text to be used as current module description
 # V4R_MODULE_TYPE - STATIC|SHARED - set to force override global settings for current module
 # BUILD_${the_module}_INIT - ON|OFF (default ON) - initial value for BUILD_${the_module}
-# V4R_MODULE_CHILDREN - list of submodules
 
 # The verbose template for V4R module:
 #
@@ -168,9 +166,6 @@ macro(v4r_add_module _name)
       set(V4R_MODULES_DISABLED_USER ${V4R_MODULES_DISABLED_USER} "${the_module}" CACHE INTERNAL "List of V4R modules explicitly disabled by user")
     endif()
 
-    # add submodules if any
-    set(V4R_MODULE_${the_module}_CHILDREN "${V4R_MODULE_CHILDREN}" CACHE INTERNAL "List of ${the_module} submodules")
-
     # add reverse wrapper dependencies
     foreach (wrapper ${V4R_MODULE_${the_module}_WRAPPERS})
       v4r_add_dependencies(v4r_${wrapper} OPTIONAL ${the_module})
@@ -292,7 +287,7 @@ function(__v4r_sort_modules_by_deps __lst)
       if (NOT ";${result};" MATCHES ";${m};")
         # scan through module dependencies...
         set(unresolved_deps_found FALSE)
-        foreach (d ${V4R_MODULE_${m}_CHILDREN} ${V4R_MODULE_${m}_DEPS})
+        foreach (d ${V4R_MODULE_${m}_DEPS})
           # ... which are not already in the result and are enabled
           if ((NOT ";${result};" MATCHES ";${d};") AND HAVE_${d})
             set(unresolved_deps_found TRUE)
@@ -612,41 +607,8 @@ macro(v4r_create_module)
 endmacro()
 
 macro(_v4r_create_module)
-  set(sub_objs "")
-  set(sub_links "")
-  set(cuda_objs "")
-  if (V4R_MODULE_${the_module}_CHILDREN)
-    message(STATUS "Complex module ${the_module}")
-    foreach (m ${V4R_MODULE_${the_module}_CHILDREN})
-      if (BUILD_${m} AND TARGET ${m}_object)
-        get_target_property(_sub_links ${m} LINK_LIBRARIES)
-        list(APPEND sub_objs $<TARGET_OBJECTS:${m}_object>)
-        list(APPEND sub_links ${_sub_links})
-        message(STATUS "    + ${m}")
-      else()
-        message(STATUS "    - ${m}")
-      endif()
-      list(APPEND cuda_objs ${V4R_MODULE_${m}_CUDA_OBJECTS})
-    endforeach()
-  endif()
-
   v4r_add_library(${the_module} ${V4R_MODULE_TYPE} ${V4R_MODULE_${the_module}_HEADERS} ${V4R_MODULE_${the_module}_SOURCES}
-    "${V4R_CONFIG_FILE_INCLUDE_DIR}/v4r_config.h" "${V4R_CONFIG_FILE_INCLUDE_DIR}/v4r_modules.h" ${sub_objs})
-
-  if (cuda_objs)
-    target_link_libraries(${the_module} ${cuda_objs})
-  endif()
-
-  # TODO: is it needed?
-  if (sub_links)
-    v4r_list_filterout(sub_links "^v4r_")
-    v4r_list_unique(sub_links)
-    target_link_libraries(${the_module} ${sub_links})
-  endif()
-
-  unset(sub_objs)
-  unset(sub_links)
-  unset(cuda_objs)
+    "${V4R_CONFIG_FILE_INCLUDE_DIR}/v4r_config.h" "${V4R_CONFIG_FILE_INCLUDE_DIR}/v4r_modules.h")
 
   v4r_target_link_libraries(${the_module} ${V4R_MODULE_${the_module}_DEPS_TO_LINK})
   v4r_target_link_libraries(${the_module} LINK_INTERFACE_LIBRARIES ${V4R_MODULE_${the_module}_DEPS_TO_LINK})
@@ -702,26 +664,6 @@ macro(_v4r_create_module)
   if("${_target_type}" STREQUAL "SHARED_LIBRARY")
     install(TARGETS ${the_module}
       LIBRARY DESTINATION ${V4R_LIB_INSTALL_PATH} COMPONENT dev NAMELINK_ONLY)
-  endif()
-
-  foreach(m ${V4R_MODULE_${the_module}_CHILDREN} ${the_module})
-    # only "public" headers need to be installed
-    if(V4R_MODULE_${m}_HEADERS AND ";${V4R_MODULES_PUBLIC};" MATCHES ";${m};")
-      foreach(hdr ${V4R_MODULE_${m}_HEADERS})
-        string(REGEX REPLACE "^.*v4r/" "v4r/" hdr2 "${hdr}")
-        if(NOT hdr2 MATCHES "v4r/${m}/private.*" AND hdr2 MATCHES "^(v4r/?.*)/[^/]+.h(..)?$" )
-          install(FILES ${hdr} OPTIONAL DESTINATION "${V4R_INCLUDE_INSTALL_PATH}/${CMAKE_MATCH_1}" COMPONENT dev)
-        endif()
-      endforeach()
-    endif()
-  endforeach()
-
-  if (TARGET ${the_module}_object)
-    # copy COMPILE_DEFINITIONS
-    get_target_property(main_defs ${the_module} COMPILE_DEFINITIONS)
-    if (main_defs)
-      set_target_properties(${the_module}_object PROPERTIES COMPILE_DEFINITIONS ${main_defs})
-    endif()
   endif()
 endmacro()
 
@@ -810,8 +752,6 @@ function(v4r_add_perf_tests)
       if(NOT V4R_PERF_${the_module}_SOURCES)
         file(GLOB_RECURSE perf_srcs "${perf_path}/*.cpp")
         file(GLOB_RECURSE perf_hdrs "${perf_path}/*.hpp" "${perf_path}/*.h")
-        v4r_source_group("Src" DIRBASE "${perf_path}" FILES ${perf_srcs})
-        v4r_source_group("Include" DIRBASE "${perf_path}" FILES ${perf_hdrs})
         set(V4R_PERF_${the_module}_SOURCES ${perf_srcs} ${perf_hdrs})
       endif()
 
@@ -854,8 +794,6 @@ function(v4r_add_accuracy_tests)
       if(NOT V4R_TEST_${the_module}_SOURCES)
         file(GLOB_RECURSE test_srcs "${test_path}/*.cpp")
         file(GLOB_RECURSE test_hdrs "${test_path}/*.hpp" "${test_path}/*.h")
-        v4r_source_group("Src" DIRBASE "${test_path}" FILES ${test_srcs})
-        v4r_source_group("Include" DIRBASE "${test_path}" FILES ${test_hdrs})
         set(V4R_TEST_${the_module}_SOURCES ${test_srcs} ${test_hdrs})
       endif()
 

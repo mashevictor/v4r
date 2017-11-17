@@ -37,53 +37,53 @@
 **
 ****************************************************************************/
 
-
 /**
  * @file main.cpp
  * @author Johann Prankl (prankl@acin.tuwien.ac.at)
  * @date 2017
  * @brief
  *
- */ 
+ */
 
 #ifndef KP_ARTICULATED_OBJECT_HH
 #define KP_ARTICULATED_OBJECT_HH
 
 #include <stdio.h>
-#include <string>
-#include <stdexcept>
+#include <v4r/common/convertPose.h>
+#include <v4r/keypoints/PartMotion6D.h>
+#include <Eigen/Dense>
 #include <opencv2/core/core.hpp>
 #include <opencv2/features2d/features2d.hpp>
-#include <Eigen/Dense>
-#include <v4r/keypoints/PartMotion6D.h>
+#include <stdexcept>
+#include <string>
 #include <v4r/common/impl/SmartPtr.hpp>
 #include <v4r/keypoints/impl/Object.hpp>
-#include <v4r/common/convertPose.h>
 
-//A makro to get rid of the unused warning
+// A makro to get rid of the unused warning
 #ifndef UNUSED
-#define UNUSED(expr) do { (void)(expr); } while (0)
+#define UNUSED(expr) \
+  do {               \
+    (void)(expr);    \
+  } while (0)
 #endif
 
-namespace v4r
-{
+namespace v4r {
 
 /**
  * feature pairs to compute the pnp pose transformation
  */
-class V4R_EXPORTS FeatureGroup
-{
-public:
+class V4R_EXPORTS FeatureGroup {
+ public:
   int part_idx;
   int view_idx;
   std::vector<cv::Point2f> im_points;
   std::vector<Eigen::Vector3f> points;
   std::vector<Eigen::Vector3f> normals;
-  std::vector< int > part_feature_indices;
-  std::vector< int > view_feature_indices;
+  std::vector<int> part_feature_indices;
+  std::vector<int> view_feature_indices;
   FeatureGroup() {}
   /** clear **/
-  inline void clear() { 
+  inline void clear() {
     im_points.clear();
     points.clear();
     normals.clear();
@@ -91,7 +91,8 @@ public:
     view_feature_indices.clear();
   }
   /** add data **/
-  inline void push_back(const cv::Point2f &im_pt, const Eigen::Vector3f &pt3, const Eigen::Vector3f &n, int _part_feature_idx, int _view_feature_idx) {
+  inline void push_back(const cv::Point2f &im_pt, const Eigen::Vector3f &pt3, const Eigen::Vector3f &n,
+                        int _part_feature_idx, int _view_feature_idx) {
     UNUSED(im_pt);
     points.push_back(pt3);
     normals.push_back(n);
@@ -107,13 +108,10 @@ public:
     view_feature_indices.resize(z);
   }
   /** filter **/
-  inline int filter(const std::vector<int> &valid_indices)
-  {
-    int z=0;
-    for (unsigned i=0; i<valid_indices.size(); i++)
-    {
-      if (valid_indices[i]==1)
-      {
+  inline int filter(const std::vector<int> &valid_indices) {
+    int z = 0;
+    for (unsigned i = 0; i < valid_indices.size(); i++) {
+      if (valid_indices[i] == 1) {
         im_points[z] = im_points[i];
         points[z] = points[i];
         normals[z] = normals[i];
@@ -127,29 +125,30 @@ public:
   }
 };
 
-
-
-/*************************************************************************** 
- * ArticulatedObject 
+/***************************************************************************
+ * ArticulatedObject
  */
-class V4R_EXPORTS ArticulatedObject : public Object, public PartMotion6D
-{
-public:
+class V4R_EXPORTS ArticulatedObject : public Object, public PartMotion6D {
+ public:
   std::string version;
-  std::vector< std::vector< Eigen::VectorXd > > part_parameter; // parameter for articulated scenes (objects)
+  std::vector<std::vector<Eigen::VectorXd>> part_parameter;  // parameter for articulated scenes (objects)
 
-  std::vector<Part::Ptr> parts;         // the first part is the object itself
+  std::vector<Part::Ptr> parts;  // the first part is the object itself
 
-  ArticulatedObject() : version(std::string("1.0")) {};
+  ArticulatedObject() : version(std::string("1.0")){};
 
   /* clear */
   void clearArticulatedObject();
 
   /* add a new object view */
-  ObjectView &addArticulatedView(const Eigen::Matrix4f &_pose, const cv::Mat_<unsigned char> &im=cv::Mat_<unsigned char>(), const std::vector<Eigen::VectorXd> &_part_parameter=std::vector<Eigen::VectorXd>());
+  ObjectView &addArticulatedView(const Eigen::Matrix4f &_pose,
+                                 const cv::Mat_<unsigned char> &im = cv::Mat_<unsigned char>(),
+                                 const std::vector<Eigen::VectorXd> &_part_parameter = std::vector<Eigen::VectorXd>());
 
   /* add projections */
-  void addArticulatedProjections(ObjectView &view, const std::vector< std::pair<int,cv::Point2f> > &im_pts, const Eigen::Matrix4f &pose, const std::vector<Eigen::VectorXd> &_part_parameter=std::vector<Eigen::VectorXd>());
+  void addArticulatedProjections(ObjectView &view, const std::vector<std::pair<int, cv::Point2f>> &im_pts,
+                                 const Eigen::Matrix4f &pose,
+                                 const std::vector<Eigen::VectorXd> &_part_parameter = std::vector<Eigen::VectorXd>());
 
   /* get parameters of the articulated parts */
   void getParameters(std::vector<Eigen::VectorXd> &_params);
@@ -161,14 +160,14 @@ public:
   void updatePoseRecursive(const Eigen::Matrix4f &_pose, Part &part, std::vector<Part::Ptr> &parts);
 
   /* updatePoseRecursive */
-  void updatePoseRecursive(const Eigen::Matrix4f &_pose=Eigen::Matrix4f::Identity());
+  void updatePoseRecursive(const Eigen::Matrix4f &_pose = Eigen::Matrix4f::Identity());
 
   /* getKinematicChain */
-  void getChainRecursive(const Part &part, const std::vector<Part::Ptr> &parts, int idx, std::vector< std::vector<int> > &kinematics);
-
+  void getChainRecursive(const Part &part, const std::vector<Part::Ptr> &parts, int idx,
+                         std::vector<std::vector<int>> &kinematics);
 
   /* getKinematicChain */
-  void getKinematicChain(std::vector< std::vector<int> > &kinematics);
+  void getKinematicChain(std::vector<std::vector<int>> &kinematics);
 
   /* getFeatures */
   void getFeatures(int part_idx, int view_idx, FeatureGroup &features);
@@ -179,15 +178,10 @@ public:
   /** addCamera **/
   int addCamera(const std::vector<Eigen::VectorXd> &_part_parameter);
 
-  typedef SmartPtr< ::v4r::ArticulatedObject> Ptr;
-  typedef SmartPtr< ::v4r::ArticulatedObject const> ConstPtr;
+  typedef SmartPtr<::v4r::ArticulatedObject> Ptr;
+  typedef SmartPtr<::v4r::ArticulatedObject const> ConstPtr;
 };
 
-
-
-
-
-} //--END--
+}  //--END--
 
 #endif
-

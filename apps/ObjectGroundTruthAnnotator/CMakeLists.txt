@@ -34,16 +34,16 @@ if(HAVE_OPENNURBS)
   list(APPEND DEP_LIBS ${OPENNURBS_LIBRARIES})
 endif()
 
+if(HAVE_QT)
+  v4r_include_directories(${QT_INCLUDE_DIRS})
+  list(APPEND DEP_LIBS ${QT_LIBRARIES})
+endif()
+
 set(FORMS
         mainwindow.ui
         params.ui
 )
 
-v4r_include_directories(${Qt5Widgets_INCLUDE_DIRS})
-v4r_include_directories(${Qt5OpenGL_INCLUDE_DIRS})
-list(APPEND DEP_LIBS ${Qt5Widgets_LIBRARIES})
-list(APPEND DEP_LIBS ${Qt5OpenGL_LIBRARIES})
-add_definitions(${QT_DEFINITIONS})
 qt5_wrap_ui(FORMS_MOC ${FORMS})
 
 #add_definitions(-std=c++0x)

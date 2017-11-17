@@ -51,7 +51,7 @@ if(CMAKE_COMPILER_IS_GNUCXX)
   #add_extra_compiler_option(-Wundef)
   add_extra_compiler_option(-Winit-self)
   add_extra_compiler_option(-Wpointer-arith)
-  add_extra_compiler_option(-Wshadow)
+  # add_extra_compiler_option(-Wshadow)
   add_extra_compiler_option(-Wsign-promo)
 
   if(ENABLE_NOISY_WARNINGS)

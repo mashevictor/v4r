@@ -25,29 +25,28 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-
 #ifndef FOREST_H
 #define FOREST_H
 
-#include <algorithm>
-#include <time.h>
-#include "boost/random.hpp"
-#include <fstream>
 #include <string.h>
+#include <time.h>
+#include <algorithm>
+#include <fstream>
+#include "boost/random.hpp"
 #include "classificationdata.h"
 #include "tree.h"
 
 #include <boost/archive/text_iarchive.hpp>
 #include <boost/archive/text_oarchive.hpp>
-#include <boost/serialization/vector.hpp>
 #include <boost/serialization/map.hpp>
+#include <boost/serialization/vector.hpp>
 
 #include <v4r/core/macros.h>
 
 #ifdef _OPENMP
-   #include <omp.h>
+#include <omp.h>
 #else
-   #define omp_get_thread_num() 0
+#define omp_get_thread_num() 0
 #endif
 
 namespace v4r {
@@ -56,24 +55,23 @@ namespace RandomForest {
 // how many data points to load into RAM at once
 #define MAX_DATAPOINTS_TO_LOAD 1000000
 
-class V4R_EXPORTS Forest
-{   
-private:
-  friend class boost::serialization::access;  
-  template<class Archive>
-  void serialize(Archive & ar, const unsigned int version)
-  {
-    ar & trees;    
-    ar & maxDepth;
-    ar & nTrees;
-    ar & testedSplittingFunctions;
-    ar & minInformationGain;
-    ar & minPointsForSplit;
-    ar & baggingRatio;
-	ar & labels;
-    ar & splitNodesStoreLabelDistribution;
+class V4R_EXPORTS Forest {
+ private:
+  friend class boost::serialization::access;
+  template <class Archive>
+  void serialize(Archive& ar, const unsigned int version) {
+    (void)version;
+    ar& trees;
+    ar& maxDepth;
+    ar& nTrees;
+    ar& testedSplittingFunctions;
+    ar& minInformationGain;
+    ar& minPointsForSplit;
+    ar& baggingRatio;
+    ar& labels;
+    ar& splitNodesStoreLabelDistribution;
   }
-  
+
   boost::mt19937 randomGenerator;
   std::vector<Tree> trees;
   int maxDepth;
@@ -89,13 +87,15 @@ private:
 
   std::vector<int> labels;
   void RefineLeafNodes(ClassificationData& data, int verbosityLevel = 1);
-  
-public:
+
+ public:
   Forest();
   Forest(std::string filename);
-  Forest(int nTrees, int maxDepth = 8, float baggingRatio = 0.5, int testedSplittingFunctions = 100, float minInformationGain = 0.02, int minPointsForSplit = 5);
+  Forest(int nTrees, int maxDepth = 8, float baggingRatio = 0.5, int testedSplittingFunctions = 100,
+         float minInformationGain = 0.02, int minPointsForSplit = 5);
   void Train(ClassificationData& trainingData, int verbosityLevel = 1);
-  void TrainLarge(ClassificationData& trainingData, bool allNodesStoreLabelDistribution, bool refineWithAllTrainingData = false, int verbosityLevel = 1);
+  void TrainLarge(ClassificationData& trainingData, bool allNodesStoreLabelDistribution,
+                  bool refineWithAllTrainingData = false, int verbosityLevel = 1);
   std::vector<float> SoftClassify(std::vector<float>& point, int depth = -1, int useNTrees = -1);
   void EraseSplitNodeLabelDistributions();
   int ClassifyPoint(std::vector<float>& point, int depth = -1, int useNTrees = -1);
@@ -105,7 +105,6 @@ public:
   std::vector<int> GetLabels();
   virtual ~Forest();
 };
-
 }
 }
-#endif // FOREST_H
+#endif  // FOREST_H

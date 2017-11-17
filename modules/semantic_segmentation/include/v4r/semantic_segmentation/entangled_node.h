@@ -37,7 +37,6 @@
 **
 ****************************************************************************/
 
-
 /**
  * @file   entangled_node.h
  * @author Daniel Wolf (wolf@acin.tuwien.ac.at)
@@ -46,13 +45,12 @@
  *
  */
 
-
 #pragma once
-#include <vector>
-#include <memory>
 #include <map>
+#include <memory>
 #include <mutex>
 #include <random>
+#include <vector>
 
 #include <boost/serialization/vector.hpp>
 
@@ -63,126 +61,122 @@
 
 namespace v4r {
 
-    class EntangledForestSplitFeature;
-    class EntangledForestNode;
-    class EntangledForestTree;
+class EntangledForestSplitFeature;
+class EntangledForestNode;
+class EntangledForestTree;
 
-    class V4R_EXPORTS EntangledForestNode
-    {
-    private:
-        friend class boost::serialization::access;
-        template<class Archive>
-        void serialize(Archive & ar, const unsigned int version __attribute__((unused)))
-        {
-            ar & mParent;
-            ar & mSplitFeature;
-            ar & mDepth;
-            ar & mLeftChildIdx;
-            ar & mRightChildIdx;
-            ar & mLabelDistribution;
-            ar & mAbsLabelDistribution;
-            ar & mIsSplitNode;
-            ar & mOnFrontier;
+class V4R_EXPORTS EntangledForestNode {
+ private:
+  friend class boost::serialization::access;
+  template <class Archive>
+  void serialize(Archive& ar, const unsigned int version __attribute__((unused))) {
+    ar& mParent;
+    ar& mSplitFeature;
+    ar& mDepth;
+    ar& mLeftChildIdx;
+    ar& mRightChildIdx;
+    ar& mLabelDistribution;
+    ar& mAbsLabelDistribution;
+    ar& mIsSplitNode;
+    ar& mOnFrontier;
+  }
 
-        }
+  EntangledForestNode* mParent;
 
-        EntangledForestNode* mParent;
+  bool mOnFrontier;
 
-        bool mOnFrontier;
+  bool mIsSplitNode;
+  EntangledForestSplitFeature* mSplitFeature;
 
-        bool mIsSplitNode;
-        EntangledForestSplitFeature* mSplitFeature;
+  int mDepth;
 
-        int mDepth;
+  int mLeftChildIdx;
+  int mRightChildIdx;
 
-        int mLeftChildIdx;
-        int mRightChildIdx;
+  std::vector<double> mLabelDistribution;
+  std::vector<unsigned int> mAbsLabelDistribution;
 
-        std::vector<double> mLabelDistribution;
-        std::vector<unsigned int> mAbsLabelDistribution;
+  ClusterIdxItr SplitOnFeature(EntangledForestSplitFeature* f, EntangledForestData* data, ClusterIdxItr start,
+                               ClusterIdxItr end);
 
+ public:
+  std::pair<ClusterIdxItr, ClusterIdxItr> mTrainingDataIterators;
 
-        ClusterIdxItr SplitOnFeature(EntangledForestSplitFeature* f, EntangledForestData* data, ClusterIdxItr start, ClusterIdxItr end);
+  EntangledForestNode();
+  EntangledForestNode(EntangledForestData* data);
+  EntangledForestNode(EntangledForestData* data, ClusterIdxItr dataStart, ClusterIdxItr dataEnd,
+                      EntangledForestNode* parent);
 
-    public:
-        std::pair<ClusterIdxItr, ClusterIdxItr > mTrainingDataIterators;
+  inline unsigned int GetNrOfPoints() {
+    return std::distance(mTrainingDataIterators.first, mTrainingDataIterators.second);
+  }
+  double GetWeightedNrOfPoints(std::vector<double>& classWeights);
 
-        EntangledForestNode();
-        EntangledForestNode(EntangledForestData* data);
-        EntangledForestNode(EntangledForestData* data, ClusterIdxItr dataStart, ClusterIdxItr dataEnd, EntangledForestNode *parent);
+  void ResetLabelDistribution();
+  void ClearSplitNodeLabelDistribution();
+  void AddToAbsLabelDistribution(int labelIdx);
+  void UpdateLabelDistribution(std::vector<int> labels, std::map<int, unsigned int>& pointsPerLabel);
 
-        inline unsigned int GetNrOfPoints() { return std::distance(mTrainingDataIterators.first, mTrainingDataIterators.second); }
-        double GetWeightedNrOfPoints(std::vector<double> &classWeights);
+  void Split(EntangledForestData* data, EntangledForestSplitFeature* f, EntangledForestNode** leftChild,
+             EntangledForestNode** rightChild);
 
+  inline int GetDepth() {
+    return mDepth;
+  }
+  inline int GetLeftChildIdx();
+  inline int GetRightChildIdx();
+  inline void SetLeftChildIdx(int idx);
+  inline void SetRightChildIdx(int idx);
+  inline std::vector<double>& GetLabelDistribution();
+  inline std::vector<unsigned int>& GetAbsLabelDistribution();
+  inline bool IsSplitNode();
+  inline bool IsOnFrontier() {
+    return mOnFrontier;
+  }
+  void SetAsLeafNode();
+  bool IsDescendantOf(EntangledForestNode* n);
+  int evaluate(EntangledForestData* data, int imageIdx, int clusterIdx);  // returns child idx
+  EntangledForestNode* GetParent();
 
-        void ResetLabelDistribution();
-        void ClearSplitNodeLabelDistribution();
-        void AddToAbsLabelDistribution(int labelIdx);
-        void UpdateLabelDistribution(std::vector< int > labels, std::map< int, unsigned int >& pointsPerLabel);
+  EntangledForestSplitFeature* GetSplitFeature();
 
-        void Split(EntangledForestData* data, EntangledForestSplitFeature* f, EntangledForestNode** leftChild, EntangledForestNode** rightChild);
+  void SetParent(EntangledForestNode* par);
+  bool IsTopClass(int classIdx);
+  bool IsAmongTopN(unsigned int classIdx, unsigned int N);
+  void ApplyClusterLabelDistribution(std::vector<double>& labeldist);
+  void UpdateLabelDistribution(std::vector<double>& labeldist);
 
-        inline int GetDepth() { return mDepth; }
-        inline int GetLeftChildIdx();
-        inline int GetRightChildIdx();
-        inline void SetLeftChildIdx(int idx);
-        inline void SetRightChildIdx(int idx);
-        inline std::vector<double>& GetLabelDistribution();
-        inline std::vector<unsigned int>& GetAbsLabelDistribution();
-        inline bool IsSplitNode();
-        inline bool IsOnFrontier() { return mOnFrontier; }
-        void SetAsLeafNode();
-        bool IsDescendantOf(EntangledForestNode* n);
-        int evaluate(EntangledForestData* data, int imageIdx, int clusterIdx);    // returns child idx
-        EntangledForestNode* GetParent();
+  void SetRandomGenerator(std::mt19937* randomGenerator);  // neccessary after load
 
-        EntangledForestSplitFeature* GetSplitFeature();
+  void Clone(EntangledForestNode* n, EntangledForestTree* newTree);
+  virtual ~EntangledForestNode();
+};
 
-        void SetParent(EntangledForestNode*par);
-        bool IsTopClass(int classIdx);
-        bool IsAmongTopN(unsigned int classIdx, unsigned int N);
-        void ApplyClusterLabelDistribution(std::vector<double>& labeldist);
-        void UpdateLabelDistribution(std::vector<double>& labeldist);
+inline std::vector<double>& EntangledForestNode::GetLabelDistribution() {
+  return mLabelDistribution;
+}
 
-        void SetRandomGenerator(std::mt19937* randomGenerator);    // neccessary after load
+inline std::vector<unsigned int>& EntangledForestNode::GetAbsLabelDistribution() {
+  return mAbsLabelDistribution;
+}
 
-        void Clone(EntangledForestNode* n, EntangledForestTree* newTree);
-        virtual ~EntangledForestNode();
-    };
+inline bool EntangledForestNode::IsSplitNode() {
+  return mIsSplitNode;
+}
 
-    inline std::vector< double >& EntangledForestNode::GetLabelDistribution()
-    {
-        return mLabelDistribution;
-    }
+inline int EntangledForestNode::GetLeftChildIdx() {
+  return mLeftChildIdx;
+}
 
-    inline std::vector< unsigned int >& EntangledForestNode::GetAbsLabelDistribution()
-    {
-        return mAbsLabelDistribution;
-    }
+inline int EntangledForestNode::GetRightChildIdx() {
+  return mRightChildIdx;
+}
 
-    inline bool EntangledForestNode::IsSplitNode()
-    {
-        return mIsSplitNode;
-    }
+inline void EntangledForestNode::SetLeftChildIdx(int idx) {
+  mLeftChildIdx = idx;
+}
 
-    inline int EntangledForestNode::GetLeftChildIdx()
-    {
-        return mLeftChildIdx;
-    }
-
-    inline int EntangledForestNode::GetRightChildIdx()
-    {
-        return mRightChildIdx;
-    }
-
-    inline void EntangledForestNode::SetLeftChildIdx(int idx)
-    {
-        mLeftChildIdx = idx;
-    }
-
-    inline void EntangledForestNode::SetRightChildIdx(int idx)
-    {
-        mRightChildIdx = idx;
-    }
-
+inline void EntangledForestNode::SetRightChildIdx(int idx) {
+  mRightChildIdx = idx;
+}
 }

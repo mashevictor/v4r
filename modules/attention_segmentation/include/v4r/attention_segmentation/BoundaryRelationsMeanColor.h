@@ -37,7 +37,6 @@
 **
 ****************************************************************************/
 
-
 /**
  * @file BoundaryRelationsMeanColor.h
  * @author Potapova
@@ -52,20 +51,15 @@
 #include <v4r/core/macros.h>
 #include "v4r/attention_segmentation/BoundaryRelationsBase.h"
 
-namespace v4r
-{
+namespace v4r {
 
-class V4R_EXPORTS BoundaryRelationsMeanColor : public BoundaryRelationsBase
-{
-public:
-
-protected:
+class V4R_EXPORTS BoundaryRelationsMeanColor : public BoundaryRelationsBase {
+ public:
+ protected:
   void getYUV(double &Y, double &U, double &V, pcl::PointXYZRGB p);
 
-private:
-
-public:
-
+ private:
+ public:
   typedef boost::shared_ptr<BoundaryRelationsMeanColor> Ptr;
 
   BoundaryRelationsMeanColor();
@@ -74,8 +68,6 @@ public:
   //@ep: not so sure that the type of the return argument is the best
   virtual v4r::meanVal compute();
 };
-
 }
 
-#endif //BOUNDARY_RELATIONS_MEANCOLOR_H
-
+#endif  // BOUNDARY_RELATIONS_MEANCOLOR_H

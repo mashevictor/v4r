@@ -37,71 +37,56 @@
 **
 ****************************************************************************/
 
-
 /**
  * @file main.cpp
  * @author Johann Prankl (prankl@acin.tuwien.ac.at)
  * @date 2017
  * @brief
  *
- */ 
+ */
 
 #ifndef V4R_COMPUTE_GDESC_ORIENTATIONS_HH
 #define V4R_COMPUTE_GDESC_ORIENTATIONS_HH
 
-#include <opencv2/core/core.hpp>
-#include <opencv2/imgproc/imgproc.hpp>
-#include <opencv2/features2d/features2d.hpp>
 #include <v4r/core/macros.h>
+#include <opencv2/core/core.hpp>
+#include <opencv2/features2d/features2d.hpp>
+#include <opencv2/imgproc/imgproc.hpp>
 
 #include <v4r/features/ImGDescOrientation.h>
 
+namespace v4r {
 
-namespace v4r 
-{
-
-class V4R_EXPORTS ComputeImGDescOrientations
-{
-public:
-  class Parameter
-  {
-  public:
+class V4R_EXPORTS ComputeImGDescOrientations {
+ public:
+  class Parameter {
+   public:
     int win_size;
     ImGDescOrientation::Parameter goParam;
-    Parameter(int _win_size=34, 
-      const ImGDescOrientation::Parameter &_goParam=ImGDescOrientation::Parameter())
+    Parameter(int _win_size = 34, const ImGDescOrientation::Parameter &_goParam = ImGDescOrientation::Parameter())
     : win_size(_win_size), goParam(_goParam) {}
   };
 
-private:
+ private:
   Parameter param;
 
   int h_win;
 
-public:
- 
-
-  ComputeImGDescOrientations(const Parameter &p=Parameter());
+ public:
+  ComputeImGDescOrientations(const Parameter &p = Parameter());
   ~ComputeImGDescOrientations();
 
-  void compute(const cv::Mat_<unsigned char> &image, const std::vector<cv::Point2f> &pts, 
-        std::vector<cv::KeyPoint> &keys);
+  void compute(const cv::Mat_<unsigned char> &image, const std::vector<cv::Point2f> &pts,
+               std::vector<cv::KeyPoint> &keys);
   void compute(const cv::Mat_<unsigned char> &image, std::vector<cv::KeyPoint> &keys);
-  //void compute(const cv::Mat_<unsigned char> &image, std::vector<AffKeypoint> &keys);
+  // void compute(const cv::Mat_<unsigned char> &image, std::vector<AffKeypoint> &keys);
 
-
-  typedef SmartPtr< ::v4r::ComputeImGDescOrientations> Ptr;
-  typedef SmartPtr< ::v4r::ComputeImGDescOrientations const> ConstPtr;
-
+  typedef SmartPtr<::v4r::ComputeImGDescOrientations> Ptr;
+  typedef SmartPtr<::v4r::ComputeImGDescOrientations const> ConstPtr;
 };
-
-
 
 /*************************** INLINE METHODES **************************/
 
-
-
-} //--END--
+}  //--END--
 
 #endif
-

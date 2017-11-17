@@ -37,7 +37,6 @@
 **
 ****************************************************************************/
 
-
 /**
  * @file EPBase.cpp
  * @author Potapova
@@ -48,35 +47,31 @@
 
 #include "v4r/attention_segmentation/EPBase.h"
 
-namespace v4r
-{
-
+namespace v4r {
 
 /************************************************************************************
  * Constructor/Destructor
  */
 
-EPBase::EPBase()
-{
+EPBase::EPBase() {
   have_cloud = false;
   have_normals = false;
   have_indices = false;
-  
+
   computed = false;
-  
+
   ClassName = "EPBase";
 }
 
-EPBase::~EPBase()
-{
-}
+EPBase::~EPBase() {}
 
-void EPBase::setInputCloud(const pcl::PointCloud<pcl::PointXYZRGB>::Ptr &_cloud)
-{
-  if ( (_cloud->height<=1) || (_cloud->width<=1) || (!_cloud->isOrganized()) )
-  {
+void EPBase::setInputCloud(const pcl::PointCloud<pcl::PointXYZRGB>::Ptr& _cloud) {
+  if ((_cloud->height <= 1) || (_cloud->width <= 1) || (!_cloud->isOrganized())) {
     char* error_message = new char[200];
-    sprintf(error_message,"[%s::setInputCloud()]: Invalid point cloud (height must be > 1; width must be > 1; point cloud should be organized).",ClassName.c_str());
+    sprintf(error_message,
+            "[%s::setInputCloud()]: Invalid point cloud (height must be > 1; width must be > 1; point cloud should be "
+            "organized).",
+            ClassName.c_str());
     throw std::runtime_error(error_message);
   }
 
@@ -90,19 +85,16 @@ void EPBase::setInputCloud(const pcl::PointCloud<pcl::PointXYZRGB>::Ptr &_cloud)
   computed = false;
 }
 
-void EPBase::setNormals(const pcl::PointCloud<pcl::Normal>::Ptr &_normals)
-{
-  if(!have_cloud)
-  {
+void EPBase::setNormals(const pcl::PointCloud<pcl::Normal>::Ptr& _normals) {
+  if (!have_cloud) {
     char* error_message = new char[200];
-    sprintf(error_message,"[%s::setNormals()]: I suggest you first set the point cloud.",ClassName.c_str());
+    sprintf(error_message, "[%s::setNormals()]: I suggest you first set the point cloud.", ClassName.c_str());
     throw std::runtime_error(error_message);
   }
-  
-  if ( (_normals->height!=(unsigned int)height) || (_normals->width!=(unsigned int)width) )
-  {
+
+  if ((_normals->height != (unsigned int)height) || (_normals->width != (unsigned int)width)) {
     char* error_message = new char[200];
-    sprintf(error_message,"[%s::setNormals()]: Invalid normals (not for this point cloud).",ClassName.c_str());
+    sprintf(error_message, "[%s::setNormals()]: Invalid normals (not for this point cloud).", ClassName.c_str());
     throw std::runtime_error(error_message);
   }
 
@@ -110,37 +102,32 @@ void EPBase::setNormals(const pcl::PointCloud<pcl::Normal>::Ptr &_normals)
   have_normals = true;
 }
 
-void EPBase::setIndices(const pcl::PointIndices::Ptr &_indices)
-{
-  if(!have_cloud)
-  {
+void EPBase::setIndices(const pcl::PointIndices::Ptr& _indices) {
+  if (!have_cloud) {
     char* error_message = new char[200];
-    sprintf(error_message,"[%s::setNormals()]: I suggest you first set the point cloud.",ClassName.c_str());
+    sprintf(error_message, "[%s::setNormals()]: I suggest you first set the point cloud.", ClassName.c_str());
     throw std::runtime_error(error_message);
   }
-  
+
   indices = _indices->indices;
   have_indices = true;
 }
 
-void EPBase::setIndices(const std::vector<int> &_indices)
-{
-  if(!have_cloud)
-  {
+void EPBase::setIndices(const std::vector<int>& _indices) {
+  if (!have_cloud) {
     char* error_message = new char[200];
-    sprintf(error_message,"[%s::setNormals()]: I suggest you first set the point cloud.",ClassName.c_str());
+    sprintf(error_message, "[%s::setNormals()]: I suggest you first set the point cloud.", ClassName.c_str());
     throw std::runtime_error(error_message);
   }
-  
+
   indices = _indices;
   have_indices = true;
 }
 
-void EPBase::compute()
-{
+void EPBase::compute() {
   char* error_message = new char[200];
-  sprintf(error_message,"[%s::setNormals()]: Why do you call me? I am just the base class!.",ClassName.c_str());
+  sprintf(error_message, "[%s::setNormals()]: Why do you call me? I am just the base class!.", ClassName.c_str());
   throw std::runtime_error(error_message);
 }
 
-} // end v4r
+}  // end v4r

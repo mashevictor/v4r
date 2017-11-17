@@ -37,7 +37,6 @@
 **
 ****************************************************************************/
 
-
 /**
  * @file ColorHistogram.h
  * @author Andreas Richtsfeld
@@ -49,32 +48,28 @@
 #ifndef SURFACE_COLOR_HISTOGRAM_HH
 #define SURFACE_COLOR_HISTOGRAM_HH
 
-#include <vector>
-#include <opencv2/opencv.hpp>
 #include <v4r/core/macros.h>
+#include <opencv2/opencv.hpp>
+#include <vector>
 #include "v4r/attention_segmentation//PCLUtils.h"
 
 //@ep: TODO: this should be inheritance and not case clause
 
-namespace v4r
-{
+namespace v4r {
 
 /**
  * @brief Class ColorHistogram
  */
-class V4R_EXPORTS ColorHistogram
-{
-
-public:
+class V4R_EXPORTS ColorHistogram {
+ public:
   typedef boost::shared_ptr<ColorHistogram> Ptr;
-  
-  struct Color3C
-  {
-    int ch1; // R/B/Y
-    int ch2; // G/G/U
-    int ch3; // B/R/V
+
+  struct Color3C {
+    int ch1;  // R/B/Y
+    int ch2;  // G/G/U
+    int ch3;  // B/R/V
   };
-  
+
   enum ColorModel {
     YUV_MODEL = 0,
     RGB_MODEL,
@@ -86,28 +81,28 @@ public:
     HIST_2D = 1,
     HIST_3D = 2,
   };
-  
-private:
+
+ private:
   int nrBins;
-  int colorModel;                          /// 0 ... yuv / 1 ... rgb 
+  int colorModel;  /// 0 ... yuv / 1 ... rgb
   int histogramType;
   double maxVal;
-  
+
   double UVthreshold;
   bool useUVthreshold;
-  
+
   int width, height;
-  
+
   bool computed;
   bool have_input_cloud;
   pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud;
   bool have_indices;
   pcl::PointIndices::Ptr indices;
-  
+
   cv::Mat_<double> hist;
 
   bool init();
-  
+
   bool buildHistogram();
   bool buildHistogramAverage();
   bool buildHistogram2D();
@@ -124,9 +119,8 @@ private:
   void printHistogramAverage();
   void printHistogram2D();
   void printHistogram3D();
-  
-public:
-  
+
+ public:
   ColorHistogram(int _nr_bins, double _UVthreshold = 0.);
   // sets input cloud
   void setInputCloud(pcl::PointCloud<pcl::PointXYZRGB>::Ptr _cloud);
@@ -134,31 +128,57 @@ public:
   void setIndices(pcl::PointIndices::Ptr _indices);
   V4R_EXPORTS void setIndices(std::vector<int> &_indices);
   void setIndices(cv::Rect rect);
-  
-  void setColorModel(int _colorModel) {colorModel = _colorModel;};
-  void setHistogramType(int _histogramType) {histogramType = _histogramType;};
-  void setBinNumber(int _nrBins) {nrBins = _nrBins;};
-  void setUseUVThreshold(bool _useUVthreshold) {useUVthreshold = _useUVthreshold;};
-  void setUVThreshold(double _UVthreshold) {UVthreshold = _UVthreshold;};
-  void setMaxVal(double _maxVal) {maxVal = _maxVal;}
-  
-  int getBinNumber() {return nrBins;};
-  int getColorModel() {return colorModel;};
-  int getHistogramType() {return histogramType;};
-  bool getUseUVThreshold() {return useUVthreshold;};
-  double getUVThreshold() {return UVthreshold;};
-  double getMaxVal() {return maxVal;};
-  bool getComputed() {return computed;};
-  const cv::Mat getHist() const {return hist;};
-  
+
+  void setColorModel(int _colorModel) {
+    colorModel = _colorModel;
+  };
+  void setHistogramType(int _histogramType) {
+    histogramType = _histogramType;
+  };
+  void setBinNumber(int _nrBins) {
+    nrBins = _nrBins;
+  };
+  void setUseUVThreshold(bool _useUVthreshold) {
+    useUVthreshold = _useUVthreshold;
+  };
+  void setUVThreshold(double _UVthreshold) {
+    UVthreshold = _UVthreshold;
+  };
+  void setMaxVal(double _maxVal) {
+    maxVal = _maxVal;
+  }
+
+  int getBinNumber() {
+    return nrBins;
+  };
+  int getColorModel() {
+    return colorModel;
+  };
+  int getHistogramType() {
+    return histogramType;
+  };
+  bool getUseUVThreshold() {
+    return useUVthreshold;
+  };
+  double getUVThreshold() {
+    return UVthreshold;
+  };
+  double getMaxVal() {
+    return maxVal;
+  };
+  bool getComputed() {
+    return computed;
+  };
+  const cv::Mat getHist() const {
+    return hist;
+  };
+
   void compute();
-  
+
   V4R_EXPORTS double compare(ColorHistogram::Ptr ch);
-  
+
   void printHistogram();
 };
-
 }
 
 #endif
-

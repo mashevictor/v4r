@@ -1,19 +1,17 @@
-project(${OPENNURBS_LIBRARY})
+cmake_minimum_required(VERSION 2.8 FATAL_ERROR)
+project(OpenNURBS)
+
 include("openNURBS.cmake")
-v4r_include_directories(${CMAKE_CURRENT_SOURCE_DIR})
+include("on_nurbs.cmake")
 
-add_library(${OPENNURBS_LIBRARY} STATIC ${OPENNURBS_SOURCES})
-target_link_libraries(${OPENNURBS_LIBRARY})
+find_package(PCL REQUIRED)
 
-set_target_properties(${OPENNURBS_LIBRARY}
-  PROPERTIES
-    POSITION_INDEPENDENT_CODE TRUE
-    OUTPUT_NAME "${OPENNURBS_LIBRARY}"
-    ARCHIVE_OUTPUT_DIRECTORY ${3P_LIBRARY_OUTPUT_PATH}
-)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR} ${PCL_INCLUDE_DIRS})
 
-install(FILES ${OPENNURBS_INCLUDES} DESTINATION "${V4R_3P_INCLUDE_INSTALL_PATH}/opennurbs")
+add_library(opennurbs STATIC ${OPENNURBS_SOURCES} ${ON_NURBS_SOURCES})
+target_link_libraries(opennurbs ${PCL_LIBRARIES})
 
-if(NOT BUILD_SHARED_LIBS)
-  v4r_install_target(${OPENNURBS_LIBRARY} EXPORT V4RModules ARCHIVE DESTINATION ${V4R_3P_LIB_INSTALL_PATH} COMPONENT dev)
-endif()
+set_target_properties(opennurbs PROPERTIES POSITION_INDEPENDENT_CODE TRUE)
+
+install(FILES ${OPENNURBS_INCLUDES} DESTINATION "include/opennurbs")
+install(TARGETS opennurbs ARCHIVE DESTINATION lib)

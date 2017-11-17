@@ -37,7 +37,6 @@
 **
 ****************************************************************************/
 
-
 /**
  * @file Graph.h
  * @author Andreas Richtsfeld
@@ -49,84 +48,74 @@
 #ifndef GC_GRAPH_H
 #define GC_GRAPH_H
 
-#include <vector>
+#include <math.h>
 #include <stdio.h>
 #include <cstdlib>
-#include <math.h>
+#include <vector>
 
-#include <pcl/point_types.h>
 #include <pcl/point_cloud.h>
+#include <pcl/point_types.h>
 
 #include "v4r/attention_segmentation/Edge.h"
 #include "v4r/attention_segmentation/Relation.h"
 #include "v4r/attention_segmentation/SurfaceModel.h"
 
-namespace gc
-{
+namespace gc {
 
-template<typename T1,typename T2>
+template <typename T1, typename T2>
 extern T1 Dot3(const T1 v1[3], const T2 v2[3]);
-  
-template<typename T1,typename T2, typename T3>
+
+template <typename T1, typename T2, typename T3>
 extern void Add3(const T1 v1[3], const T2 v2[3], T3 r[3]);
 
 /**
  * @brief Class Graph
  */
-class Graph
-{
-private:  
-  unsigned nodes;                                               ///< number of surface patches
-  std::vector<gc::Edge> edges;                                  ///< edges of the graph (wiht node numbers and probability)
+class Graph {
+ private:
+  unsigned nodes;               ///< number of surface patches
+  std::vector<gc::Edge> edges;  ///< edges of the graph (wiht node numbers and probability)
 
-  std::vector<v4r::Relation> relations;                     ///< relations between features
-  std::vector<v4r::SurfaceModel::Ptr> surfaces;                     ///< relations between features
-  pcl::PointCloud<pcl::PointXYZRGB>::Ptr pcl_cloud;             ///< point cloud
-  pcl::PointCloud<pcl::Normal>::Ptr normals;                    ///< Normals of the point cloud
-  
+  std::vector<v4r::Relation> relations;              ///< relations between features
+  std::vector<v4r::SurfaceModel::Ptr> surfaces;      ///< relations between features
+  pcl::PointCloud<pcl::PointXYZRGB>::Ptr pcl_cloud;  ///< point cloud
+  pcl::PointCloud<pcl::Normal>::Ptr normals;         ///< Normals of the point cloud
+
   std::vector<int> surfaces_reindex;
-  //std::vector<int> surfaces_reindex2;
-  
-public:
-  
-private:
-  
+  // std::vector<int> surfaces_reindex2;
+
+ public:
+ private:
   inline int GetIdx(short x, short y);
   inline short X(int idx);
   inline short Y(int idx);
-  
-public:
+
+ public:
   Graph();
   Graph(unsigned nrNodes, std::vector<v4r::Relation> &rel);
   Graph(std::vector<v4r::SurfaceModel::Ptr> &surf, std::vector<v4r::Relation> &rel);
   ~Graph();
-  
+
   void BuildFromSVM(std::vector<gc::Edge> &e, unsigned &num_edges, std::vector<int> &surfaces_reindex2);
   void BuildFromPointCloud(pcl::PointCloud<pcl::PointXYZRGB>::Ptr &_pcl_cloud,
-                           pcl::PointCloud<pcl::Normal>::Ptr &_normals,
-                           std::vector<gc::Edge> &e, unsigned &num_edges);
+                           pcl::PointCloud<pcl::Normal>::Ptr &_normals, std::vector<gc::Edge> &e, unsigned &num_edges);
 };
 
 /*************************** INLINE METHODES **************************/
 /** Return index for coordinates x,y **/
-inline int Graph::GetIdx(short x, short y)
-{
-  return y*pcl_cloud->width + x;
+inline int Graph::GetIdx(short x, short y) {
+  return y * pcl_cloud->width + x;
 }
 
 /** Return x coordinate for index **/
-inline short Graph::X(int idx)
-{
-  return idx%pcl_cloud->width;
+inline short Graph::X(int idx) {
+  return idx % pcl_cloud->width;
 }
 
 /** Return y coordinate for index **/
-inline short Graph::Y(int idx)
-{
-  return idx/pcl_cloud->width;
+inline short Graph::Y(int idx) {
+  return idx / pcl_cloud->width;
 }
-
 }
 
 #endif
-

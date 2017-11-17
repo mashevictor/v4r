@@ -28,26 +28,11 @@
 /* OpenGL support*/
 #cmakedefine HAVE_OPENGL
 
-/* OpenNI library */
-#cmakedefine HAVE_OPENNI
-
-/* OpenNI library */
-#cmakedefine HAVE_OPENNI2
-
-/* Posix threads (pthreads) */
-#cmakedefine HAVE_PTHREADS
-
-/* parallel_for with pthreads */
-#cmakedefine HAVE_PTHREADS_PF
-
 /* Qt support */
 #cmakedefine HAVE_QT
 
 /* Qt OpenGL support */
 #cmakedefine HAVE_QT_OPENGL
-
-/* Intel Threading Building Blocks */
-#cmakedefine HAVE_TBB
 
 /* Define if your processor stores words with the most significant byte
    first (like Motorola and SPARC, unlike Intel and VAX). */

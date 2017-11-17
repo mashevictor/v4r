@@ -37,8 +37,6 @@
 **
 ****************************************************************************/
 
-
-
 #ifndef ATTENTION_MODULE_EXAMPLES_UTILS_HPP
 #define ATTENTION_MODULE_EXAMPLES_UTILS_HPP
 
@@ -46,14 +44,15 @@
 #include "v4r/attention_segmentation/ZAdaptiveNormals.h"
 //#include "v4r/attention_segmentation/EPUtils.h"
 
-namespace v4r
-{
+namespace v4r {
 
-V4R_EXPORTS int preparePointCloud(pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud, pcl::ModelCoefficients::Ptr coefficients, 
-                      pcl::PointCloud<pcl::Normal>::Ptr normals, pcl::PointIndices::Ptr object_indices_in_the_hull, bool useStandartNormals = false);
-V4R_EXPORTS int preparePointCloud(pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud, pcl::PointCloud<pcl::Normal>::Ptr normals, pcl::PointIndices::Ptr object_indices, 
-		      bool useStandartNormals = false);
+V4R_EXPORTS int preparePointCloud(pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud,
+                                  pcl::ModelCoefficients::Ptr coefficients, pcl::PointCloud<pcl::Normal>::Ptr normals,
+                                  pcl::PointIndices::Ptr object_indices_in_the_hull, bool useStandartNormals = false);
+V4R_EXPORTS int preparePointCloud(pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud,
+                                  pcl::PointCloud<pcl::Normal>::Ptr normals, pcl::PointIndices::Ptr object_indices,
+                                  bool useStandartNormals = false);
 
 bool checkIsNaN(const pcl::PointXYZRGB &p);
-} // namespace v4r
-#endif //ATTENTION_MODULE_EXAMPLES_UTILS_HPP
+}  // namespace v4r
+#endif  // ATTENTION_MODULE_EXAMPLES_UTILS_HPP

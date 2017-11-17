@@ -37,7 +37,6 @@
 **
 ****************************************************************************/
 
-
 /**
  * @file Texture.cpp
  * @author Richtsfeld
@@ -48,156 +47,122 @@
 
 #include "v4r/attention_segmentation/Texture.h"
 
-namespace v4r
-{
-
+namespace v4r {
 
 /************************************************************************************
  * Constructor/Destructor
  */
 
-Texture::Texture()
-{
+Texture::Texture() {
   computed = false;
   have_edges = false;
   have_indices = false;
 }
 
-Texture::~Texture()
-{
-}
+Texture::~Texture() {}
 
-void Texture::setInputEdges(cv::Mat &_edges)
-{
-  if ( (_edges.cols<=0) || (_edges.rows<=0) )
+void Texture::setInputEdges(cv::Mat &_edges) {
+  if ((_edges.cols <= 0) || (_edges.rows <= 0))
     throw std::runtime_error("[ColorHistogram::setInputEdges] Invalid image (height|width must be > 1)");
-  
-  if ( _edges.type() != CV_8UC1 )
+
+  if (_edges.type() != CV_8UC1)
     throw std::runtime_error("[ColorHistogram::setInputEdges] Invalid image type (must be 8UC1)");
 
   edges = _edges;
   width = edges.cols;
   height = edges.rows;
-  
+
   have_edges = true;
   computed = false;
-  
+
   indices.reset(new pcl::PointIndices);
-  for(int i = 0; i < width*height; i++)
-  {
+  for (int i = 0; i < width * height; i++) {
     indices->indices.push_back(i);
   }
 }
 
-void Texture::setIndices(pcl::PointIndices::Ptr _indices)
-{
-  if(!have_edges) {
+void Texture::setIndices(pcl::PointIndices::Ptr _indices) {
+  if (!have_edges) {
     printf("[ColorHistogram::setIndices]: Error: No edges available.\n");
     return;
   }
-    
+
   indices = _indices;
   have_indices = true;
 }
 
-void Texture::setIndices(std::vector<int> &_indices)
-{
+void Texture::setIndices(std::vector<int> &_indices) {
   indices.reset(new pcl::PointIndices);
   indices->indices = _indices;
 }
 
-void Texture::setIndices(cv::Rect _rect)
-{
-  if(!have_edges) {
+void Texture::setIndices(cv::Rect _rect) {
+  if (!have_edges) {
     printf("[ColorHistogram::setIndices]: Error: No edges available.\n");
     return;
   }
-  
-  if(_rect.y >= height)
-  {
-    _rect.y = height-1;
+
+  if (_rect.y >= height) {
+    _rect.y = height - 1;
   }
-  
-  if( (_rect.y + _rect.height) >= height)
-  {
-    _rect.height = height-_rect.y;
+
+  if ((_rect.y + _rect.height) >= height) {
+    _rect.height = height - _rect.y;
   }
-  
-  if(_rect.x >= width)
-  {
-    _rect.x = width-1;
+
+  if (_rect.x >= width) {
+    _rect.x = width - 1;
   }
-  
-  if( (_rect.x + _rect.width) >= width)
-  {
-    _rect.width = width-_rect.x;
+
+  if ((_rect.x + _rect.width) >= width) {
+    _rect.width = width - _rect.x;
   }
-  
-  printf("[ColorHistogram] _rect = %d,%d,%d,%d.\n",_rect.x,_rect.y,_rect.x+_rect.width,_rect.y+_rect.height);
-  
+
+  printf("[ColorHistogram] _rect = %d,%d,%d,%d.\n", _rect.x, _rect.y, _rect.x + _rect.width, _rect.y + _rect.height);
+
   indices.reset(new pcl::PointIndices);
-  for(int r = _rect.y; r < (_rect.y+_rect.height); r++)
-  {
-    for(int c = _rect.x; c < (_rect.x+_rect.width); c++)
-    {
-      indices->indices.push_back(r*width+c);
+  for (int r = _rect.y; r < (_rect.y + _rect.height); r++) {
+    for (int c = _rect.x; c < (_rect.x + _rect.width); c++) {
+      indices->indices.push_back(r * width + c);
     }
   }
-  
+
   have_indices = true;
 }
 
-void Texture::compute()
-{
-  if(!have_edges) {
+void Texture::compute() {
+  if (!have_edges) {
     printf("[Texture::compute] Error: No edges set.\n");
     return;
   }
 
   textureRate = 0.0;
-  
-  if( (indices->indices.size()) <= 0) 
-  {
+
+  if ((indices->indices.size()) <= 0) {
     computed = true;
     return;
   }
-  
+
   int texArea = 0;
-  for(unsigned int i=0; i<indices->indices.size(); i++) 
-  {
+  for (unsigned int i = 0; i < indices->indices.size(); i++) {
     int x = indices->indices.at(i) % width;
     int y = indices->indices.at(i) / width;
-    if(edges.at<uchar>(y,x) == 255)
+    if (edges.at<uchar>(y, x) == 255)
       texArea++;
   }
-  
-  textureRate = (double) ((double)texArea / indices->indices.size());
-  
+
+  textureRate = (double)((double)texArea / indices->indices.size());
+
   computed = true;
 }
 
-double Texture::compare(Texture::Ptr t)
-{
-  if(!computed || !(t->getComputed())) 
-  {
+double Texture::compare(Texture::Ptr t) {
+  if (!computed || !(t->getComputed())) {
     printf("[Texture::compare]: Error: Texture is not computed.\n");
     return 0.;
   }
-  
+
   return 1. - fabs(textureRate - t->getTextureRate());
 }
 
-
-} // end surface
-
-
-
-
-
-
-
-
-
-
-
-
+}  // end surface

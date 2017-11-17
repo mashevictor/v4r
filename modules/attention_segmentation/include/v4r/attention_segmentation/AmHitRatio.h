@@ -37,8 +37,6 @@
 **
 ****************************************************************************/
 
-
-
 #ifndef AMHITRATIO_HPP
 #define AMHITRATIO_HPP
 
@@ -47,12 +45,12 @@
 
 namespace v4r {
 
-struct ObjectDistance{
+struct ObjectDistance {
   float distance;
   int attentionPointIdx;
 };
 
-struct PointEvaluation{
+struct PointEvaluation {
   float distance;
   int objectIdx;
   float hitRatio;
@@ -60,41 +58,40 @@ struct PointEvaluation{
   float bestDistance;
 };
 
-class V4R_EXPORTS AttentionPointsEvaluation
-{
-public:
+class V4R_EXPORTS AttentionPointsEvaluation {
+ public:
   V4R_EXPORTS AttentionPointsEvaluation();
   V4R_EXPORTS ~AttentionPointsEvaluation();
-  
+
   void setAttentionPoints(std::vector<cv::Point> attention_points_);
   std::vector<cv::Point> getAttentionPoints();
-  
+
   void setMask(cv::Mat &mask_);
   bool getMask(cv::Mat &mask_);
-  
+
   bool calculate();
-  
+
   bool writeToFile(std::string file_name);
-  
+
   std::vector<PointEvaluation> getEvaluatedPoints();
-  
-private:
+
+ private:
   std::vector<cv::Point> attention_points;
-  
+
   bool haveMask;
   cv::Mat mask;
-  
+
   std::vector<PointEvaluation> evaluated_points;
-  
+
   void calculateCenters();
   std::vector<cv::Point> centers;
   std::vector<float> maxDist2Center;
   void labeling2Mask(cv::Mat &mask_i, int maskNum);
   void hitRatio();
-  
+
   void calculateDistance2objects();
 };
-  
-} //namespace v4r
 
-#endif //HITRATIO_HPP
+}  // namespace v4r
+
+#endif  // HITRATIO_HPP

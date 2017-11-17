@@ -37,7 +37,6 @@
 **
 ****************************************************************************/
 
-
 /**
  * @file   entangled_definitions.h
  * @author Daniel Wolf (wolf@acin.tuwien.ac.at)
@@ -45,7 +44,6 @@
  * @brief  .
  *
  */
-
 
 #pragma once
 
@@ -58,16 +56,16 @@
 #define PI 3.141592654
 
 #ifndef RAD2DEG
-#define RAD2DEG(x) ((x) * 57.29577951308232087721)
+#define RAD2DEG(x) ((x)*57.29577951308232087721)
 #endif
 
-#define LOG_ERROR(...)    std::cout << "\033[1;31m" << __VA_ARGS__ << "\033[0m" << std::endl;
-#define LOG_INFO(...)     std::cout << "\033[1;33m" << __VA_ARGS__ << "\033[0m" << std::endl;
-#define LOG_PLAIN(...)    std::cout << __VA_ARGS__ << std::endl;
+#define LOG_ERROR(...) std::cout << "\033[1;31m" << __VA_ARGS__ << "\033[0m" << std::endl;
+#define LOG_INFO(...) std::cout << "\033[1;33m" << __VA_ARGS__ << "\033[0m" << std::endl;
+#define LOG_PLAIN(...) std::cout << __VA_ARGS__ << std::endl;
 
 typedef std::array<unsigned int, 3> PointIdx;
-typedef std::vector<std::array<unsigned int, 3> > PointIndices;
-typedef std::vector<std::array<unsigned int, 3> >::iterator PointIdxItr;
+typedef std::vector<std::array<unsigned int, 3>> PointIndices;
+typedef std::vector<std::array<unsigned int, 3>>::iterator PointIdxItr;
 
 typedef std::array<int, 2> ClusterIdx;  // first value is image idx, second value cluster idx
 typedef std::vector<ClusterIdx> ClusterIndices;

@@ -37,7 +37,6 @@
 **
 ****************************************************************************/
 
-
 /**
  * @file BoundaryRelationsBase.cpp
  * @author Potapova
@@ -48,16 +47,13 @@
 
 #include "v4r/attention_segmentation/BoundaryRelationsBase.h"
 
-namespace v4r
-{
-
+namespace v4r {
 
 /************************************************************************************
  * Constructor/Destructor
  */
 
-BoundaryRelationsBase::BoundaryRelationsBase()
-{
+BoundaryRelationsBase::BoundaryRelationsBase() {
   have_cloud = false;
   have_normals = false;
   have_boundary = false;
@@ -65,13 +61,10 @@ BoundaryRelationsBase::BoundaryRelationsBase()
   computed = false;
 }
 
-BoundaryRelationsBase::~BoundaryRelationsBase()
-{
-}
+BoundaryRelationsBase::~BoundaryRelationsBase() {}
 
-void BoundaryRelationsBase::setInputCloud(pcl::PointCloud<pcl::PointXYZRGB>::Ptr _cloud)
-{
-  if ( (_cloud->height<=1) || (_cloud->width<=1) || (!_cloud->isOrganized()) )
+void BoundaryRelationsBase::setInputCloud(pcl::PointCloud<pcl::PointXYZRGB>::Ptr _cloud) {
+  if ((_cloud->height <= 1) || (_cloud->width <= 1) || (!_cloud->isOrganized()))
     throw std::runtime_error("[BoundaryRelationsBase::setInputCloud] Invalid point cloud (height must be > 1)");
 
   cloud = _cloud;
@@ -84,26 +77,23 @@ void BoundaryRelationsBase::setInputCloud(pcl::PointCloud<pcl::PointXYZRGB>::Ptr
   computed = false;
 }
 
-void BoundaryRelationsBase::setNormals(pcl::PointCloud<pcl::Normal>::Ptr _normals)
-{
-  if(!have_cloud)
+void BoundaryRelationsBase::setNormals(pcl::PointCloud<pcl::Normal>::Ptr _normals) {
+  if (!have_cloud)
     throw std::runtime_error("[BoundaryRelationsBase::setNormals] I suggest you first set the point cloud.");
-  
-  if ( (_normals->height!=(unsigned int)height) || (_normals->width!=(unsigned int)width) )
+
+  if ((_normals->height != (unsigned int)height) || (_normals->width != (unsigned int)width))
     throw std::runtime_error("[BoundaryRelationsBase::setNormals] Invalid normals (not for this point cloud).");
 
   normals = _normals;
   have_normals = true;
 }
 
-void BoundaryRelationsBase::setBoundary(std::vector<v4r::neighboringPair> &_boundary)
-{
+void BoundaryRelationsBase::setBoundary(std::vector<v4r::neighboringPair> &_boundary) {
   boundary = _boundary;
   have_boundary = true;
 }
 
-v4r::meanVal BoundaryRelationsBase::compute()
-{
+v4r::meanVal BoundaryRelationsBase::compute() {
   throw std::runtime_error("[BoundaryRelationsBase::compute] Why do you call me? I am just the base class!.");
   v4r::meanVal m;
   return m;
@@ -254,7 +244,8 @@ v4r::meanVal BoundaryRelationsBase::compute()
     sum_depth_var /= nr_valid_points_depth;
   }
   else
-    std::printf("[BoundaryRelations::compare] Warning: Number of valid depth points is zero: sum_depth: %4.3f\n", sum_depth);
+    std::printf("[BoundaryRelations::compare] Warning: Number of valid depth points is zero: sum_depth: %4.3f\n",
+sum_depth);
 
 
   /// calcuate curvature / depth
@@ -350,7 +341,8 @@ v4r::meanVal BoundaryRelationsBase::compute()
       }
 #ifdef DEBUG
       else
-        printf("[BoundaryRelations::compare] Warning: Invalid curvature points (nan): Should not happen! DO SOMETHING!\n");
+        printf("[BoundaryRelations::compare] Warning: Invalid curvature points (nan): Should not happen! DO
+SOMETHING!\n");
 #endif
     }
   }
@@ -359,7 +351,8 @@ v4r::meanVal BoundaryRelationsBase::compute()
     sum_uv_color_distance /= nr_valid_points_color;
 #ifdef DEBUG
   else
-    printf("[BoundaryRelations::compare] Warning: Number of valid color points is zero: sum_color: %4.3f\n", sum_uv_color_distance);
+    printf("[BoundaryRelations::compare] Warning: Number of valid color points is zero: sum_color: %4.3f\n",
+sum_uv_color_distance);
 #endif
 
   if(nr_valid_points_curvature3D != 0) {
@@ -371,7 +364,8 @@ v4r::meanVal BoundaryRelationsBase::compute()
   }
 #ifdef DEBUG
   else
-    printf("[BoundaryRelations::compare] Warning: Number of valid 3D curvature points is zero: sum_3D_curvature: %4.3f\n", sum_3D_curvature_mean);
+    printf("[BoundaryRelations::compare] Warning: Number of valid 3D curvature points is zero: sum_3D_curvature:
+%4.3f\n", sum_3D_curvature_mean);
 #endif
 
   //rel_value.push_back(1.-sum_uv_color_distance);
@@ -387,18 +381,4 @@ v4r::meanVal BoundaryRelationsBase::compute()
   return true;
 }*/
 
-
-
-} // end surface
-
-
-
-
-
-
-
-
-
-
-
-
+}  // end surface

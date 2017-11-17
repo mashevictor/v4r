@@ -37,7 +37,6 @@
 **
 ****************************************************************************/
 
-
 /**
  * @file color_comparison.h
  * @author Thomas Faeulhammer (faeulhammer@acin.tuwien.ac.at)
@@ -48,11 +47,10 @@
 
 #pragma once
 
-#include <Eigen/Eigen>
 #include <v4r/core/macros.h>
+#include <Eigen/Eigen>
 
-namespace v4r
-{
+namespace v4r {
 
 /**
  * @brief CIE76 standard for color comparison --> sqrt ( norm(L_diff) + norm(A_diff) + norm(B_diff) )
@@ -62,20 +60,16 @@ namespace v4r
  */
 V4R_EXPORTS float CIE76(const Eigen::Vector3f &a, const Eigen::Vector3f &b);
 
-V4R_EXPORTS float CIE94(const Eigen::Vector3f &a, const Eigen::Vector3f &b, float K1, float K2, float Kl); // default parameters for graphics
-//V4R_EXPORTS float CIE94(const Eigen::Vector3f &a, const Eigen::Vector3f &b, float K1=1.f, float K2=.045f, float Kl=.015f); // default parameters for graphics
-//V4R_EXPORTS float CIE94(const Eigen::Vector3f &a, const Eigen::Vector3f &b, float K1=2.f, float K2=.048f, float Kl=.014f); // default parameters for textiles
+V4R_EXPORTS float CIE94(const Eigen::Vector3f &a, const Eigen::Vector3f &b, float K1, float K2,
+                        float Kl);  // default parameters for graphics
+// V4R_EXPORTS float CIE94(const Eigen::Vector3f &a, const Eigen::Vector3f &b, float K1=1.f, float K2=.045f, float
+// Kl=.015f); // default parameters for graphics
+// V4R_EXPORTS float CIE94(const Eigen::Vector3f &a, const Eigen::Vector3f &b, float K1=2.f, float K2=.048f, float
+// Kl=.014f); // default parameters for textiles
 
 V4R_EXPORTS float CIE94_DEFAULT(const Eigen::Vector3f &a, const Eigen::Vector3f &b);
 
 V4R_EXPORTS float CIEDE2000(const Eigen::Vector3f &a, const Eigen::Vector3f &b);
 
-
-enum ColorComparisonMethod
-{
-    cie76,
-    cie94,
-    ciede2000
-};
-
+enum ColorComparisonMethod { cie76, cie94, ciede2000 };
 }

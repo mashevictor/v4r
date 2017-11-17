@@ -1,0 +1,10 @@
+find_package(Boost "${MIN_VER_BOOST}" COMPONENTS thread program_options serialization system filesystem regex)
+if(Boost_FOUND)
+  set(BOOST_LIBRARIES "${Boost_LIBRARIES}")
+  set(BOOST_INCLUDE_DIRS "${Boost_INCLUDE_DIRS}")
+  set(BOOST_VERSION "${Boost_MAJOR_VERSION}.${Boost_MINOR_VERSION}")
+  set(HAVE_BOOST TRUE)
+else()
+  set(HAVE_BOOST FALSE)
+endif()
+

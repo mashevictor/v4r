@@ -37,7 +37,6 @@
 **
 ****************************************************************************/
 
-
 /**
  * @file ObjectSegmentation.cpp
  * @author Johann Prankl (prankl@acin.tuwien.ac.at), Aitor Aldoma (aldoma@acin.tuwien.ac.at)
@@ -46,29 +45,27 @@
  *
  */
 
-
-
 #ifndef Q_MOC_RUN
 #include "ObjectSegmentation.h"
 
-#include <cmath>
-#include <boost/filesystem.hpp>
 #include <pcl/features/normal_3d_omp.h>
+#include <pcl/filters/voxel_grid.h>
 #include <pcl/sample_consensus/ransac.h>
 #include <pcl/sample_consensus/sac_model_plane.h>
-#include <pcl/filters/voxel_grid.h>
+#include <boost/filesystem.hpp>
+#include <cmath>
 
-#include <opencv2/highgui/highgui.hpp>
-#include <v4r/keypoints/impl/invPose.hpp>
-#include <v4r/keypoints/impl/PoseIO.hpp>
-#include <v4r/common/convertCloud.h>
-#include <v4r/common/convertNormals.h>
-#include <v4r/common/convertImage.h>
-#include <v4r/reconstruction/impl/projectPointToImage.hpp>
-#include <v4r/common/noise_models.h>
-#include <v4r/registration/noise_model_based_cloud_integration.h>
-#include <v4r/registration/MvLMIcp.h>
 #include <pcl/segmentation/extract_clusters.h>
+#include <v4r/common/convertCloud.h>
+#include <v4r/common/convertImage.h>
+#include <v4r/common/convertNormals.h>
+#include <v4r/common/noise_models.h>
+#include <v4r/registration/MvLMIcp.h>
+#include <v4r/registration/noise_model_based_cloud_integration.h>
+#include <opencv2/highgui/highgui.hpp>
+#include <v4r/keypoints/impl/PoseIO.hpp>
+#include <v4r/keypoints/impl/invPose.hpp>
+#include <v4r/reconstruction/impl/projectPointToImage.hpp>
 
 //#define ER_TEST_MLS
 
@@ -79,30 +76,28 @@
 
 using namespace std;
 
-
 /**
  * @brief ObjectSegmentation::ObjectSegmentation
  */
 ObjectSegmentation::ObjectSegmentation()
- : cmd(UNDEF), m_run(false), image_idx(-1), first_click(true),
-   have_roi(false), roi_pose(Eigen::Matrix4f::Identity()), bb_min(Eigen::Vector3f(0.,0.,0.)), bb_max(Eigen::Vector3f(0.,0.,0.)),
-   object_base_transform(Eigen::Matrix4f::Identity()), use_roi_segmentation(false), roi_offs(0.01), use_dense_mv(false)
-{
+: cmd(UNDEF), m_run(false), image_idx(-1), first_click(true), have_roi(false), roi_pose(Eigen::Matrix4f::Identity()),
+  bb_min(Eigen::Vector3f(0., 0., 0.)), bb_max(Eigen::Vector3f(0., 0., 0.)),
+  object_base_transform(Eigen::Matrix4f::Identity()), use_roi_segmentation(false), roi_offs(0.01), use_dense_mv(false) {
   v4r::ZAdaptiveNormals::Parameter n_param;
   n_param.adaptive = true;
   nest.reset(new v4r::ZAdaptiveNormals(n_param));
 
-  max_point_dist = 0.03;         // ec clustering threshold
+  max_point_dist = 0.03;  // ec clustering threshold
 
   v4r::ClusterNormalsToPlanes::Parameter p_param;
-  p_param.thrAngle=45;
-  p_param.inlDist=0.01;
-  p_param.minPoints=5000;
-  p_param.least_squares_refinement=false;
-  p_param.smooth_clustering=true;
-  p_param.thrAngleSmooth=30;
-  p_param.inlDistSmooth=0.01;
-  p_param.minPointsSmooth=3;
+  p_param.thrAngle = 45;
+  p_param.inlDist = 0.01;
+  p_param.minPoints = 5000;
+  p_param.least_squares_refinement = false;
+  p_param.smooth_clustering = true;
+  p_param.thrAngleSmooth = 30;
+  p_param.inlDistSmooth = 0.01;
+  p_param.minPointsSmooth = 3;
   pest.reset(new v4r::ClusterNormalsToPlanes(p_param));
 
   vx_size = 0.001;
@@ -112,19 +107,14 @@ ObjectSegmentation::ObjectSegmentation()
 
   tmp_cloud1.reset(new pcl::PointCloud<pcl::PointXYZRGB>());
   tmp_cloud2.reset(new pcl::PointCloud<pcl::PointXYZRGB>());
-  oc_cloud.reset(new Sensor::AlignedPointXYZRGBVector () );
+  oc_cloud.reset(new Sensor::AlignedPointXYZRGBVector());
   ncloud_filt.reset(new pcl::PointCloud<pcl::PointXYZRGBNormal>());
 }
 
 /**
  * @brief ObjectSegmentation::~ObjectSegmentation
  */
-ObjectSegmentation::~ObjectSegmentation()
-{
-
-}
-
-
+ObjectSegmentation::~ObjectSegmentation() {}
 
 /******************************** public *******************************/
 
@@ -132,18 +122,15 @@ ObjectSegmentation::~ObjectSegmentation()
  * @brief ObjectSegmentation::start
  * @param cam_id
  */
-void ObjectSegmentation::start()
-{
+void ObjectSegmentation::start() {
   QThread::start();
 }
 
 /**
  * @brief ObjectSegmentation::stop
  */
-void ObjectSegmentation::stop()
-{
-  if(m_run)
-  {
+void ObjectSegmentation::stop() {
+  if (m_run) {
     m_run = false;
     this->wait();
   }
@@ -153,17 +140,14 @@ void ObjectSegmentation::stop()
  * @brief ObjectSegmentation::isRunning
  * @return
  */
-bool ObjectSegmentation::isRunning()
-{
+bool ObjectSegmentation::isRunning() {
   return m_run;
 }
-
 
 /**
  * @brief ObjectSegmentation::finishedSegmentation
  */
-void ObjectSegmentation::finishSegmentation()
-{
+void ObjectSegmentation::finishSegmentation() {
   cmd = FINISH_OBJECT_MODELLING;
   start();
 }
@@ -171,10 +155,8 @@ void ObjectSegmentation::finishSegmentation()
 /**
  * @brief ObjectSegmentation::optimizeMultiview
  */
-bool ObjectSegmentation::optimizeMultiview()
-{
-  if (clouds.get()!=0 && clouds->size()>0)
-  {
+bool ObjectSegmentation::optimizeMultiview() {
+  if (clouds.get() != 0 && clouds->size() > 0) {
     cmd = OPTIMIZE_MULTIVIEW;
     start();
     return true;
@@ -186,11 +168,11 @@ bool ObjectSegmentation::optimizeMultiview()
  * @brief ObjectSegmentation::activateROI
  * @param enable
  */
-void ObjectSegmentation::activateROI(bool enable)
-{
-  if (fabs(bb_min[0]-bb_max[0])<0.00001)
-    have_roi=false;
-  else have_roi=enable;
+void ObjectSegmentation::activateROI(bool enable) {
+  if (fabs(bb_min[0] - bb_max[0]) < 0.00001)
+    have_roi = false;
+  else
+    have_roi = enable;
 }
 
 /**
@@ -199,8 +181,8 @@ void ObjectSegmentation::activateROI(bool enable)
  * @param offs
  * @param _use_dense_mv
  */
-void ObjectSegmentation::set_segmentation_params(bool use_roi_segm, const double &offs, bool _use_dense_mv, const double &_edge_radius_px)
-{
+void ObjectSegmentation::set_segmentation_params(bool use_roi_segm, const double &offs, bool _use_dense_mv,
+                                                 const double &_edge_radius_px) {
   use_roi_segmentation = use_roi_segm;
   roi_offs = offs;
   use_dense_mv = _use_dense_mv;
@@ -213,32 +195,32 @@ void ObjectSegmentation::set_segmentation_params(bool use_roi_segm, const double
  * @param _bb_max
  * @param _roi_pose
  */
-void ObjectSegmentation::set_roi(const Eigen::Vector3f &_bb_min, const Eigen::Vector3f &_bb_max, const Eigen::Matrix4f &_roi_pose)
-{
+void ObjectSegmentation::set_roi(const Eigen::Vector3f &_bb_min, const Eigen::Vector3f &_bb_max,
+                                 const Eigen::Matrix4f &_roi_pose) {
   bb_min = _bb_min;
   bb_max = _bb_max;
   object_base_transform = roi_pose = _roi_pose;
-  have_roi=true;
+  have_roi = true;
 }
 
 /**
  * @brief ObjectSegmentation::cam_params_changed
  * @param _cam_params
  */
-void ObjectSegmentation::cam_params_changed(const RGBDCameraParameter &_cam_params)
-{
-  intrinsic = cv::Mat_<double>::eye(3,3);
+void ObjectSegmentation::cam_params_changed(const RGBDCameraParameter &_cam_params) {
+  intrinsic = cv::Mat_<double>::eye(3, 3);
 
-  intrinsic(0,0) = _cam_params.f[0]; intrinsic(1,1) = _cam_params.f[1];
-  intrinsic(0,2) = _cam_params.c[0]; intrinsic(1,2) = _cam_params.c[1];
+  intrinsic(0, 0) = _cam_params.f[0];
+  intrinsic(1, 1) = _cam_params.f[1];
+  intrinsic(0, 2) = _cam_params.c[0];
+  intrinsic(1, 2) = _cam_params.c[1];
 }
 
 /**
  * @brief ObjectSegmentation::segmentation_parameter_changed
  * @param param
  */
-void ObjectSegmentation::segmentation_parameter_changed(const SegmentationParameter& param)
-{
+void ObjectSegmentation::segmentation_parameter_changed(const SegmentationParameter &param) {
   seg_params = param;
 
   v4r::ClusterNormalsToPlanes::Parameter p_param;
@@ -259,8 +241,7 @@ void ObjectSegmentation::segmentation_parameter_changed(const SegmentationParame
  * @brief ObjectSegmentation::object_modelling_parameter_changed
  * @param param
  */
-void ObjectSegmentation::object_modelling_parameter_changed(const ObjectModelling& param)
-{
+void ObjectSegmentation::object_modelling_parameter_changed(const ObjectModelling &param) {
   om_params = param;
 }
 
@@ -268,15 +249,13 @@ void ObjectSegmentation::object_modelling_parameter_changed(const ObjectModellin
  * @brief ObjectSegmentation::storeMasks
  * @param _folder
  */
-void ObjectSegmentation::storeMasks(const std::string &_folder)
-{
+void ObjectSegmentation::storeMasks(const std::string &_folder) {
   char filename[PATH_MAX];
 
-  std::string mask_names = _folder+"/mask_%04d.png";
+  std::string mask_names = _folder + "/mask_%04d.png";
 
-  for (unsigned i=0; i<masks.size(); i++)
-  {
-    snprintf(filename,PATH_MAX, mask_names.c_str(), i);
+  for (unsigned i = 0; i < masks.size(); i++) {
+    snprintf(filename, PATH_MAX, mask_names.c_str(), i);
     cv::imwrite(filename, masks[i]);
   }
 }
@@ -285,8 +264,7 @@ void ObjectSegmentation::storeMasks(const std::string &_folder)
  * @brief ObjectSegmentation::storePointCloudModel
  * @param _folder
  */
-bool ObjectSegmentation::storePointCloudModel(const std::string &_folder)
-{
+bool ObjectSegmentation::storePointCloudModel(const std::string &_folder) {
   pcl::PointCloud<pcl::PointXYZRGB> &cloud = *tmp_cloud1;
   const Sensor::AlignedPointXYZRGBVector &oc = *oc_cloud;
 
@@ -295,12 +273,11 @@ bool ObjectSegmentation::storePointCloudModel(const std::string &_folder)
   cloud.height = 1;
   cloud.is_dense = true;
 
-  for (unsigned i=0; i<oc.size(); i++)
+  for (unsigned i = 0; i < oc.size(); i++)
     cloud.points[i] = oc[i];
 
-  if (cloud.points.size()>0)
-  {
-    pcl::io::savePCDFileBinary(_folder+"/model.pcd", cloud);
+  if (cloud.points.size() > 0) {
+    pcl::io::savePCDFileBinary(_folder + "/model.pcd", cloud);
     return true;
   }
 
@@ -313,14 +290,14 @@ bool ObjectSegmentation::storePointCloudModel(const std::string &_folder)
  * @param _modelname
  * @return
  */
-bool ObjectSegmentation::savePointClouds(const std::string &_folder, const std::string &_modelname)
-{
-  if (octree_cloud.get()==0 || big_normals.get()==0 || clouds.get()==0 || clouds->empty() ||
-      octree_cloud->empty() || octree_cloud->points.size()!=big_normals->points.size() || clouds->size()!=indices.size())
+bool ObjectSegmentation::savePointClouds(const std::string &_folder, const std::string &_modelname) {
+  if (octree_cloud.get() == 0 || big_normals.get() == 0 || clouds.get() == 0 || clouds->empty() ||
+      octree_cloud->empty() || octree_cloud->points.size() != big_normals->points.size() ||
+      clouds->size() != indices.size())
     return false;
 
   char filename[PATH_MAX];
-  boost::filesystem::create_directories(_folder + "/models/" + _modelname + "/views" );
+  boost::filesystem::create_directories(_folder + "/models/" + _modelname + "/views");
 
   // store global model
   pcl::io::savePCDFileBinary(_folder + "/models/" + _modelname + "/3D_model.pcd", *ncloud_filt);
@@ -331,54 +308,52 @@ bool ObjectSegmentation::savePointClouds(const std::string &_folder, const std::
   std::string mask_names = _folder + "/models/" + _modelname + "/views/mask_%08d.png";
   std::string idx_names = _folder + "/models/" + _modelname + "/views/object_indices_%08d.txt";
 
-
-  for (unsigned i=0; i<clouds->size(); i++)
-  {
-    if (indices[i].empty()) continue;
+  for (unsigned i = 0; i < clouds->size(); i++) {
+    if (indices[i].empty())
+      continue;
 
     // store indices
     snprintf(filename, PATH_MAX, idx_names.c_str(), i);
-    std::ofstream mask_f (filename);
-    for(unsigned j=0; j < indices[i].size(); j++)
-        mask_f << indices[i][j] << std::endl;
+    std::ofstream mask_f(filename);
+    for (unsigned j = 0; j < indices[i].size(); j++)
+      mask_f << indices[i][j] << std::endl;
     mask_f.close();
 
     // store cloud
-    snprintf(filename,PATH_MAX, cloud_names.c_str(), i);
+    snprintf(filename, PATH_MAX, cloud_names.c_str(), i);
     pcl::io::savePCDFileBinary(filename, *clouds->at(i).second);
 
     // store image
     v4r::convertImage(*clouds->at(i).second, image);
-    snprintf(filename,PATH_MAX, image_names.c_str(), i);
+    snprintf(filename, PATH_MAX, image_names.c_str(), i);
     cv::imwrite(filename, image);
 
     // store poses
-    snprintf(filename,PATH_MAX, pose_names.c_str(), i);
+    snprintf(filename, PATH_MAX, pose_names.c_str(), i);
     v4r::writePose(filename, std::string(), inv_poses[i]);
 
     // store masks
-    snprintf(filename,PATH_MAX, mask_names.c_str(), i);
+    snprintf(filename, PATH_MAX, mask_names.c_str(), i);
     cv::imwrite(filename, masks[i]);
   }
 
   return true;
 }
 
-
 /**
  * @brief ObjectSegmentation::set_image
  * @param idx
  */
-void ObjectSegmentation::set_image(int idx)
-{
-  if (clouds->size()==0 || idx<0 || idx >= int(clouds->size()))
+void ObjectSegmentation::set_image(int idx) {
+  if (clouds->size() == 0 || idx < 0 || idx >= int(clouds->size()))
     return;
 
   image_idx = idx;
 
-  if (masks.size()==clouds->size())
+  if (masks.size() == clouds->size())
     getMaskedImage(*(*clouds)[image_idx].second, masks[image_idx], image, 0.5);
-  else convertImage(*clouds->at(idx).second, image);
+  else
+    convertImage(*clouds->at(idx).second, image);
 
   emit new_image(clouds->at(idx).second, image);
   emit update_visualization();
@@ -389,94 +364,89 @@ void ObjectSegmentation::set_image(int idx)
  * @param x
  * @param y
  */
-void ObjectSegmentation::segment_image(int x, int y)
-{
-  if (image_idx<0 || image_idx>=int(clouds->size()) || labels.size()!=clouds->size())
+void ObjectSegmentation::segment_image(int x, int y) {
+  if (image_idx < 0 || image_idx >= int(clouds->size()) || labels.size() != clouds->size())
     return;
 
   const pcl::PointCloud<pcl::PointXYZRGB> &c_cloud = *(*clouds)[image_idx].second;
   const Eigen::Matrix4f &glob_pose = cameras[(*clouds)[image_idx].first];
 
   // init masks
-  if (first_click)
-  {
-    for (unsigned i=0; i<masks.size(); i++)
+  if (first_click) {
+    for (unsigned i = 0; i < masks.size(); i++)
       masks[i] = cv::Mat_<unsigned char>::zeros(c_cloud.height, c_cloud.width);
   }
 
   cv::Mat_<int> &ls = labels[image_idx];
   cv::Mat_<unsigned char> &mask = masks[image_idx];
 
-  if (mask.cols != int(c_cloud.width) || mask.rows!= int(c_cloud.height) || ls.cols != int(c_cloud.width) || ls.rows!= int(c_cloud.height))
+  if (mask.cols != int(c_cloud.width) || mask.rows != int(c_cloud.height) || ls.cols != int(c_cloud.width) ||
+      ls.rows != int(c_cloud.height))
     return;
 
   std::vector<v4r::ClusterNormalsToPlanes::Plane::Ptr> &cls = planes[image_idx];
-  int segm_idx = ls(y,x);
+  int segm_idx = ls(y, x);
 
-  if (segm_idx>=int(cls.size()))
+  if (segm_idx >= int(cls.size()))
     return;
 
-  unsigned char mark_obj = (first_click || mask(y,x)<128?255:0);
+  unsigned char mark_obj = (first_click || mask(y, x) < 128 ? 255 : 0);
 
   v4r::ClusterNormalsToPlanes::Plane &plane = *cls[segm_idx];
 
   // mark object
-  for (unsigned i=0; i<plane.size(); i++)
+  for (unsigned i = 0; i < plane.size(); i++)
     mask(plane.indices[i]) = mark_obj;
 
   // propagate to all other images
-  if (first_click)
-  {
+  if (first_click) {
     first_click = false;
     Eigen::Matrix4f inv_pose;
     Eigen::Vector4f centroid;
     pcl::compute3DCentroid(c_cloud, plane.indices, centroid);
-    v4r::invPose(glob_pose,inv_pose);
+    v4r::invPose(glob_pose, inv_pose);
     Eigen::Vector3f glob_centroid = (inv_pose * centroid).segment<3>(0);
 
-    for (unsigned i=0; i<masks.size(); i++)
-    {
-      if (int(i)==image_idx) continue;
+    for (unsigned i = 0; i < masks.size(); i++) {
+      if (int(i) == image_idx)
+        continue;
 
       Eigen::Matrix4f &pose = cameras[(*clouds)[i].first];
-      Eigen::Vector3f pt = pose.topLeftCorner<3,3>() * glob_centroid + pose.block<3,1>(0,3);
+      Eigen::Vector3f pt = pose.topLeftCorner<3, 3>() * glob_centroid + pose.block<3, 1>(0, 3);
 
       cv::Point2f im_pt, tmp_pt;
 
       if (dist_coeffs.empty())
-        v4r::projectPointToImage(&pt[0],&intrinsic(0,0), &im_pt.x);
-      else v4r::projectPointToImage(&pt[0],&intrinsic(0,0), &dist_coeffs(0,0), &im_pt.x);
+        v4r::projectPointToImage(&pt[0], &intrinsic(0, 0), &im_pt.x);
+      else
+        v4r::projectPointToImage(&pt[0], &intrinsic(0, 0), &dist_coeffs(0, 0), &im_pt.x);
 
       int _segm_idx = INT_MAX;
 
-      if (im_pt.x>=0 && im_pt.x<mask.cols && im_pt.y>=0 && im_pt.y<mask.rows)
-        _segm_idx = labels[i]((int)(im_pt.y+.5), (int)(im_pt.x+.5));
+      if (im_pt.x >= 0 && im_pt.x < mask.cols && im_pt.y >= 0 && im_pt.y < mask.rows)
+        _segm_idx = labels[i]((int)(im_pt.y + .5), (int)(im_pt.x + .5));
 
+      if (_segm_idx > (int)planes[i].size()) {
+        for (int v = -1; v <= 1; v++) {
+          for (int u = -1; u <= 1; u++) {
+            tmp_pt = im_pt + cv::Point2f(u, v);
 
-      if (_segm_idx>(int)planes[i].size())
-      {
-        for (int v=-1; v<=1; v++)
-        {
-          for (int u=-1; u<=1; u++)
-          {
-            tmp_pt = im_pt + cv::Point2f(u,v);
-
-            if (tmp_pt.x>=0 && tmp_pt.x<mask.cols && tmp_pt.y>=0 && tmp_pt.y<mask.rows)
-            {
-              _segm_idx = labels[i]((int)(tmp_pt.y+.5), (int)(tmp_pt.x+.5));
+            if (tmp_pt.x >= 0 && tmp_pt.x < mask.cols && tmp_pt.y >= 0 && tmp_pt.y < mask.rows) {
+              _segm_idx = labels[i]((int)(tmp_pt.y + .5), (int)(tmp_pt.x + .5));
             }
           }
         }
       }
 
-      if (_segm_idx>=(int)planes[i].size()) continue;
+      if (_segm_idx >= (int)planes[i].size())
+        continue;
 
       v4r::ClusterNormalsToPlanes::Plane &_plane = *planes[i][_segm_idx];
       cv::Mat_<unsigned char> &_mask = masks[i];
 
       // mark object
-      for (unsigned j=0; j<_plane.size(); j++)
-         _mask(_plane.indices[j]) = mark_obj;
+      for (unsigned j = 0; j < _plane.size(); j++)
+        _mask(_plane.indices[j]) = mark_obj;
     }
   }
 
@@ -487,18 +457,18 @@ void ObjectSegmentation::segment_image(int x, int y)
   emit update_visualization();
 }
 
-
 /**
  * @brief ObjectSegmentation::setData
  * @param _cameras
  * @param _clouds
  */
-void ObjectSegmentation::setData(const std::vector<Eigen::Matrix4f, Eigen::aligned_allocator<Eigen::Matrix4f> > &_cameras, const boost::shared_ptr< std::vector<std::pair<int, pcl::PointCloud<pcl::PointXYZRGB>::ConstPtr> > > &_clouds)
-{
+void ObjectSegmentation::setData(
+    const std::vector<Eigen::Matrix4f, Eigen::aligned_allocator<Eigen::Matrix4f>> &_cameras,
+    const boost::shared_ptr<std::vector<std::pair<int, pcl::PointCloud<pcl::PointXYZRGB>::ConstPtr>>> &_clouds) {
   cameras = _cameras;
   clouds = _clouds;
 
-  if(clouds->size()<=0)
+  if (clouds->size() <= 0)
     return;
 
   // segment planes and smooth clusters
@@ -507,55 +477,55 @@ void ObjectSegmentation::setData(const std::vector<Eigen::Matrix4f, Eigen::align
   planes.resize(clouds->size());
   normals.resize(clouds->size());
 
-  v4r::DataMatrix2D<Eigen::Vector3f>::Ptr kp_cloud( new v4r::DataMatrix2D<Eigen::Vector3f>() );
-  v4r::DataMatrix2D<Eigen::Vector3f>::Ptr kp_normals( new v4r::DataMatrix2D<Eigen::Vector3f>() );
+  v4r::DataMatrix2D<Eigen::Vector3f>::Ptr kp_cloud(new v4r::DataMatrix2D<Eigen::Vector3f>());
+  v4r::DataMatrix2D<Eigen::Vector3f>::Ptr kp_normals(new v4r::DataMatrix2D<Eigen::Vector3f>());
 
-  for (unsigned i=0; i<clouds->size(); i++)
-  {
+  for (unsigned i = 0; i < clouds->size(); i++) {
     pcl::PointCloud<pcl::PointXYZRGB>::ConstPtr &c = (*clouds)[i].second;
     cv::Mat_<int> &ls = labels[i];
-    ls = cv::Mat_<int>::ones(c->height, c->width)*INT_MAX-1;
+    ls = cv::Mat_<int>::ones(c->height, c->width) * INT_MAX - 1;
 
     v4r::convertCloud(*c, *kp_cloud);
 
     if (have_roi && use_roi_segmentation)
       createMaskFromROI(*kp_cloud, masks[i], object_base_transform, bb_min, bb_max, roi_offs);
-    else masks[i] = cv::Mat_<unsigned char>::ones(c->height, c->width)*255;
+    else
+      masks[i] = cv::Mat_<unsigned char>::ones(c->height, c->width) * 255;
 
     nest->compute(*kp_cloud, *kp_normals);
     pest->compute(*kp_cloud, *kp_normals, planes[i]);
 
-    pcl::PointCloud<pcl::Normal>::Ptr normal (new pcl::PointCloud<pcl::Normal>);
+    pcl::PointCloud<pcl::Normal>::Ptr normal(new pcl::PointCloud<pcl::Normal>);
     v4r::convertNormals(*kp_normals, *normal);
     normals[i] = normal;
 
-//cv::Mat_<cv::Vec3b> tmp_labels(cv::Mat_<cv::Vec3b>::zeros(c->height, c->width));
+    // cv::Mat_<cv::Vec3b> tmp_labels(cv::Mat_<cv::Vec3b>::zeros(c->height, c->width));
 
-    for (unsigned j=0; j<planes[i].size(); j++)
-    {
+    for (unsigned j = 0; j < planes[i].size(); j++) {
       v4r::ClusterNormalsToPlanes::Plane &plane = *planes[i][j];
-//cv::Vec3b col(rand()%255,rand()%255,rand()%255);
+      // cv::Vec3b col(rand()%255,rand()%255,rand()%255);
 
-      for (unsigned k=0; k<plane.size(); k++)
-{
+      for (unsigned k = 0; k < plane.size(); k++) {
         ls(plane.indices[k]) = j;
-//tmp_labels(plane.indices[k]) = col;
-}
+        // tmp_labels(plane.indices[k]) = col;
+      }
     }
 
-//cv::imwrite("log/labels.png", tmp_labels);
+    // cv::imwrite("log/labels.png", tmp_labels);
   }
 
   // vis. first image
   if (have_roi && use_roi_segmentation)
     first_click = false;
-  else first_click = true;
+  else
+    first_click = true;
 
   image_idx = 0;
 
   if (have_roi && use_roi_segmentation)
     getMaskedImage(*clouds->at(image_idx).second, masks[image_idx], image, 0.5);
-  else convertImage(*clouds->at(image_idx).second, image);
+  else
+    convertImage(*clouds->at(image_idx).second, image);
 
   emit new_image(clouds->at(0).second, image);
   emit update_visualization();
@@ -564,111 +534,95 @@ void ObjectSegmentation::setData(const std::vector<Eigen::Matrix4f, Eigen::align
 /**
  * @brief ObjectSegmentation::drawObjectCloud
  */
-void ObjectSegmentation::drawObjectCloud()
-{
-  //createObjectCloud();
-  //createObjectCloudFiltered();
+void ObjectSegmentation::drawObjectCloud() {
+  // createObjectCloud();
+  // createObjectCloudFiltered();
 
   emit update_model_cloud(oc_cloud);
   emit update_visualization();
 }
-
-
-
 
 /*********************************** private *******************************************/
 /**
  * @brief ObjectSegmentation::run
  * main loop
  */
-void ObjectSegmentation::run()
-{
-  m_run=true;
+void ObjectSegmentation::run() {
+  m_run = true;
 
-  switch (cmd)
-  {
-  case FINISH_OBJECT_MODELLING:
-  {
-    if (clouds.get()!=0 && clouds->size()>0)
-      postProcessingSegmentation(false);
+  switch (cmd) {
+    case FINISH_OBJECT_MODELLING: {
+      if (clouds.get() != 0 && clouds->size() > 0)
+        postProcessingSegmentation(false);
 
-    emit set_object_base_transform(object_base_transform);
-    emit finishedObjectSegmentation();
-    break;
-  }
-  case OPTIMIZE_MULTIVIEW:
-  {
-    if (clouds.get()!=0 && clouds->size()>0)
-      postProcessingSegmentation(true);
+      emit set_object_base_transform(object_base_transform);
+      emit finishedObjectSegmentation();
+      break;
+    }
+    case OPTIMIZE_MULTIVIEW: {
+      if (clouds.get() != 0 && clouds->size() > 0)
+        postProcessingSegmentation(true);
 
-    emit set_object_base_transform(object_base_transform);
-    emit finishedObjectSegmentation();
-    break;
-  }
-  default:
-    break;
+      emit set_object_base_transform(object_base_transform);
+      emit finishedObjectSegmentation();
+      break;
+    }
+    default:
+      break;
   }
 
   cmd = UNDEF;
-  m_run=false;
+  m_run = false;
 }
 
 /**
  * @brief ObjectSegmentation::postProcessingSegmentation
  */
-void ObjectSegmentation::postProcessingSegmentation(bool do_mv)
-{
-  if (!have_roi)
-  {
+void ObjectSegmentation::postProcessingSegmentation(bool do_mv) {
+  if (!have_roi) {
     detectCoordinateSystem(roi_pose);
   }
 
-  unsigned cnt=0;
+  unsigned cnt = 0;
   Eigen::Vector3d centroid(Eigen::Vector3d::Zero());
   Eigen::Matrix4f inv_pose, transform_centroid(Eigen::Matrix4f::Identity());
 
-  for (unsigned i=0; i<clouds->size() && i<masks.size(); i++)
-  {
+  for (unsigned i = 0; i < clouds->size() && i < masks.size(); i++) {
     const pcl::PointCloud<pcl::PointXYZRGB> &cloud = *clouds->at(i).second;
     const cv::Mat_<unsigned char> &mask = masks[i];
-    v4r::invPose(cameras[clouds->at(i).first]*roi_pose,inv_pose);
-    Eigen::Matrix3f R = inv_pose.topLeftCorner<3,3>();
-    Eigen::Vector3f t = inv_pose.block<3,1>(0,3);
+    v4r::invPose(cameras[clouds->at(i).first] * roi_pose, inv_pose);
+    Eigen::Matrix3f R = inv_pose.topLeftCorner<3, 3>();
+    Eigen::Vector3f t = inv_pose.block<3, 1>(0, 3);
 
-    for (unsigned j=0; j<cloud.points.size(); j++)
-    {
+    for (unsigned j = 0; j < cloud.points.size(); j++) {
       const Eigen::Vector3f &pt = cloud.points[j].getVector3fMap();
-      if (mask(j) > 128 && !std::isnan(pt[0]) && !std::isnan(pt[1]) && !std::isnan(pt[2]) )
-      {
+      if (mask(j) > 128 && !std::isnan(pt[0]) && !std::isnan(pt[1]) && !std::isnan(pt[2])) {
         cnt++;
-        centroid += (R*pt+t).cast<double>();
+        centroid += (R * pt + t).cast<double>();
       }
     }
   }
 
-  if (cnt>0)
-  {
-    transform_centroid(0,3) = centroid[0]/(double)cnt;
-    transform_centroid(1,3) = centroid[1]/(double)cnt;
+  if (cnt > 0) {
+    transform_centroid(0, 3) = centroid[0] / (double)cnt;
+    transform_centroid(1, 3) = centroid[1] / (double)cnt;
   }
 
-  object_base_transform = roi_pose*transform_centroid;
+  object_base_transform = roi_pose * transform_centroid;
 
   // use Aitor's mv optimization
-  if(use_dense_mv || do_mv)
-  {
+  if (use_dense_mv || do_mv) {
     emit printStatus("Status: Dense multiview optimization ... Please be patient...");
 
     pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud_segmented(new pcl::PointCloud<pcl::PointXYZRGB>);
     std::vector<pcl::PointCloud<pcl::PointXYZRGB>::Ptr> clouds_filtered(clouds->size());
-    std::vector< pcl::PointCloud<pcl::Normal>::Ptr > normals_segmented;
+    std::vector<pcl::PointCloud<pcl::Normal>::Ptr> normals_segmented;
 
     inv_poses.resize(clouds->size());
     indices.resize(clouds->size());
     normals_segmented.resize(clouds->size());
 
-    for (unsigned i=0; i<clouds->size() && i<masks.size(); i++)
-    {
+    for (unsigned i = 0; i < clouds->size() && i < masks.size(); i++) {
       indices[i].clear();
       clouds_filtered[i].reset(new pcl::PointCloud<pcl::PointXYZRGB>());
       normals_segmented[i].reset(new pcl::PointCloud<pcl::Normal>());
@@ -676,8 +630,8 @@ void ObjectSegmentation::postProcessingSegmentation(bool do_mv)
       const pcl::PointCloud<pcl::PointXYZRGB> &cloud = *clouds->at(i).second;
       const cv::Mat_<unsigned char> &mask = masks[i];
 
-      for (int j=0; j<mask.rows*mask.cols; j++)
-        if (mask(j)>128 && !std::isnan(cloud.points[j].x))
+      for (int j = 0; j < mask.rows * mask.cols; j++)
+        if (mask(j) > 128 && !std::isnan(cloud.points[j].x))
           indices[i].push_back(j);
 
       pcl::copyPointCloud(cloud, indices[i], *cloud_segmented);
@@ -685,7 +639,7 @@ void ObjectSegmentation::postProcessingSegmentation(bool do_mv)
       pcl::VoxelGrid<pcl::PointXYZRGB> filter;
       filter.setInputCloud(cloud_segmented);
       filter.setDownsampleAllData(true);
-      filter.setLeafSize(vx_size,vx_size,vx_size);
+      filter.setLeafSize(vx_size, vx_size, vx_size);
       filter.filter(*clouds_filtered[i]);
 
       pcl::NormalEstimationOMP<pcl::PointXYZRGB, pcl::Normal> normal_est;
@@ -693,7 +647,7 @@ void ObjectSegmentation::postProcessingSegmentation(bool do_mv)
       normal_est.setRadiusSearch(0.015f);
       normal_est.compute(*normals_segmented[i]);
 
-      v4r::invPose(cameras[clouds->at(i).first]*object_base_transform, inv_poses[i]);
+      v4r::invPose(cameras[clouds->at(i).first] * object_base_transform, inv_poses[i]);
     }
 
     v4r::Registration::MvLMIcp<pcl::PointXYZRGB> nl_icp;
@@ -702,8 +656,8 @@ void ObjectSegmentation::postProcessingSegmentation(bool do_mv)
     nl_icp.setMaxCorrespondenceDistance(max_dist);
     nl_icp.setMaxIterations(max_iterations);
     nl_icp.setDiffType(diff_type);
-    //nl_icp.setNormals(normals_segmented);
-    //nl_icp.setNormalDot(0.5f);
+    // nl_icp.setNormals(normals_segmented);
+    // nl_icp.setNormalDot(0.5f);
     nl_icp.compute();
 
     inv_poses = nl_icp.getFinalPoses();
@@ -711,17 +665,15 @@ void ObjectSegmentation::postProcessingSegmentation(bool do_mv)
     Eigen::Matrix4f inv_base, tmp;
     v4r::invPose(object_base_transform, inv_base);
 
-    for (unsigned i=0; i<clouds->size() && i<masks.size(); i++)
-    {
+    for (unsigned i = 0; i < clouds->size() && i < masks.size(); i++) {
       v4r::invPose(inv_poses[i], tmp);
-      cameras[clouds->at(i).first] = tmp*inv_base;
+      cameras[clouds->at(i).first] = tmp * inv_base;
     }
   }
 
-  //createObjectCloud();
+  // createObjectCloud();
   createObjectCloudFiltered();
 }
-
 
 /**
  * @brief ObjectSegmentation::createMaskFromROI
@@ -732,52 +684,51 @@ void ObjectSegmentation::postProcessingSegmentation(bool do_mv)
  * @param bb_max
  * @param roi_offs
  */
-void ObjectSegmentation::createMaskFromROI(const v4r::DataMatrix2D<Eigen::Vector3f> &cloud, cv::Mat_<unsigned char> &mask, const Eigen::Matrix4f &_object_base_transform, const Eigen::Vector3f &_bb_min, const Eigen::Vector3f &_bb_max, const double &_roi_offs)
-{
+void ObjectSegmentation::createMaskFromROI(const v4r::DataMatrix2D<Eigen::Vector3f> &cloud,
+                                           cv::Mat_<unsigned char> &mask, const Eigen::Matrix4f &_object_base_transform,
+                                           const Eigen::Vector3f &_bb_min, const Eigen::Vector3f &_bb_max,
+                                           const double &_roi_offs) {
   Eigen::Vector3f pt;
   Eigen::Matrix4f inv_pose;
 
-  v4r::invPose(_object_base_transform,inv_pose);
+  v4r::invPose(_object_base_transform, inv_pose);
 
-  Eigen::Matrix3f R = inv_pose.topLeftCorner<3,3>();
-  Eigen::Vector3f t = inv_pose.block<3,1>(0,3);
+  Eigen::Matrix3f R = inv_pose.topLeftCorner<3, 3>();
+  Eigen::Vector3f t = inv_pose.block<3, 1>(0, 3);
 
   mask = cv::Mat_<unsigned char>::zeros(cloud.rows, cloud.cols);
 
-  for (unsigned i=0; i<cloud.data.size(); i++)
-  {
+  for (unsigned i = 0; i < cloud.data.size(); i++) {
     const Eigen::Vector3f &pt0 = cloud.data[i];
 
-    if (!std::isnan(pt0[0]) && !std::isnan(pt0[1]) && !std::isnan(pt0[2]))
-    {
-      pt = R*pt0 + t;
+    if (!std::isnan(pt0[0]) && !std::isnan(pt0[1]) && !std::isnan(pt0[2])) {
+      pt = R * pt0 + t;
 
-      if (pt[0]>_bb_min[0] && pt[0]<_bb_max[0] && pt[1]>_bb_min[1] && pt[1]<_bb_max[1] && pt[2]>_roi_offs && pt[2]<_bb_max[2])
+      if (pt[0] > _bb_min[0] && pt[0] < _bb_max[0] && pt[1] > _bb_min[1] && pt[1] < _bb_max[1] && pt[2] > _roi_offs &&
+          pt[2] < _bb_max[2])
         mask(i) = 255;
     }
   }
 }
 
-
 /**
  * @brief ObjectSegmentation::createObjectCloud
  */
-void ObjectSegmentation::createObjectCloud()
-{
+void ObjectSegmentation::createObjectCloud() {
   oc_cloud->clear();
 
-  if (clouds->size()==0 || masks.size()!=clouds->size())
+  if (clouds->size() == 0 || masks.size() != clouds->size())
     return;
 
-  std::vector<std::pair<int, pcl::PointCloud<pcl::PointXYZRGB>::ConstPtr> > &ref_clouds = *clouds;
+  std::vector<std::pair<int, pcl::PointCloud<pcl::PointXYZRGB>::ConstPtr>> &ref_clouds = *clouds;
 
-  if (ref_clouds.size()>0)
-  {
+  if (ref_clouds.size() > 0) {
     Eigen::Matrix4f inv_pose;
-    octree.reset(new pcl::octree::OctreePointCloudVoxelCentroid<pcl::PointXYZRGB,pcl::octree::OctreeVoxelCentroidContainerXYZRGB<pcl::PointXYZRGB> >(om_params.vx_size_object));
+    octree.reset(new pcl::octree::OctreePointCloudVoxelCentroid<
+                 pcl::PointXYZRGB, pcl::octree::OctreeVoxelCentroidContainerXYZRGB<pcl::PointXYZRGB>>(
+        om_params.vx_size_object));
 
-    for (unsigned i=0; i<ref_clouds.size(); i++)
-    {
+    for (unsigned i = 0; i < ref_clouds.size(); i++) {
       v4r::invPose(cameras[ref_clouds[i].first], inv_pose);
 
       segmentObject(*ref_clouds[i].second, masks[i], *tmp_cloud1);
@@ -794,28 +745,25 @@ void ObjectSegmentation::createObjectCloud()
 /**
  * @brief ObjectSegmentation::createObjectCloudFiltered
  */
-void ObjectSegmentation::createObjectCloudFiltered()
-{
+void ObjectSegmentation::createObjectCloudFiltered() {
   oc_cloud->clear();
 
-  if (clouds->size()==0 || masks.size()!=clouds->size())
+  if (clouds->size() == 0 || masks.size() != clouds->size())
     return;
 
   v4r::NguyenNoiseModelParameter nmparam;
   v4r::NguyenNoiseModel<pcl::PointXYZRGB> nm(nmparam);
-  std::vector<std::pair<int, pcl::PointCloud<pcl::PointXYZRGB>::ConstPtr> > &ref_clouds = *clouds;
-  std::vector< std::vector<std::vector<float> > > pt_properties (ref_clouds.size());
-  std::vector<pcl::PointCloud<pcl::PointXYZRGB>::ConstPtr > ptr_clouds(ref_clouds.size());
+  std::vector<std::pair<int, pcl::PointCloud<pcl::PointXYZRGB>::ConstPtr>> &ref_clouds = *clouds;
+  std::vector<std::vector<std::vector<float>>> pt_properties(ref_clouds.size());
+  std::vector<pcl::PointCloud<pcl::PointXYZRGB>::ConstPtr> ptr_clouds(ref_clouds.size());
   inv_poses.clear();
   indices.clear();
   inv_poses.resize(ref_clouds.size());
   indices.resize(ref_clouds.size());
 
-  if (!ref_clouds.empty())
-  {
-    for (unsigned i=0; i<ref_clouds.size(); i++)
-    {
-      v4r::invPose(cameras[ref_clouds[i].first]*object_base_transform, inv_poses[i]);
+  if (!ref_clouds.empty()) {
+    for (unsigned i = 0; i < ref_clouds.size(); i++) {
+      v4r::invPose(cameras[ref_clouds[i].first] * object_base_transform, inv_poses[i]);
       ptr_clouds[i] = ref_clouds[i].second;
 
       nm.setInputCloud(ref_clouds[i].second);
@@ -825,8 +773,8 @@ void ObjectSegmentation::createObjectCloudFiltered()
 
       cv::Mat_<unsigned char> &m = masks[i];
 
-      for (int j=0; j<m.rows*m.cols; j++)
-        if (m(j)>128)
+      for (int j = 0; j < m.rows * m.cols; j++)
+        if (m(j) > 128)
           indices[i].push_back(j);
     }
 
@@ -845,16 +793,16 @@ void ObjectSegmentation::createObjectCloudFiltered()
     big_normals.reset(new pcl::PointCloud<pcl::Normal>);
     nmIntegration.getOutputNormals(big_normals);
 
-    //test mls
+// test mls
 #ifdef ER_TEST_MLS
     pcl::PointCloud<pcl::PointXYZRGB> mls_points;
     pcl::MovingLeastSquares<pcl::PointXYZRGB, pcl::PointXYZRGB> mls;
-    mls.setComputeNormals (true);
+    mls.setComputeNormals(true);
     mls.setInputCloud(octree_cloud);
-    mls.setPolynomialFit (true);
-    mls.setSearchRadius (0.01);
+    mls.setPolynomialFit(true);
+    mls.setSearchRadius(0.01);
     mls.process(mls_points);
-    *octree_cloud=mls_points;
+    *octree_cloud = mls_points;
 #endif
 
     // create model cloud with normals
@@ -863,44 +811,41 @@ void ObjectSegmentation::createObjectCloudFiltered()
     pcl::concatenateFields(*octree_cloud, *big_normals, *ncloud);
 
     // filter ec
-    pcl::search::KdTree<pcl::PointXYZRGBNormal>::Ptr tree (new pcl::search::KdTree<pcl::PointXYZRGBNormal>);
-    tree->setInputCloud (ncloud);
+    pcl::search::KdTree<pcl::PointXYZRGBNormal>::Ptr tree(new pcl::search::KdTree<pcl::PointXYZRGBNormal>);
+    tree->setInputCloud(ncloud);
 
     std::vector<pcl::PointIndices> cluster_indices;
     pcl::EuclideanClusterExtraction<pcl::PointXYZRGBNormal> ec;
-    ec.setClusterTolerance (max_point_dist);
-    ec.setMinClusterSize (50);
-    ec.setSearchMethod (tree);
-    ec.setInputCloud (ncloud);
-    ec.extract (cluster_indices);
+    ec.setClusterTolerance(max_point_dist);
+    ec.setMinClusterSize(50);
+    ec.setSearchMethod(tree);
+    ec.setInputCloud(ncloud);
+    ec.extract(cluster_indices);
 
     int cnt_max = 0;
     std::vector<pcl::PointIndices>::const_iterator it_max = cluster_indices.end();
-    for (std::vector<pcl::PointIndices>::const_iterator it = cluster_indices.begin (); it != cluster_indices.end (); ++it)
-    {
-      if (it->indices.size()>(unsigned)cnt_max)
-      {
+    for (std::vector<pcl::PointIndices>::const_iterator it = cluster_indices.begin(); it != cluster_indices.end();
+         ++it) {
+      if (it->indices.size() > (unsigned)cnt_max) {
         it_max = it;
         cnt_max = it->indices.size();
       }
     }
-    cout<<"found "<<cluster_indices.size()<<" clusters"<<endl;
-    if (it_max!=cluster_indices.end())
-    {
-      cout<<"use "<<it_max->indices.size()<<" of ";
-      for (unsigned i=0;i<cluster_indices.size(); i++)
-        cout<<cluster_indices[i].indices.size()<<" ";
-      cout<<endl;
+    cout << "found " << cluster_indices.size() << " clusters" << endl;
+    if (it_max != cluster_indices.end()) {
+      cout << "use " << it_max->indices.size() << " of ";
+      for (unsigned i = 0; i < cluster_indices.size(); i++)
+        cout << cluster_indices[i].indices.size() << " ";
+      cout << endl;
       Sensor::AlignedPointXYZRGBVector &ref_oc = *oc_cloud;
       ref_oc.resize(it_max->indices.size());
-      for (unsigned i=0; i < it_max->indices.size(); i++)
-      {
+      for (unsigned i = 0; i < it_max->indices.size(); i++) {
         const pcl::PointXYZRGBNormal &pt = ncloud->points[it_max->indices[i]];
-        ncloud_filt->points.push_back (pt);
+        ncloud_filt->points.push_back(pt);
         ref_oc[i].getVector4fMap() = pt.getVector4fMap();
         ref_oc[i].rgb = pt.rgb;
       }
-      ncloud_filt->width = ncloud_filt->points.size ();
+      ncloud_filt->width = ncloud_filt->points.size();
       ncloud_filt->height = 1;
       ncloud_filt->is_dense = true;
     }
@@ -913,14 +858,13 @@ void ObjectSegmentation::createObjectCloudFiltered()
  * @param mask
  * @param seg_cloud
  */
-void ObjectSegmentation::segmentObject(const pcl::PointCloud<pcl::PointXYZRGB> &cloud, const cv::Mat_<unsigned char> &mask, pcl::PointCloud<pcl::PointXYZRGB> &seg_cloud)
-{
+void ObjectSegmentation::segmentObject(const pcl::PointCloud<pcl::PointXYZRGB> &cloud,
+                                       const cv::Mat_<unsigned char> &mask,
+                                       pcl::PointCloud<pcl::PointXYZRGB> &seg_cloud) {
   seg_cloud.points.clear();
 
-  for (unsigned i=0; i<cloud.points.size(); i++)
-  {
-    if (mask(i)>128 && !isnan(cloud.points[i].getVector3fMap()))
-    {
+  for (unsigned i = 0; i < cloud.points.size(); i++) {
+    if (mask(i) > 128 && !isnan(cloud.points[i].getVector3fMap())) {
       seg_cloud.points.push_back(cloud.points[i]);
     }
   }
@@ -936,44 +880,41 @@ void ObjectSegmentation::segmentObject(const pcl::PointCloud<pcl::PointXYZRGB> &
  * @param centroid
  * @param pose
  */
-void ObjectSegmentation::getInplaneTransform(const Eigen::Vector3f &pt, const Eigen::Vector3f &normal, Eigen::Matrix4f &pose)
-{
+void ObjectSegmentation::getInplaneTransform(const Eigen::Vector3f &pt, const Eigen::Vector3f &normal,
+                                             Eigen::Matrix4f &pose) {
   pose.setIdentity();
 
   Eigen::Vector3f px, py;
   Eigen::Vector3f pz = normal;
 
-  if (pt.dot(pz) > 0) pz *= -1;
-  px = (Eigen::Vector3f(1,0,0).cross(pz)).normalized();
+  if (pt.dot(pz) > 0)
+    pz *= -1;
+  px = (Eigen::Vector3f(1, 0, 0).cross(pz)).normalized();
   py = (pz.cross(px)).normalized();
 
-  pose.block<3,1>(0,0) = px;
-  pose.block<3,1>(0,1) = py;
-  pose.block<3,1>(0,2) = pz;
-  pose.block<3,1>(0,3) = pt;
+  pose.block<3, 1>(0, 0) = px;
+  pose.block<3, 1>(0, 1) = py;
+  pose.block<3, 1>(0, 2) = pz;
+  pose.block<3, 1>(0, 3) = pt;
 
-//  //transform to camera
-//  Eigen::Matrix4f inv;
-//  v4r::invPose(pose,inv);
-//  pose = inv;
+  //  //transform to camera
+  //  Eigen::Matrix4f inv;
+  //  v4r::invPose(pose,inv);
+  //  pose = inv;
 }
-
 
 /**
  * @brief ObjectSegmentation::convertImage
  * @param cloud
  * @param image
  */
-void ObjectSegmentation::convertImage(const pcl::PointCloud<pcl::PointXYZRGB> &cloud, cv::Mat_<cv::Vec3b> &_image)
-{
+void ObjectSegmentation::convertImage(const pcl::PointCloud<pcl::PointXYZRGB> &cloud, cv::Mat_<cv::Vec3b> &_image) {
   _image = cv::Mat_<cv::Vec3b>(cloud.height, cloud.width);
 
-  for (unsigned v = 0; v < cloud.height; v++)
-  {
-    for (unsigned u = 0; u < cloud.width; u++)
-    {
-      cv::Vec3b &cv_pt = _image.at<cv::Vec3b> (v, u);
-      const pcl::PointXYZRGB &pt = cloud(u,v);
+  for (unsigned v = 0; v < cloud.height; v++) {
+    for (unsigned u = 0; u < cloud.width; u++) {
+      cv::Vec3b &cv_pt = _image.at<cv::Vec3b>(v, u);
+      const pcl::PointXYZRGB &pt = cloud(u, v);
 
       cv_pt[2] = pt.r;
       cv_pt[1] = pt.g;
@@ -989,29 +930,24 @@ void ObjectSegmentation::convertImage(const pcl::PointCloud<pcl::PointXYZRGB> &c
  * @param image
  * @param alpha
  */
-void ObjectSegmentation::getMaskedImage(const pcl::PointCloud<pcl::PointXYZRGB> &cloud, const cv::Mat_<unsigned char> &mask, cv::Mat_<cv::Vec3b> &_image, float alpha)
-{
-    (void)alpha;
+void ObjectSegmentation::getMaskedImage(const pcl::PointCloud<pcl::PointXYZRGB> &cloud,
+                                        const cv::Mat_<unsigned char> &mask, cv::Mat_<cv::Vec3b> &_image, float alpha) {
+  (void)alpha;
   _image = cv::Mat_<cv::Vec3b>(cloud.height, cloud.width);
 
-  for (unsigned v = 0; v < cloud.height; v++)
-  {
-    for (unsigned u = 0; u < cloud.width; u++)
-    {
-      cv::Vec3b &cv_pt = _image.at<cv::Vec3b> (v, u);
-      const pcl::PointXYZRGB &pt = cloud(u,v);
+  for (unsigned v = 0; v < cloud.height; v++) {
+    for (unsigned u = 0; u < cloud.width; u++) {
+      cv::Vec3b &cv_pt = _image.at<cv::Vec3b>(v, u);
+      const pcl::PointXYZRGB &pt = cloud(u, v);
 
-      if (mask(v,u)>128)
-      {
+      if (mask(v, u) > 128) {
         cv_pt[2] = pt.r;
         cv_pt[1] = pt.g;
         cv_pt[0] = pt.b;
-      }
-      else
-      {
-        cv_pt[2] = pt.r*0.5;
-        cv_pt[1] = pt.g*0.5;
-        cv_pt[0] = pt.b*0.5;
+      } else {
+        cv_pt[2] = pt.r * 0.5;
+        cv_pt[1] = pt.g * 0.5;
+        cv_pt[0] = pt.b * 0.5;
       }
     }
   }
@@ -1021,64 +957,64 @@ void ObjectSegmentation::getMaskedImage(const pcl::PointCloud<pcl::PointXYZRGB> 
  * @brief StoreTrackingModel::detectCoordinateSystem
  * @param pose
  */
-void ObjectSegmentation::detectCoordinateSystem(Eigen::Matrix4f &pose)
-{
+void ObjectSegmentation::detectCoordinateSystem(Eigen::Matrix4f &pose) {
   pose.setIdentity();
 
   pcl::PointXYZRGB pt;
   pcl::PointCloud<pcl::PointXYZRGB>::Ptr gcloud(new pcl::PointCloud<pcl::PointXYZRGB>());
   pcl::PointCloud<pcl::PointXYZRGB> &gc = *gcloud;
-  Eigen::Vector3d centroid(0.,0.,0.);
-  int cnt=0;
+  Eigen::Vector3d centroid(0., 0., 0.);
+  int cnt = 0;
 
-  for (unsigned i=0; i<clouds->size(); i++)
-  {
+  for (unsigned i = 0; i < clouds->size(); i++) {
     const pcl::PointCloud<pcl::PointXYZRGB> &cloud = *clouds->at(i).second;
     cv::Mat_<unsigned char> &mask = masks[i];
     Eigen::Matrix4f &_pose = cameras[clouds->at(i).first];
     Eigen::Matrix4f inv_pose;
 
-    v4r::invPose(_pose,inv_pose);
+    v4r::invPose(_pose, inv_pose);
 
-    Eigen::Matrix3f R = inv_pose.topLeftCorner<3,3>();
-    Eigen::Vector3f t = inv_pose.block<3,1>(0,3);
+    Eigen::Matrix3f R = inv_pose.topLeftCorner<3, 3>();
+    Eigen::Vector3f t = inv_pose.block<3, 1>(0, 3);
 
     int xmin = INT_MAX, ymin = INT_MAX;
     int xmax = 0, ymax = 0;
 
-    for (int v=0; v<mask.rows; v++)
-    {
-      for (int u=0; u<mask.cols; u++)
-      {
-        if (mask(v,u)<128) continue;
-        if (u<xmin) xmin = u;
-        if (u>xmax) xmax = u;
-        if (v<ymin) ymin = v;
-        if (v>ymax) ymax = v;
+    for (int v = 0; v < mask.rows; v++) {
+      for (int u = 0; u < mask.cols; u++) {
+        if (mask(v, u) < 128)
+          continue;
+        if (u < xmin)
+          xmin = u;
+        if (u > xmax)
+          xmax = u;
+        if (v < ymin)
+          ymin = v;
+        if (v > ymax)
+          ymax = v;
       }
     }
 
-    int deltax_h = (xmax-xmin)/2.;
-    int deltay_h = (ymax-ymin)/2.;
+    int deltax_h = (xmax - xmin) / 2.;
+    int deltay_h = (ymax - ymin) / 2.;
 
-    if (deltax_h<=0 || deltay_h<=0) continue;
+    if (deltax_h <= 0 || deltay_h <= 0)
+      continue;
 
-    xmin = (xmin-deltax_h>=0?xmin-deltax_h:0);
-    ymin = (ymin-deltay_h>=0?ymin-deltay_h:0);
-    xmax = (xmax+deltax_h<mask.cols?xmax+deltax_h:mask.cols-1);
-    ymax = (ymax+deltay_h<mask.rows?ymax+deltay_h:mask.rows-1);
+    xmin = (xmin - deltax_h >= 0 ? xmin - deltax_h : 0);
+    ymin = (ymin - deltay_h >= 0 ? ymin - deltay_h : 0);
+    xmax = (xmax + deltax_h < mask.cols ? xmax + deltax_h : mask.cols - 1);
+    ymax = (ymax + deltay_h < mask.rows ? ymax + deltay_h : mask.rows - 1);
 
-    for (int v=ymin; v<=ymax; v++)
-    {
-      for (int u=xmin; u<=xmax; u++)
-      {
-        const pcl::PointXYZRGB &pt1 = cloud(u,v);
+    for (int v = ymin; v <= ymax; v++) {
+      for (int u = xmin; u <= xmax; u++) {
+        const pcl::PointXYZRGB &pt1 = cloud(u, v);
 
-        if (std::isnan(pt1.x) || std::isnan(pt1.y) || std::isnan(pt1.z)) continue;
+        if (std::isnan(pt1.x) || std::isnan(pt1.y) || std::isnan(pt1.z))
+          continue;
 
-        if (mask(v,u)<128)
-        {
-          pt.getVector3fMap() = R*pt1.getVector3fMap() + t;
+        if (mask(v, u) < 128) {
+          pt.getVector3fMap() = R * pt1.getVector3fMap() + t;
           gc.points.push_back(pt);
           centroid += pt.getVector3fMap().cast<double>();
           cnt++;
@@ -1091,7 +1027,7 @@ void ObjectSegmentation::detectCoordinateSystem(Eigen::Matrix4f &pose)
   gc.height = 1;
   gc.is_dense = true;
 
-  if (cnt<10 || gc.points.size()<10)
+  if (cnt < 10 || gc.points.size() < 10)
     return;
 
   centroid /= double(cnt);
@@ -1100,16 +1036,16 @@ void ObjectSegmentation::detectCoordinateSystem(Eigen::Matrix4f &pose)
   Eigen::VectorXf plane_coeffs = Eigen::VectorXf(4);
   std::vector<int> inliers;
 
-  pcl::SampleConsensusModelPlane<pcl::PointXYZRGB>::Ptr
-    model_p (new pcl::SampleConsensusModelPlane<pcl::PointXYZRGB> (gcloud));
+  pcl::SampleConsensusModelPlane<pcl::PointXYZRGB>::Ptr model_p(
+      new pcl::SampleConsensusModelPlane<pcl::PointXYZRGB>(gcloud));
 
-  pcl::RandomSampleConsensus<pcl::PointXYZRGB> ransac (model_p);
+  pcl::RandomSampleConsensus<pcl::PointXYZRGB> ransac(model_p);
 
-  ransac.setDistanceThreshold (.05);
+  ransac.setDistanceThreshold(.05);
   ransac.computeModel();
   ransac.getInliers(inliers);
 
-  if (inliers.size()<10)
+  if (inliers.size() < 10)
     return;
 
   model_p->optimizeModelCoefficients(inliers, plane_coeffs, plane_coeffs);
@@ -1118,13 +1054,15 @@ void ObjectSegmentation::detectCoordinateSystem(Eigen::Matrix4f &pose)
   Eigen::Vector3f px, py;
   Eigen::Vector3f pz = plane_coeffs.segment<3>(0);
 
-  if (centroid.dot(pz.cast<double>()) > 0) pz *= -1;
-  px = (Eigen::Vector3f(1,0,0).cross(pz)).normalized();
+  if (centroid.dot(pz.cast<double>()) > 0)
+    pz *= -1;
+  px = (Eigen::Vector3f(1, 0, 0).cross(pz)).normalized();
   py = pz.cross(px);
 
-  pose.block<3,1>(0,0) = px;
-  pose.block<3,1>(0,1) = py;
-  pose.block<3,1>(0,2) = pz;
-  pose.block<3,1>(0,3) = centroid.cast<float>();
-  pose.block<3,1>(0,3)[2] = -(plane_coeffs[0]*centroid[0]+plane_coeffs[1]*centroid[1]+plane_coeffs[3])/plane_coeffs[2];
+  pose.block<3, 1>(0, 0) = px;
+  pose.block<3, 1>(0, 1) = py;
+  pose.block<3, 1>(0, 2) = pz;
+  pose.block<3, 1>(0, 3) = centroid.cast<float>();
+  pose.block<3, 1>(0, 3)[2] =
+      -(plane_coeffs[0] * centroid[0] + plane_coeffs[1] * centroid[1] + plane_coeffs[3]) / plane_coeffs[2];
 }

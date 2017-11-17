@@ -37,81 +37,76 @@
 **
 ****************************************************************************/
 
-
-
 #ifndef SURFACEHEIGHT_HPP
 #define SURFACEHEIGHT_HPP
 
 #include <v4r/core/macros.h>
 #include "v4r/attention_segmentation/BaseMap.h"
 
-namespace v4r
-{
+namespace v4r {
 
 /**
  * parameters for surface height saliency map
  * */
 
-enum SurfaceTypes
-{
-  AM_TALL      = 0,
+enum SurfaceTypes {
+  AM_TALL = 0,
   AM_SHORT,
   AM_DISTANCE,
 };
 
-class V4R_EXPORTS SurfaceHeightSaliencyMap: public BaseMap 
-{
-public:
+class V4R_EXPORTS SurfaceHeightSaliencyMap : public BaseMap {
+ public:
   SurfaceHeightSaliencyMap();
   ~SurfaceHeightSaliencyMap();
-  
+
   void setModelCoefficients(pcl::ModelCoefficients::Ptr coefficients_);
   bool getModelCoefficients(pcl::ModelCoefficients::Ptr &coefficients_);
-  
+
   void setDistanceFromTop(float distance_from_top_);
   float getDistanceFromTop();
-  
+
   void setMaxDistance(int max_distance_);
   int getMaxDistance();
-  
+
   void setHeightType(int heightType_);
   int getHeightType();
-  
-/**
-* calculates single surface height map
-* */
+
+  /**
+  * calculates single surface height map
+  * */
 
   virtual int calculate();
-  
+
   virtual void reset();
   virtual void print();
-  
-private:
+
+ private:
   pcl::ModelCoefficients::Ptr coefficients;
-  float                       distance_from_top;
-  float                       max_distance;
-  int                         heightType;
-  
-  bool                        haveModelCoefficients;
-  
+  float distance_from_top;
+  float max_distance;
+  int heightType;
+
+  bool haveModelCoefficients;
+
   float getHeightCoefficient(int heightType_);
 
   int calculateHeightMap();
-  void calculateHeightMap(pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud_cur, pcl::PointIndices::Ptr indices_cur, int image_width, int image_height, 
-			  float heightCoefficient, cv::Mat &map_cur);
+  void calculateHeightMap(pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud_cur, pcl::PointIndices::Ptr indices_cur,
+                          int image_width, int image_height, float heightCoefficient, cv::Mat &map_cur);
   int calculatePointDistanceMap();
-  int calculatePointDistanceMap(pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud_cur, pcl::PointIndices::Ptr indices_cur, int image_width, int image_height, 
-				 cv::Mat &map_cur);
+  int calculatePointDistanceMap(pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud_cur, pcl::PointIndices::Ptr indices_cur,
+                                int image_width, int image_height, cv::Mat &map_cur);
 
-protected:
+ protected:
   virtual int checkParameters();
   virtual int calculatePyramidSimple();
   virtual int calculatePyramidItti();
   virtual int calculatePyramidFrintrop();
-  
+
   virtual int combinePyramid(BasePyramid::Ptr pyramid);
 };
 
-} // namespace v4r
+}  // namespace v4r
 
-#endif //SURFACEHEIGHT_HPP
+#endif  // SURFACEHEIGHT_HPP

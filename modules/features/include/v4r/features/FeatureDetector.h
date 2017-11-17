@@ -37,14 +37,13 @@
 **
 ****************************************************************************/
 
-
 /**
  * @file main.cpp
  * @author Johann Prankl (prankl@acin.tuwien.ac.at)
  * @date 2017
  * @brief
  *
- */ 
+ */
 
 #ifndef KP_FEATURE_DETECTOR_HH
 #define KP_FEATURE_DETECTOR_HH
@@ -56,15 +55,11 @@
 #include <v4r/core/macros.h>
 #include <v4r/common/impl/SmartPtr.hpp>
 
+namespace v4r {
 
-namespace v4r 
-{
-
-class V4R_EXPORTS FeatureDetector
-{
-public:
-  enum Type
-  {
+class V4R_EXPORTS FeatureDetector {
+ public:
+  enum Type {
     K_MSER,
     K_HARRIS,
     KD_CVSURF,
@@ -88,38 +83,40 @@ public:
     UNDEF = MAX_TYPE
   };
 
-private:
+ private:
   Type type;
 
-public:
-  FeatureDetector(Type _type=UNDEF) : type(_type) {}
+ public:
+  FeatureDetector(Type _type = UNDEF) : type(_type) {}
   virtual ~FeatureDetector() {}
 
-  virtual void detect(const cv::Mat &image, std::vector<cv::KeyPoint> &keys, cv::Mat &descriptors) { 
-      (void)image;
-      (void)keys;
-      (void)descriptors;
-      std::cout<<"[FeatureDetector::detect] Not implemented!]"<<std::endl; };
+  virtual void detect(const cv::Mat &image, std::vector<cv::KeyPoint> &keys, cv::Mat &descriptors) {
+    (void)image;
+    (void)keys;
+    (void)descriptors;
+    std::cout << "[FeatureDetector::detect] Not implemented!]" << std::endl;
+  };
 
   virtual void detect(const cv::Mat &image, std::vector<cv::KeyPoint> &keys) {
-      (void)image;
-      (void)keys;
-    std::cout<<"[FeatureDetector::detect] Not implemented!]"<<std::endl; }
+    (void)image;
+    (void)keys;
+    std::cout << "[FeatureDetector::detect] Not implemented!]" << std::endl;
+  }
 
-   virtual void extract(const cv::Mat &image, std::vector<cv::KeyPoint> &keys, cv::Mat &descriptors) {
-      (void)image;
-      (void)keys;
-      (void)descriptors;
-    std::cout<<"[FeatureDetector::extract] Not implemented!]"<<std::endl; }
- 
+  virtual void extract(const cv::Mat &image, std::vector<cv::KeyPoint> &keys, cv::Mat &descriptors) {
+    (void)image;
+    (void)keys;
+    (void)descriptors;
+    std::cout << "[FeatureDetector::extract] Not implemented!]" << std::endl;
+  }
 
-  Type getType() {return type;}
+  Type getType() {
+    return type;
+  }
 
-  typedef SmartPtr< ::v4r::FeatureDetector> Ptr;
-  typedef SmartPtr< ::v4r::FeatureDetector const> ConstPtr;
+  typedef SmartPtr<::v4r::FeatureDetector> Ptr;
+  typedef SmartPtr<::v4r::FeatureDetector const> ConstPtr;
 };
-
 }
 
 #endif
-

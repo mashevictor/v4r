@@ -37,7 +37,6 @@
 **
 ****************************************************************************/
 
-
 /**
  * @file dmRenderObject.h
  * @author Simon Schreiberhuber (schreiberhuber@acin.tuwien.ac.at)
@@ -46,142 +45,121 @@
  *
  */
 
-
 #ifndef __DM_RENDERER_OBJECT__
 #define __DM_RENDERER_OBJECT__
-
 
 #include <GL/glew.h>
 #include <GL/gl.h>
 
-
-#include <eigen3/Eigen/Eigen>
 #include <v4r/core/macros.h>
+#include <eigen3/Eigen/Eigen>
 
 #include <pcl/PolygonMesh.h>
 
 #include <opencv2/opencv.hpp>
 
+namespace v4r {
 
-namespace v4r{
+class V4R_EXPORTS DepthmapRendererModel {
+ private:
+  friend class DepthmapRenderer;
 
+  struct Vertex;
 
+  Vertex *vertices;
+  uint32_t *indices;
+  uint32_t vertexCount;
+  uint32_t indexCount;
 
-class V4R_EXPORTS DepthmapRendererModel{
-private:
-    friend class DepthmapRenderer;
+  struct MeshInfo {
+    uint32_t beginIndex = 0;
+    uint32_t indexCount = 0;
+    cv::Mat tex;
+    GLuint glTex = 0;
+  };
+  std::vector<MeshInfo> meshes;
 
-    struct Vertex;
+  float scale;
+  Eigen::Vector3f offset;
+  bool color;
+  bool texture;
+  bool geometry;
+  bool normal;
 
-    Vertex *vertices;
-    uint32_t *indices;
-    uint32_t vertexCount;
-    uint32_t indexCount;
+  /**
+   * @brief loadToGPU
+   *        Uploads geometry data to GPU and returns the OpenGL handles for Vertex and Index Buffers
+   * @param VBO
+   * @param IBO
+   */
+  void loadToGPU(GLuint &VBO, GLuint &IBO);
 
+  void unloadFromGPU();
 
+  /**
+   * @brief getIndexCount
+   * @return
+   */
+  unsigned int getIndexCount();
 
-    //TODO: add this!!!!!!!!!
-    struct MeshInfo{
-        uint32_t beginIndex=0;
-        uint32_t indexCount=0;
-        //TODO: add texture
-        cv::Mat tex;
-        GLuint glTex=0;
+ public:
+  /**
+   * @brief DepthmapRendererModel loads the geometry data and creates the necessary opengl ressources
+   * @param file filename of the geometry file
+   */
+  DepthmapRendererModel(const std::string &file, std::string path = "", bool shiftToCenterAndNormalizeScale = true);
 
-    };
-    std::vector<MeshInfo> meshes;
+  /**
+   * @brief DepthmapRendererModel loads the geometry data into the opengl context
+   * @param pclMesh
+   */
+  DepthmapRendererModel(const pcl::PolygonMesh &pclMesh, bool shiftToCenterAndNormalizeScale = true);
 
-    float scale;
-    Eigen::Vector3f offset;
-    bool color;
-    bool texture;//TODO add
-    bool geometry;
+  DepthmapRendererModel(const DepthmapRendererModel &obj);
 
-    /**
-     * @brief loadToGPU
-     *        Uploads geometry data to GPU and returns the OpenGL handles for Vertex and Index Buffers
-     * @param VBO
-     * @param IBO
-     */
-    void loadToGPU(GLuint &VBO,GLuint &IBO);
+  ~DepthmapRendererModel();
 
-    void unloadFromGPU();
+  friend void swap(DepthmapRendererModel &first, DepthmapRendererModel &second);
 
-    /**
-     * @brief getIndexCount
-     * @return
-     */
-    unsigned int getIndexCount();
+  DepthmapRendererModel &operator=(const DepthmapRendererModel model);
 
+  /**
+   * @brief getScale
+   * @return the models get fitted into a unity sphere.... Scale and Ofset gives the shift and offset of the object
+   * Note: the translation was applied first... so to transform the pointcloud back you have to
+   * apply the scale first and and translate afterwards
+   */
+  float getScale();
 
+  /**
+   * @brief hasColor
+   * @return
+   * true if the loaded mesh contains color information (suitable to generate a colored pointcloud)
+   */
+  bool hasColor();
 
-public:
+  bool hasTexture();
 
-
-
-    /**
-     * @brief DepthmapRendererModel loads the geometry data and creates the necessary opengl ressources
-     * @param file filename of the geometry file
-     */
-    DepthmapRendererModel(const std::string &file, std::string path="", bool shiftToCenterAndNormalizeScale=true);
-
-    /**
-     * @brief DepthmapRendererModel loads the geometry data into the opengl context
-     * @param pclMesh
-     */
-    DepthmapRendererModel(const pcl::PolygonMesh &pclMesh, bool shiftToCenterAndNormalizeScale=true);
-
-
-    DepthmapRendererModel(const DepthmapRendererModel &obj);
-
-    ~DepthmapRendererModel();
-
-    friend void swap(DepthmapRendererModel& first, DepthmapRendererModel& second);
-
-    DepthmapRendererModel& operator =(const DepthmapRendererModel model);
-
-
-
-
-
-
-    /**
-     * @brief getScale
-     * @return the models get fitted into a unity sphere.... Scale and Ofset gives the shift and offset of the object
-     * Note: the translation was applied first... so to transform the pointcloud back you have to
-     * apply the scale first and and translate afterwards
-     */
-    float getScale();
+  /**
+   * @brief hasNormals
+   * @return
+   */
+  bool hasNormals();
 
 
+  /**
+   * @brief hasGeometry
+   * @return
+   * true if the geometry file loaded correctly and contains geometry.
+   */
+  bool hasGeometry();
 
-    /**
-     * @brief hasColor
-     * @return
-     * true if the loaded mesh contains color information (suitable to generate a colored pointcloud)
-     */
-    bool hasColor();
-
-
-
-    bool hasTexture();
-
-
-    /**
-     * @brief hasGeometry
-     * @return
-     * true if the geometry file loaded correctly and contains geometry.
-     */
-    bool hasGeometry();
-
-    /**
-     * @brief getOffset
-     * @return the models get fitted into a unity sphere.... Scale and Offset gives the shift and offset of the object
-     */
-    Eigen::Vector3f getOffset();
-
+  /**
+   * @brief getOffset
+   * @return the models get fitted into a unity sphere.... Scale and Offset gives the shift and offset of the object
+   */
+  Eigen::Vector3f getOffset();
 };
-
 }
 
 #endif /* defined(__DM_RENDERER_OBJECT__) */

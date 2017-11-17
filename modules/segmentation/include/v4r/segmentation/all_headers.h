@@ -37,7 +37,6 @@
 **
 ****************************************************************************/
 
-
 /**
  * @file all_headers.h
  * @author Thomas Faeulhammer (faeulhammer@acin.tuwien.ac.at)
@@ -52,17 +51,15 @@
 #include <v4r/segmentation/segmenter.h>
 #include <v4r/segmentation/types.h>
 
-namespace v4r
-{
+namespace v4r {
 /**
  * @brief initSegmenter set up a segmentation object
  * @param method segmentation method as stated in segmentation/types.h
  * @param params boost parameters for segmentation object
  * @return segmenter
  */
-template<typename PointT>
-typename Segmenter<PointT>::Ptr
-initSegmenter(int method, std::vector<std::string> &params );
+template <typename PointT>
+typename Segmenter<PointT>::Ptr initSegmenter(int method, std::vector<std::string> &params);
 
 /**
  * @brief initPlaneExtractor set up a plane extraction object
@@ -70,8 +67,6 @@ initSegmenter(int method, std::vector<std::string> &params );
  * @param params boost parameters for segmentation object
  * @return plane_extractor
  */
-template<typename PointT>
-typename PlaneExtractor<PointT>::Ptr
-initPlaneExtractor(int method, std::vector<std::string> &params );
-
+template <typename PointT>
+typename PlaneExtractor<PointT>::Ptr initPlaneExtractor(int method, std::vector<std::string> &params);
 }

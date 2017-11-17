@@ -37,32 +37,30 @@
 **
 ****************************************************************************/
 
-
-
 #ifndef ATTENTION_MODULE_INCLUDE_HEADERS_HPP
 #define ATTENTION_MODULE_INCLUDE_HEADERS_HPP
 
+#include "v4r/attention_segmentation/AmHitRatio.h"
 #include "v4r/attention_segmentation/AttentionModuleErrors.h"
 #include "v4r/attention_segmentation/BaseMap.h"
 #include "v4r/attention_segmentation/ColorMap.h"
-#include "v4r/attention_segmentation/OrientationMap.h"
 #include "v4r/attention_segmentation/FrintropSaliencyMap.h"
+#include "v4r/attention_segmentation/HitRatio.h"
 #include "v4r/attention_segmentation/IKNSaliencyMap.h"
+#include "v4r/attention_segmentation/LocationMap.h"
+#include "v4r/attention_segmentation/MSR.h"
 #include "v4r/attention_segmentation/MapsCombination.h"
-#include "v4r/attention_segmentation/pyramidBase.h"
-#include "v4r/attention_segmentation/pyramidSimple.h"
-#include "v4r/attention_segmentation/pyramidItti.h"
-#include "v4r/attention_segmentation/pyramidFrintrop.h"
+#include "v4r/attention_segmentation/OrientationMap.h"
 #include "v4r/attention_segmentation/RelativeSurfaceOrientationMap.h"
 #include "v4r/attention_segmentation/SurfaceCurvatureMap.h"
 #include "v4r/attention_segmentation/SurfaceHeightMap.h"
 #include "v4r/attention_segmentation/Symmetry3DMap.h"
 #include "v4r/attention_segmentation/SymmetryMap.h"
-#include "v4r/attention_segmentation/LocationMap.h"
-#include "v4r/attention_segmentation/WTA.h"
 #include "v4r/attention_segmentation/TJ.h"
-#include "v4r/attention_segmentation/MSR.h"
-#include "v4r/attention_segmentation/HitRatio.h"
-#include "v4r/attention_segmentation/AmHitRatio.h"
+#include "v4r/attention_segmentation/WTA.h"
+#include "v4r/attention_segmentation/pyramidBase.h"
+#include "v4r/attention_segmentation/pyramidFrintrop.h"
+#include "v4r/attention_segmentation/pyramidItti.h"
+#include "v4r/attention_segmentation/pyramidSimple.h"
 
-#endif //ATTENTION_MODULE_INCLUDE_HEADERS_HPP
+#endif  // ATTENTION_MODULE_INCLUDE_HEADERS_HPP

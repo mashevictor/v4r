@@ -37,7 +37,6 @@
 **
 ****************************************************************************/
 
-
 /**
  * @file BoundaryRelationsMeanDepth.h
  * @author Potapova
@@ -48,43 +47,34 @@
 
 #include "v4r/attention_segmentation/BoundaryRelationsMeanDepth.h"
 
-namespace v4r
-{
-
+namespace v4r {
 
 /************************************************************************************
  * Constructor/Destructor
  */
 
-BoundaryRelationsMeanDepth::BoundaryRelationsMeanDepth():
-BoundaryRelationsBase()
-{
-}
+BoundaryRelationsMeanDepth::BoundaryRelationsMeanDepth() : BoundaryRelationsBase() {}
 
-BoundaryRelationsMeanDepth::~BoundaryRelationsMeanDepth()
-{
-}
+BoundaryRelationsMeanDepth::~BoundaryRelationsMeanDepth() {}
 
-v4r::meanVal BoundaryRelationsMeanDepth::compute()
-{
+v4r::meanVal BoundaryRelationsMeanDepth::compute() {
   //@ep: TODO check reconditions
-  if(!have_cloud)
-  {
+  if (!have_cloud) {
     printf("[BoundaryRelationsMeanDepth::compute] Error: No input cloud set.\n");
     exit(0);
   }
 
-  if(!have_boundary)
-  {
+  if (!have_boundary) {
     printf("[BoundaryRelationsMeanDepth::compute] Error: No input border.\n");
     exit(0);
   }
-  
+
   v4r::meanVal meanDepth;
-  
-  if(boundary.size() <= 0)
-  {
-    printf("[BoundaryRelationsMeanDepth::compute] Warning: Boundary size is 0. This means that constants are different everywhere!\n");
+
+  if (boundary.size() <= 0) {
+    printf(
+        "[BoundaryRelationsMeanDepth::compute] Warning: Boundary size is 0. This means that constants are different "
+        "everywhere!\n");
     meanDepth.mean = 0;
     meanDepth.stddev = 0;
     return meanDepth;
@@ -97,17 +87,15 @@ v4r::meanVal BoundaryRelationsMeanDepth::compute()
   double totalDepthStdDev = 0.;
   std::vector<double> valuesDepth;
   valuesDepth.reserve(boundaryLength);
-  for(unsigned int i=0; i<boundary.size(); i++)
-  {
+  for (unsigned int i = 0; i < boundary.size(); i++) {
     pcl::PointXYZRGB p1 = cloud->points.at(boundary.at(i).idx1);
     pcl::PointXYZRGB p2 = cloud->points.at(boundary.at(i).idx2);
 
-    if(checkNaN(p1) || checkNaN(p2))
-    {
+    if (checkNaN(p1) || checkNaN(p2)) {
       boundaryLength--;
       continue;
     }
- 
+
     double depth = fabs(p1.z - p2.z);
     valuesDepth.push_back(depth);
     totalDepth += depth;
@@ -115,18 +103,16 @@ v4r::meanVal BoundaryRelationsMeanDepth::compute()
 
   // normalize depth sum and calculate depth variance
   //@ep: this shoule be separate function in the utils
-  if(boundaryLength > 0)
-  {
+  if (boundaryLength > 0) {
     totalDepth /= boundaryLength;
-    for(unsigned i=0; i<valuesDepth.size(); i++)
-    {
+    for (unsigned i = 0; i < valuesDepth.size(); i++) {
       totalDepthStdDev += fabs(valuesDepth.at(i) - totalDepth);
     }
     totalDepthStdDev /= boundaryLength;
-  }
-  else
-  {
-    std::printf("[BoundaryRelationsMeanDepth::compute] Warning: Number of valid depth points is zero: totalDepth: %4.3f\n", totalDepth);
+  } else {
+    std::printf(
+        "[BoundaryRelationsMeanDepth::compute] Warning: Number of valid depth points is zero: totalDepth: %4.3f\n",
+        totalDepth);
     totalDepth = 0.;
     totalDepthStdDev = 0.;
   }
@@ -137,16 +123,4 @@ v4r::meanVal BoundaryRelationsMeanDepth::compute()
   return meanDepth;
 }
 
-} // end surface
-
-
-
-
-
-
-
-
-
-
-
-
+}  // end surface

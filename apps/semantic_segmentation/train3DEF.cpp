@@ -37,7 +37,6 @@
 **
 ****************************************************************************/
 
-
 /**
  * @file train3DEF.cpp
  * @author Daniel Wolf (wolf@acin.tuwien.ac.at)
@@ -68,63 +67,58 @@ string datadir;
 string indexfile;
 string namesfile;
 
-static bool parseArgs(int argc, char** argv)
-{
-    po::options_description forest("Forest options");
-    forest.add_options()
-            ("help,h","")
-            ("output,o", po::value<std::string>(&forestfile), "" )
-            ("trees,t", po::value<int>(&nTrees)->default_value(60), "Number of trees")
-            ("depth,d", po::value<int>(&maxDepth)->default_value(20), "Max. depth of trees (-1 = no limit)")
-            ("bagging,b", po::value<float>(&bagging)->default_value(0.3), "Bagging ratio (0-1.0)")
-            ("uniformbags,u", po::value<bool>(&uniformBags)->default_value(false), "Uniformly bag training data" )
-            ("features,f", po::value<int>(&nFeatures)->default_value(1000), "Max. number of sampled settings per feature")
-            ("thresholds,s", po::value<int>(&nThresholds)->default_value(100), "Max. number of sampled thresholds per feature")
-            ("gain,g", po::value<float>(&minGain)->default_value(0.02), "Min. gain to split")
-            ("points,p", po::value<int>(&minPoints)->default_value(5), "Min. points to split")
-            ;
+static bool parseArgs(int argc, char** argv) {
+  po::options_description forest("Forest options");
+  forest.add_options()("help,h", "")("output,o", po::value<std::string>(&forestfile), "")(
+      "trees,t", po::value<int>(&nTrees)->default_value(60), "Number of trees")(
+      "depth,d", po::value<int>(&maxDepth)->default_value(20), "Max. depth of trees (-1 = no limit)")(
+      "bagging,b", po::value<float>(&bagging)->default_value(0.3), "Bagging ratio (0-1.0)")(
+      "uniformbags,u", po::value<bool>(&uniformBags)->default_value(false), "Uniformly bag training data")(
+      "features,f", po::value<int>(&nFeatures)->default_value(1000), "Max. number of sampled settings per feature")(
+      "thresholds,s", po::value<int>(&nThresholds)->default_value(100),
+      "Max. number of sampled thresholds per feature")("gain,g", po::value<float>(&minGain)->default_value(0.02),
+                                                       "Min. gain to split")(
+      "points,p", po::value<int>(&minPoints)->default_value(5), "Min. points to split");
 
-    po::options_description data("Data options");
-    data.add_options()
-            ("input,i", po::value<std::string>(&datadir), "Input directory of training data")
-            ("indexfile,x", po::value<std::string>(&indexfile), "Index file for training data")
-            ("namesfile,n", po::value<std::string>(&namesfile), "File containing list of label names")
-            ;
+  po::options_description data("Data options");
+  data.add_options()("input,i", po::value<std::string>(&datadir), "Input directory of training data")(
+      "indexfile,x", po::value<std::string>(&indexfile), "Index file for training data")(
+      "namesfile,n", po::value<std::string>(&namesfile), "File containing list of label names");
 
-    po::options_description all("");
-    all.add(data).add(forest);
+  po::options_description all("");
+  all.add(data).add(forest);
 
-    po::options_description visible("");
-    visible.add(data).add(forest);
+  po::options_description visible("");
+  visible.add(data).add(forest);
 
-    po::variables_map vm;
-    po::store(po::command_line_parser(argc, argv).
-              options(all).run(), vm);
+  po::variables_map vm;
+  po::store(po::command_line_parser(argc, argv).options(all).run(), vm);
 
-    po::notify(vm);
+  po::notify(vm);
 
-    if(vm.count("help") || !vm.count("input") || !vm.count("output") || !vm.count("indexfile") || !vm.count("namesfile"))
-    {
-        std::cout << "General usage: train3DEF [-options] -o output-file -i trainingdata-dir -x index-file -n classname-file" << std::endl;
-        std::cout << visible;
-        return false;
-    }
+  if (vm.count("help") || !vm.count("input") || !vm.count("output") || !vm.count("indexfile") ||
+      !vm.count("namesfile")) {
+    std::cout
+        << "General usage: train3DEF [-options] -o output-file -i trainingdata-dir -x index-file -n classname-file"
+        << std::endl;
+    std::cout << visible;
+    return false;
+  }
 
-    return true;
+  return true;
 }
 
-int main (int argc, char** argv)
-{
-    if(!parseArgs(argc, argv))
-        return -1;
+int main(int argc, char** argv) {
+  if (!parseArgs(argc, argv))
+    return -1;
 
-    v4r::EntangledForestData d;
+  v4r::EntangledForestData d;
 
-    d.LoadTrainingData(datadir, indexfile, namesfile);
+  d.LoadTrainingData(datadir, indexfile, namesfile);
 
-    v4r::EntangledForest f(nTrees, maxDepth, bagging, nFeatures, nThresholds, minGain, minPoints);
-    f.Train(&d, uniformBags);
-    f.SaveToBinaryFile(forestfile);
+  v4r::EntangledForest f(nTrees, maxDepth, bagging, nFeatures, nThresholds, minGain, minPoints);
+  f.Train(&d, uniformBags);
+  f.SaveToBinaryFile(forestfile);
 
-    return 0;
+  return 0;
 }

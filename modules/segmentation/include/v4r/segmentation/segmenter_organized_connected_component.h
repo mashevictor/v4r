@@ -37,7 +37,6 @@
 **
 ****************************************************************************/
 
-
 /**
  * @file   segmenter_organized_connected_component.h
  * @author Thomas Faeulhammer (faeulhammer@acin.tuwien.ac.at)
@@ -54,43 +53,39 @@
 
 namespace po = boost::program_options;
 
-namespace v4r
-{
+namespace v4r {
 
+class V4R_EXPORTS OrganizedConnectedComponentSegmenterParameter : public SegmenterParameter {
+ public:
+  using SegmenterParameter::min_cluster_size_;
+  using SegmenterParameter::max_cluster_size_;
+  using SegmenterParameter::distance_threshold_;
 
-class V4R_EXPORTS OrganizedConnectedComponentSegmenterParameter : public SegmenterParameter
-{
-public:
-    using SegmenterParameter::min_cluster_size_;
-    using SegmenterParameter::max_cluster_size_;
-    using SegmenterParameter::distance_threshold_;
-
-    OrganizedConnectedComponentSegmenterParameter ()
-    {
-        distance_threshold_ = 0.035f;
-    }
+  OrganizedConnectedComponentSegmenterParameter() {
+    distance_threshold_ = 0.035f;
+  }
 };
 
 template <typename PointT>
-class V4R_EXPORTS OrganizedConnectedComponentSegmenter : public Segmenter<PointT>
-{
-    using Segmenter<PointT>::normals_;
-    using Segmenter<PointT>::clusters_;
-    using Segmenter<PointT>::scene_;
+class V4R_EXPORTS OrganizedConnectedComponentSegmenter : public Segmenter<PointT> {
+  using Segmenter<PointT>::normals_;
+  using Segmenter<PointT>::clusters_;
+  using Segmenter<PointT>::scene_;
 
-    OrganizedConnectedComponentSegmenterParameter param_;
+  OrganizedConnectedComponentSegmenterParameter param_;
 
-public:
-    OrganizedConnectedComponentSegmenter(const OrganizedConnectedComponentSegmenterParameter &p = OrganizedConnectedComponentSegmenterParameter() )
-        : param_(p)
-    { }
+ public:
+  OrganizedConnectedComponentSegmenter(
+      const OrganizedConnectedComponentSegmenterParameter &p = OrganizedConnectedComponentSegmenterParameter())
+  : param_(p) {}
 
-    bool getRequiresNormals() { return true; }
+  bool getRequiresNormals() {
+    return true;
+  }
 
-    void segment();
+  void segment();
 
-    typedef boost::shared_ptr< OrganizedConnectedComponentSegmenter<PointT> > Ptr;
-    typedef boost::shared_ptr< OrganizedConnectedComponentSegmenter<PointT> const> ConstPtr;
+  typedef boost::shared_ptr<OrganizedConnectedComponentSegmenter<PointT>> Ptr;
+  typedef boost::shared_ptr<OrganizedConnectedComponentSegmenter<PointT> const> ConstPtr;
 };
-
 }

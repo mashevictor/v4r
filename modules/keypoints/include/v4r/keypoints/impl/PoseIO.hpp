@@ -1,6 +1,6 @@
 /**
  * $Id$
- * 
+ *
  * Software License Agreement (GNU General Public License)
  *
  *  Copyright (C) 2015:
@@ -38,39 +38,35 @@
 #endif
 
 #include <Eigen/Dense>
-#include <string>
-#include <iostream>
 #include <fstream>
+#include <iostream>
+#include <string>
 
-
-namespace v4r
-{
+namespace v4r {
 
 /**
  * writePose
  */
-inline void writePose(const std::string &filename, const std::string &label, const Eigen::Matrix4f &pose)
-{
-  std::ofstream out(filename.c_str(), std::ios::out); //ios::app
-  if (label.size()!=0) out<<label<<' ';
-  for (unsigned v=0; v<4; v++)
-    for (unsigned u=0; u<4; u++)
-      out<<pose(v,u)<<' ';
+inline void writePose(const std::string &filename, const std::string &label, const Eigen::Matrix4f &pose) {
+  std::ofstream out(filename.c_str(), std::ios::out);  // ios::app
+  if (label.size() != 0)
+    out << label << ' ';
+  for (unsigned v = 0; v < 4; v++)
+    for (unsigned u = 0; u < 4; u++)
+      out << pose(v, u) << ' ';
   out.close();
 }
 
 /**
  * readPose
  */
-inline bool readPose(const std::string &filename, std::string &label, Eigen::Matrix4f &pose)
-{
+inline bool readPose(const std::string &filename, std::string &label, Eigen::Matrix4f &pose) {
   std::ifstream in(filename.c_str(), std::ios::in);
-  if (in.is_open())
-  {
-    in>>label;
-    for (unsigned v=0; v<4; v++)
-      for (unsigned u=0; u<4; u++)
-        in>>pose(v,u);
+  if (in.is_open()) {
+    in >> label;
+    for (unsigned v = 0; v < 4; v++)
+      for (unsigned u = 0; u < 4; u++)
+        in >> pose(v, u);
     in.close();
     return true;
   }
@@ -80,20 +76,17 @@ inline bool readPose(const std::string &filename, std::string &label, Eigen::Mat
 /**
  * readPose
  */
-inline bool readPose(const std::string &filename, Eigen::Matrix4f &pose)
-{
+inline bool readPose(const std::string &filename, Eigen::Matrix4f &pose) {
   std::ifstream in(filename.c_str(), std::ios::in);
-  if (in.is_open())
-  {
-    for (unsigned v=0; v<4; v++)
-      for (unsigned u=0; u<4; u++)
-        in>>pose(v,u);
+  if (in.is_open()) {
+    for (unsigned v = 0; v < 4; v++)
+      for (unsigned u = 0; u < 4; u++)
+        in >> pose(v, u);
     in.close();
     return true;
   }
   return false;
 }
-
 }
 
 #endif

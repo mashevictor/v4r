@@ -37,8 +37,6 @@
 **
 ****************************************************************************/
 
-
-
 #ifndef EPEVALUATION_SEGMENT_HPP
 #define EPEVALUATION_SEGMENT_HPP
 
@@ -47,18 +45,25 @@
 
 namespace EPEvaluation {
 
-void printSegmentationEvaluation(std::string output_filename, std::string base_name, 
-                                 std::vector<long int> &tp, std::vector<long int> &fp, std::vector<long int> &fn, std::vector<bool> &used, std::vector<int> &objNumber);
-V4R_EXPORTS void evaluate(pcl::PointCloud<pcl::PointXYZRGBL>::Ptr pcl_cloud_l, cv::Mat &mask, std::string base_name, std::string output_filename);
-V4R_EXPORTS void evaluate(pcl::PointCloud<pcl::PointXYZRGBL>::Ptr pcl_cloud_l, cv::Mat &mask, cv::Point attention_point, std::string base_name, std::string output_filename);
-V4R_EXPORTS void evaluate(const cv::Mat &ground_truth_image, cv::Mat &mask, cv::Point attention_point, std::string base_name, std::string output_filename);
-void evaluateSegmentation(pcl::PointCloud<pcl::PointXYZRGBL>::Ptr pcl_cloud_l, cv::Mat &mask, 
-                          std::vector<long int> &tp, std::vector<long int> &fp, std::vector<long int> &fn, std::vector<bool> &used, std::vector<int> &objNumber);
+void printSegmentationEvaluation(std::string output_filename, std::string base_name, std::vector<long int> &tp,
+                                 std::vector<long int> &fp, std::vector<long int> &fn, std::vector<bool> &used,
+                                 std::vector<int> &objNumber);
+V4R_EXPORTS void evaluate(pcl::PointCloud<pcl::PointXYZRGBL>::Ptr pcl_cloud_l, cv::Mat &mask, std::string base_name,
+                          std::string output_filename);
+V4R_EXPORTS void evaluate(pcl::PointCloud<pcl::PointXYZRGBL>::Ptr pcl_cloud_l, cv::Mat &mask, cv::Point attention_point,
+                          std::string base_name, std::string output_filename);
+V4R_EXPORTS void evaluate(const cv::Mat &ground_truth_image, cv::Mat &mask, cv::Point attention_point,
+                          std::string base_name, std::string output_filename);
+void evaluateSegmentation(pcl::PointCloud<pcl::PointXYZRGBL>::Ptr pcl_cloud_l, cv::Mat &mask, std::vector<long int> &tp,
+                          std::vector<long int> &fp, std::vector<long int> &fn, std::vector<bool> &used,
+                          std::vector<int> &objNumber);
 void evaluateSegmentation(pcl::PointCloud<pcl::PointXYZRGBL>::Ptr pcl_cloud_l, cv::Mat &mask, cv::Point attention_point,
-                          std::vector<long int> &tp, std::vector<long int> &fp, std::vector<long int> &fn, std::vector<bool> &used, std::vector<int> &objNumber);
+                          std::vector<long int> &tp, std::vector<long int> &fp, std::vector<long int> &fn,
+                          std::vector<bool> &used, std::vector<int> &objNumber);
 void evaluateSegmentation(const cv::Mat &ground_truth_image, cv::Mat &mask, cv::Point attention_point,
-                          std::vector<long int> &tp, std::vector<long int> &fp, std::vector<long int> &fn, std::vector<bool> &used, std::vector<int> &objNumber);
+                          std::vector<long int> &tp, std::vector<long int> &fp, std::vector<long int> &fn,
+                          std::vector<bool> &used, std::vector<int> &objNumber);
 
-} //namespace EPEvaluation
+}  // namespace EPEvaluation
 
-#endif //EPEVALUATION_SEGMENT_HPP
+#endif  // EPEVALUATION_SEGMENT_HPP

@@ -1,5 +1,5 @@
 /**
- *  Copyright (C) 2012  
+ *  Copyright (C) 2012
  *    Ekaterina Potapova
  *    Automation and Control Institute
  *    Vienna University of Technology
@@ -21,49 +21,42 @@
  *  along with this program.  If not, see http://www.gnu.org/licenses/
  */
 
-
 #include "v4r/attention_segmentation/AttentionModule.h"
 
 // This program shows the use of Frintrop Saliency Map on one image
 
-int main(int argc, char** argv)
-{
-  
-  if(argc != 2)
-  {
+int main(int argc, char** argv) {
+  if (argc != 2) {
     std::cerr << "Usage: image" << std::endl;
-    return(0);
+    return (0);
   }
-  
+
   // read image
   std::string image_name(argv[1]);
-  cv::Mat image = cv::imread(image_name,-1);
-  
-  cv::imshow("Original Image",image);
-    
+  cv::Mat image = cv::imread(image_name, -1);
+
+  cv::imshow("Original Image", image);
+
   // start creating parameters
   v4r::FrintropSaliencyMap frintropSaliencyMap;
   frintropSaliencyMap.setImage(image);
   frintropSaliencyMap.setNormalizationType(v4r::NT_FRINTROP_NORM);
-      
+
   cv::Mat map;
-  
+
   printf("[INFO]: Computing Frintrop Saliency Map.\n");
-  
+
   frintropSaliencyMap.calculate();
-  
-  if(frintropSaliencyMap.getMap(map))
-  {
+
+  if (frintropSaliencyMap.getMap(map)) {
     printf("[INFO]: Computation completed.\n");
-    resize(map,map,cv::Size(image.cols,image.rows));
-    cv::imshow("Frintrop Saliency Map",map);
+    resize(map, map, cv::Size(image.cols, image.rows));
+    cv::imshow("Frintrop Saliency Map", map);
     printf("[INFO]: Press any key to continue.\n");
     cv::waitKey();
-  }
-  else
-  {
+  } else {
     printf("[ERROR]: Computation failed.\n");
   }
-    
-  return(0);
+
+  return (0);
 }

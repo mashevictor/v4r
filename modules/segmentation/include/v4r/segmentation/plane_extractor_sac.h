@@ -37,7 +37,6 @@
 **
 ****************************************************************************/
 
-
 /**
  * @file plane_extractor_sac.h
  * @author Thomas Faeulhammer (faeulhammer@acin.tuwien.ac.at)
@@ -49,28 +48,25 @@
 #pragma once
 #include <v4r/segmentation/plane_extractor.h>
 
-namespace v4r
-{
+namespace v4r {
 
-template<typename PointT>
-class V4R_EXPORTS SACPlaneExtractor : public PlaneExtractor<PointT>
-{
-protected:
-    using PlaneExtractor<PointT>::cloud_;
-    using PlaneExtractor<PointT>::normal_cloud_;
-    using PlaneExtractor<PointT>::all_planes_;
-    using PlaneExtractor<PointT>::param_;
+template <typename PointT>
+class V4R_EXPORTS SACPlaneExtractor : public PlaneExtractor<PointT> {
+ protected:
+  using PlaneExtractor<PointT>::cloud_;
+  using PlaneExtractor<PointT>::normal_cloud_;
+  using PlaneExtractor<PointT>::all_planes_;
+  using PlaneExtractor<PointT>::param_;
 
-public:
-    SACPlaneExtractor( const PlaneExtractorParameter &p = PlaneExtractorParameter() ) :
-        PlaneExtractor<PointT>(p)
-    {}
+ public:
+  SACPlaneExtractor(const PlaneExtractorParameter &p = PlaneExtractorParameter()) : PlaneExtractor<PointT>(p) {}
 
-    virtual void compute();
-    virtual bool getRequiresNormals() const { return false; }
+  virtual void compute();
+  virtual bool getRequiresNormals() const {
+    return false;
+  }
 
-    typedef boost::shared_ptr< SACPlaneExtractor<PointT> > Ptr;
-    typedef boost::shared_ptr< SACPlaneExtractor<PointT> const> ConstPtr;
+  typedef boost::shared_ptr<SACPlaneExtractor<PointT>> Ptr;
+  typedef boost::shared_ptr<SACPlaneExtractor<PointT> const> ConstPtr;
 };
-
 }

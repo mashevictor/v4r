@@ -37,7 +37,6 @@
 **
 ****************************************************************************/
 
-
 /**
  * @file MultiSession.h
  * @author Johann Prankl (prankl@acin.tuwien.ac.at), Aitor Aldoma (aldoma@acin.tuwien.ac.at)
@@ -46,37 +45,26 @@
  *
  */
 
-
-
 #ifndef _MULTI_SESSION_H
 #define _MULTI_SESSION_H
 
 #ifndef Q_MOC_RUN
 #include <QObject>
-#include <QThread>
-#include <QMutex>
-#include <v4r/registration/noise_model_based_cloud_integration.h>
 #include <pcl/point_cloud.h>
 #include <pcl/point_types.h>
+#include <v4r/registration/noise_model_based_cloud_integration.h>
+#include <QMutex>
+#include <QThread>
 #include <boost/shared_ptr.hpp>
-#include "sensor.h"
 #include <opencv2/core/core.hpp>
+#include "sensor.h"
 #endif
 
-
-
-class MultiSession : public QThread
-{
+class MultiSession : public QThread {
   Q_OBJECT
 
-public:
-  enum Command
-  {
-    MULTI_SESSION_ALIGNMENT,
-    MULTI_SESSION_MULTI_VIEW,
-    MAX_COMMAND,
-    UNDEF = MAX_COMMAND
-  };
+ public:
+  enum Command { MULTI_SESSION_ALIGNMENT, MULTI_SESSION_MULTI_VIEW, MAX_COMMAND, UNDEF = MAX_COMMAND };
 
   MultiSession();
   ~MultiSession();
@@ -86,44 +74,54 @@ public:
   bool isRunning();
   void alignSequences();
   void optimizeSequences();
-  void addSequences(const std::vector<Eigen::Matrix4f, Eigen::aligned_allocator<Eigen::Matrix4f> > &_cameras,
-                    const boost::shared_ptr< std::vector<std::pair<int, pcl::PointCloud<pcl::PointXYZRGB>::ConstPtr> > > &_clouds,
-                    const std::vector<std::vector<int> > &_object_indices, const Eigen::Matrix4f &_object_base_transform=Eigen::Matrix4f::Identity());
-  const std::vector<Eigen::Matrix4f, Eigen::aligned_allocator<Eigen::Matrix4f> > &getCameras() {return cameras;}
-  const boost::shared_ptr< std::vector<std::pair<int, pcl::PointCloud<pcl::PointXYZRGB>::ConstPtr> > > &getClouds() const {return clouds; }
-  const std::vector< cv::Mat_<unsigned char> > &getMasks(){ return masks; }
+  void addSequences(
+      const std::vector<Eigen::Matrix4f, Eigen::aligned_allocator<Eigen::Matrix4f>> &_cameras,
+      const boost::shared_ptr<std::vector<std::pair<int, pcl::PointCloud<pcl::PointXYZRGB>::ConstPtr>>> &_clouds,
+      const std::vector<std::vector<int>> &_object_indices,
+      const Eigen::Matrix4f &_object_base_transform = Eigen::Matrix4f::Identity());
+  const std::vector<Eigen::Matrix4f, Eigen::aligned_allocator<Eigen::Matrix4f>> &getCameras() {
+    return cameras;
+  }
+  const boost::shared_ptr<std::vector<std::pair<int, pcl::PointCloud<pcl::PointXYZRGB>::ConstPtr>>> &getClouds() const {
+    return clouds;
+  }
+  const std::vector<cv::Mat_<unsigned char>> &getMasks() {
+    return masks;
+  }
   void clear();
   bool savePointClouds(const std::string &_folder, const std::string &_modelname);
-  void setUseFeatures(bool b) { use_features_ = b; }
-  void setUseStablePlanes(bool b) { use_stable_planes_ = b; }
+  void setUseFeatures(bool b) {
+    use_features_ = b;
+  }
+  void setUseStablePlanes(bool b) {
+    use_stable_planes_ = b;
+  }
 
-public slots:
-  void object_modelling_parameter_changed(const ObjectModelling& param);
+ public slots:
+  void object_modelling_parameter_changed(const ObjectModelling &param);
 
-signals:
+ signals:
   void printStatus(const std::string &_txt);
   void finishedAlignment(bool ok);
-  void update_model_cloud(const boost::shared_ptr< Sensor::AlignedPointXYZRGBVector > &_oc_cloud);
+  void update_model_cloud(const boost::shared_ptr<Sensor::AlignedPointXYZRGBVector> &_oc_cloud);
   void update_visualization();
 
-
-private:
-
+ private:
   Command cmd;
   bool m_run;
 
   ObjectModelling om_params;
 
-  std::vector<Eigen::Matrix4f, Eigen::aligned_allocator<Eigen::Matrix4f> > cameras;
-  boost::shared_ptr< std::vector<std::pair<int, pcl::PointCloud<pcl::PointXYZRGB>::ConstPtr> > > clouds;
-  std::vector< cv::Mat_<unsigned char> > masks;
-  std::vector<Eigen::Matrix4f, Eigen::aligned_allocator<Eigen::Matrix4f> > output_poses;
-  
-  std::vector< pcl::PointCloud<pcl::Normal>::ConstPtr > normals;
-  std::vector<std::pair<int,int> > session_ranges_;
-  std::vector< pcl::PointCloud<pcl::PointXYZRGB>::ConstPtr > sessions_clouds_;
-  std::vector<Eigen::Matrix4f, Eigen::aligned_allocator<Eigen::Matrix4f> > sessions_cloud_poses_;
-  std::vector<std::vector<int> > sessions_cloud_indices_;
+  std::vector<Eigen::Matrix4f, Eigen::aligned_allocator<Eigen::Matrix4f>> cameras;
+  boost::shared_ptr<std::vector<std::pair<int, pcl::PointCloud<pcl::PointXYZRGB>::ConstPtr>>> clouds;
+  std::vector<cv::Mat_<unsigned char>> masks;
+  std::vector<Eigen::Matrix4f, Eigen::aligned_allocator<Eigen::Matrix4f>> output_poses;
+
+  std::vector<pcl::PointCloud<pcl::Normal>::ConstPtr> normals;
+  std::vector<std::pair<int, int>> session_ranges_;
+  std::vector<pcl::PointCloud<pcl::PointXYZRGB>::ConstPtr> sessions_clouds_;
+  std::vector<Eigen::Matrix4f, Eigen::aligned_allocator<Eigen::Matrix4f>> sessions_cloud_poses_;
+  std::vector<std::vector<int>> sessions_cloud_indices_;
 
   bool use_features_;
   bool use_stable_planes_;
@@ -135,7 +133,7 @@ private:
   double max_point_dist;
 
   pcl::PointCloud<pcl::Normal>::Ptr big_normals;
-  boost::shared_ptr< Sensor::AlignedPointXYZRGBVector > oc_cloud;
+  boost::shared_ptr<Sensor::AlignedPointXYZRGBVector> oc_cloud;
   pcl::PointCloud<pcl::PointXYZRGB>::Ptr octree_cloud;
   pcl::PointCloud<pcl::PointXYZRGBNormal>::Ptr ncloud_filt;
 
@@ -153,13 +151,10 @@ private:
  * @param pt
  * @return
  */
-inline bool MultiSession::isnan(const Eigen::Vector3f &pt)
-{
+inline bool MultiSession::isnan(const Eigen::Vector3f &pt) {
   if (std::isnan(pt[0]) || std::isnan(pt[1]) || std::isnan(pt[2]))
     return true;
   return false;
 }
-
-
 
 #endif

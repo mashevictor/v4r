@@ -37,20 +37,16 @@
 **
 ****************************************************************************/
 
-
-
 #ifndef PYRAMID_ITTI_HPP
 #define PYRAMID_ITTI_HPP
 
 #include <v4r/core/macros.h>
 #include "v4r/attention_segmentation/pyramidBase.h"
 
-namespace v4r
-{
+namespace v4r {
 
-class V4R_EXPORTS IttiPyramid: public BasePyramid
-{
-public:
+class V4R_EXPORTS IttiPyramid : public BasePyramid {
+ public:
   IttiPyramid();
   virtual ~IttiPyramid();
   typedef boost::shared_ptr<IttiPyramid> Ptr;
@@ -76,19 +72,18 @@ public:
   virtual void reset();
   virtual void print();
   virtual void combinePyramid(bool standard = false);
-  
-private:
-  int                  lowest_c;
-  int                  highest_c;
-  int                  smallest_cs;
-  int                  largest_cs;
-  int                  number_of_features;
-  bool                 changeSign;
-  
+
+ private:
+  int lowest_c;
+  int highest_c;
+  int smallest_cs;
+  int largest_cs;
+  int number_of_features;
+  bool changeSign;
+
   std::vector<cv::Mat> pyramidConspicuities;
 
   virtual void checkLevels();
 };
-
 }
-#endif //PYRAMID_ITTI_HPP
+#endif  // PYRAMID_ITTI_HPP

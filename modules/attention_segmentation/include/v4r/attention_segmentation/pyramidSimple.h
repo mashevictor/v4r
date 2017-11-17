@@ -37,20 +37,16 @@
 **
 ****************************************************************************/
 
-
-
 #ifndef PYRAMID_SIMPLE_HPP
 #define PYRAMID_SIMPLE_HPP
 
 #include <v4r/core/macros.h>
 #include "v4r/attention_segmentation/pyramidBase.h"
 
-namespace v4r
-{
+namespace v4r {
 
-class V4R_EXPORTS SimplePyramid: public BasePyramid
-{
-public:
+class V4R_EXPORTS SimplePyramid : public BasePyramid {
+ public:
   SimplePyramid();
   virtual ~SimplePyramid();
   typedef boost::shared_ptr<SimplePyramid> Ptr;
@@ -58,9 +54,7 @@ public:
   virtual void reset();
   virtual void combinePyramid(bool standard = false);
 
-private:
-
+ private:
 };
-
 }
-#endif //PYRAMID_SIMPLE_HPP
+#endif  // PYRAMID_SIMPLE_HPP

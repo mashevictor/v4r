@@ -37,7 +37,6 @@
 **
 ****************************************************************************/
 
-
 /**
  * @file StructuralRelations.h
  * @author Richtsfeld
@@ -50,74 +49,71 @@
 #define SURFACE_STRUCTURAL_RELATIONS_LIGHT_H
 
 #include <omp.h>
-#include <vector>
 #include <cstdio>
 #include <opencv2/opencv.hpp>
+#include <vector>
 
-#include "v4r/attention_segmentation/ColorHistogram.h"
-#include "v4r/attention_segmentation/Texture.h"
-#include "v4r/attention_segmentation/BoundaryRelationsMeanDepth.h"
 #include "v4r/attention_segmentation/BoundaryRelationsMeanColor.h"
 #include "v4r/attention_segmentation/BoundaryRelationsMeanCurvature.h"
+#include "v4r/attention_segmentation/BoundaryRelationsMeanDepth.h"
+#include "v4r/attention_segmentation/ColorHistogram.h"
 #include "v4r/attention_segmentation/Fourier.h"
 #include "v4r/attention_segmentation/Gabor.h"
+#include "v4r/attention_segmentation/Texture.h"
 
-#include "v4r/attention_segmentation/SurfaceModel.h"
 #include "v4r/attention_segmentation//EPBase.h"
+#include "v4r/attention_segmentation/SurfaceModel.h"
 
 #include "v4r/attention_segmentation/EPUtils.h"
 
+namespace v4r {
 
-namespace v4r
-{
-  
-class StructuralRelations: public EPBase
-{
-
+class StructuralRelations : public EPBase {
   enum UsedRelations {
-    R_COS   = 0x0001,
-    R_TR    = 0x0002,
-    R_GS    = 0x0004,
-    R_FS    = 0x0008,
-    R_RS    = 0x0010,
-    R_COS3  = 0x0020,
-    R_CUM3  = 0x0040,
-    R_DM2   = 0x0080,
-    R_DV2   = 0x0100,
-    R_CUV3  = 0x0200,
-    R_3D2   = 0x0400,
+    R_COS = 0x0001,
+    R_TR = 0x0002,
+    R_GS = 0x0004,
+    R_FS = 0x0008,
+    R_RS = 0x0010,
+    R_COS3 = 0x0020,
+    R_CUM3 = 0x0040,
+    R_DM2 = 0x0080,
+    R_DV2 = 0x0100,
+    R_CUV3 = 0x0200,
+    R_3D2 = 0x0400,
   };
-  
-public:
-EIGEN_MAKE_ALIGNED_OPERATOR_NEW     /// for 32-bit systems for pcl mandatory
-  
-protected:
 
-private:
-  
-  void computeNeighbors();
-  
+ public:
+  EIGEN_MAKE_ALIGNED_OPERATOR_NEW  /// for 32-bit systems for pcl mandatory
+
+      protected :
+
+      private :
+
+      void
+      computeNeighbors();
+
   bool have_surfaces;
-  std::vector<SurfaceModel::Ptr> surfaces;              ///< Surfaces
-  
+  std::vector<SurfaceModel::Ptr> surfaces;  ///< Surfaces
+
   pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud_model;
-  
+
   bool have_neighbours2D, have_neighbours3D;
-  std::map<borderIdentification,std::vector<neighboringPair> > ngbr3D_map;
-  std::map<borderIdentification,std::vector<neighboringPair> > ngbr2D_map;
-  
+  std::map<borderIdentification, std::vector<neighboringPair>> ngbr3D_map;
+  std::map<borderIdentification, std::vector<neighboringPair>> ngbr2D_map;
+
   std::vector<Relation> surfaceRelations;
   std::vector<Relation> validRelations;
-//   bool have_relations;
+  //   bool have_relations;
 
   int usedRelations;
   bool trainMode;
   bool initialized;
-  
+
   /** Project the datapoints of the plane surfaces to the model surface **/
   void projectPts2Model();
 
-  //for texture
+  // for texture
   cv::Mat_<cv::Vec3b> matImage;
   cv::Mat gray_image;
   //
@@ -129,27 +125,27 @@ private:
   std::vector<Fourier::Ptr> fourier;
   std::vector<Gabor::Ptr> gabor;
   Gabor::Ptr permanentGabor;
-  
-public:
+
+ public:
   StructuralRelations();
   ~StructuralRelations();
-  
+
   /** Set neighbours 2D **/
-  void setNeighbours2D(const std::map<borderIdentification,std::vector<neighboringPair> > _ngbr2D_map);
+  void setNeighbours2D(const std::map<borderIdentification, std::vector<neighboringPair>> _ngbr2D_map);
   /** Set neighbours 3D **/
-  void setNeighbours3D(const std::map<borderIdentification,std::vector<neighboringPair> > _ngbr3D_map);
-  
+  void setNeighbours3D(const std::map<borderIdentification, std::vector<neighboringPair>> _ngbr3D_map);
+
   /** Set surfaces **/
   void setSurfaces(const std::vector<SurfaceModel::Ptr> _surfaces);
   /** Set relations **/
-//   void setRelations(const std::vector<Relation> _surfaceRelations);
+  //   void setRelations(const std::vector<Relation> _surfaceRelations);
   /**Set used relations **/
   void setUsedRelations(int _usedRelations);
   /**Set training mode **/
   void setTrainingMode(bool _trainMode);
-  
+
   /** Get surfaces relations **/
-//   inline std::vector<Relation> getRelations();
+  //   inline std::vector<Relation> getRelations();
   /** Get surfaces relations **/
   inline std::vector<Relation> getValidRelations();
   /**Get used relations **/
@@ -158,7 +154,6 @@ public:
   void init();
   /** Compute relations for the segmenter **/
   virtual void compute();
-  
 };
 
 // inline std::vector<Relation> StructuralRelations::getRelations()
@@ -166,17 +161,14 @@ public:
 //   return surfaceRelations;
 // }
 
-inline std::vector<Relation> StructuralRelations::getValidRelations()
-{
+inline std::vector<Relation> StructuralRelations::getValidRelations() {
   return validRelations;
 }
 
-inline int StructuralRelations::getUsedRelations()
-{
+inline int StructuralRelations::getUsedRelations() {
   return usedRelations;
 }
 
-} //--END--
+}  //--END--
 
 #endif
-

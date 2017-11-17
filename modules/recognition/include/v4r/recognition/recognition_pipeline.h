@@ -37,7 +37,6 @@
 **
 ****************************************************************************/
 
-
 /**
  * @file recognition_pipeline.h
  * @author Aitor Aldoma (aldoma@acin.tuwien.ac.at), Thomas Faeulhammer (faeulhammer@acin.tuwien.ac.at)
@@ -50,197 +49,167 @@
 
 #include <pcl/common/common.h>
 
-#include <v4r_config.h>
+#include <glog/logging.h>
 #include <v4r/common/normals.h>
 #include <v4r/common/pcl_visualization_utils.h>
 #include <v4r/core/macros.h>
 #include <v4r/recognition/object_hypothesis.h>
 #include <v4r/recognition/source.h>
-#include <glog/logging.h>
+#include <v4r_config.h>
 
-namespace v4r
-{
+namespace v4r {
 
 /**
  * @brief The recognition pipeline class is an abstract class that represents a
  * pipeline for object recognition. It will generated groups of object hypotheses.
- * For a global recognition pipeline, each segmented cluster from the input cloud will store its object hypotheses into one group.
+ * For a global recognition pipeline, each segmented cluster from the input cloud will store its object hypotheses into
+ * one group.
  * For all other pipelines, each group will only contain one object hypothesis.
  * @author Thomas Faeulhammer, Aitor Aldoma
  */
-template<typename PointT>
-class V4R_EXPORTS RecognitionPipeline
-{
-public:
-    typedef boost::shared_ptr< RecognitionPipeline<PointT> > Ptr;
-    typedef boost::shared_ptr< RecognitionPipeline<PointT> const> ConstPtr;
+template <typename PointT>
+class V4R_EXPORTS RecognitionPipeline {
+ public:
+  typedef boost::shared_ptr<RecognitionPipeline<PointT>> Ptr;
+  typedef boost::shared_ptr<RecognitionPipeline<PointT> const> ConstPtr;
 
-protected:
-    typedef Model<PointT> ModelT;
-    typedef boost::shared_ptr<ModelT> ModelTPtr;
+ protected:
+  typedef Model<PointT> ModelT;
+  typedef boost::shared_ptr<ModelT> ModelTPtr;
 
-    typename pcl::PointCloud<PointT>::ConstPtr scene_; ///< Point cloud to be recognized
-    pcl::PointCloud<pcl::Normal>::ConstPtr scene_normals_; ///< associated normals
-    typename Source<PointT>::ConstPtr m_db_;  ///< model data base
-    std::vector< ObjectHypothesesGroup > obj_hypotheses_;   ///< generated object hypotheses
-    typename NormalEstimator<PointT>::Ptr normal_estimator_;    ///< normal estimator used for computing surface normals (currently only used at training)
-    Eigen::Vector4f table_plane_;
-    bool table_plane_set_;
+  typename pcl::PointCloud<PointT>::ConstPtr scene_;      ///< Point cloud to be recognized
+  pcl::PointCloud<pcl::Normal>::ConstPtr scene_normals_;  ///< associated normals
+  typename Source<PointT>::ConstPtr m_db_;                ///< model data base
+  std::vector<ObjectHypothesesGroup> obj_hypotheses_;     ///< generated object hypotheses
+  typename NormalEstimator<PointT>::Ptr
+      normal_estimator_;  ///< normal estimator used for computing surface normals (currently only used at training)
+  Eigen::Vector4f table_plane_;
+  bool table_plane_set_;
 
-    static std::vector< std::pair<std::string,float> > elapsed_time_;  ///< to measure performance
+  static std::vector<std::pair<std::string, float>> elapsed_time_;  ///< to measure performance
 
-    class StopWatch
-    {
-        std::string desc_;
-        boost::posix_time::ptime start_time_;
+  class StopWatch {
+    std::string desc_;
+    boost::posix_time::ptime start_time_;
 
-    public:
-        StopWatch(const std::string &desc)
-            :desc_ (desc), start_time_ (boost::posix_time::microsec_clock::local_time ())
-        {}
+   public:
+    StopWatch(const std::string &desc) : desc_(desc), start_time_(boost::posix_time::microsec_clock::local_time()) {}
 
-        ~StopWatch()
-        {
-            boost::posix_time::ptime end_time = boost::posix_time::microsec_clock::local_time ();
-            float elapsed_time = static_cast<float> (((end_time - start_time_).total_milliseconds ()));
-            VLOG(1) << desc_ << " took " << elapsed_time << " ms.";
-            elapsed_time_.push_back( std::pair<std::string,float>(desc_, elapsed_time) );
-        }
-    };
-
-
-    PCLVisualizationParams::ConstPtr vis_param_;
-
-public:
-    RecognitionPipeline() :
-        table_plane_(Eigen::Vector4f::Identity()),
-        table_plane_set_(false)
-    {}
-
-    virtual ~RecognitionPipeline(){}
-
-    virtual size_t getFeatureType() const = 0;
-
-    virtual bool needNormals() const = 0;
-
-    /**
-     * @brief initialize the recognizer (extract features, create FLANN,...)
-     * @param[in] path to model database. If training directory exists, will load trained model from disk; if not, computed features will be stored on disk (in each
-     * object model folder, a feature folder is created with data)
-     * @param[in] retrain if set, will re-compute features and store to disk, no matter if they already exist or not
-     */
-    virtual void
-    initialize(const std::string &trained_dir = "", bool retrain = false)
-    {
-        (void) retrain;
-        (void) trained_dir;
-        PCL_WARN("initialize is not implemented for this class.");
+    ~StopWatch() {
+      boost::posix_time::ptime end_time = boost::posix_time::microsec_clock::local_time();
+      float elapsed_time = static_cast<float>(((end_time - start_time_).total_milliseconds()));
+      VLOG(1) << desc_ << " took " << elapsed_time << " ms.";
+      elapsed_time_.push_back(std::pair<std::string, float>(desc_, elapsed_time));
     }
+  };
 
-    /**
-     * @brief setInputCloud
-     * @param cloud to be recognized
-     */
-    void
-    setInputCloud (const typename pcl::PointCloud<PointT>::ConstPtr cloud)
-    {
-        scene_ = cloud;
-    }
+  PCLVisualizationParams::ConstPtr vis_param_;
 
+ public:
+  RecognitionPipeline() : table_plane_(Eigen::Vector4f::Identity()), table_plane_set_(false) {}
 
-    /**
-     * @brief getObjectHypothesis
-     * @return generated object hypothesis
-     */
-    std::vector<ObjectHypothesesGroup>
-    getObjectHypothesis() const
-    {
-        return obj_hypotheses_;
-    }
+  virtual ~RecognitionPipeline() {}
 
-    /**
-     * @brief setSceneNormals
-     * @param normals normals of the input cloud
-     */
-    void
-    setSceneNormals(const pcl::PointCloud<pcl::Normal>::ConstPtr &normals)
-    {
-        scene_normals_ = normals;
-    }
+  virtual size_t getFeatureType() const = 0;
 
-    /**
-     * @brief setModelDatabase
-     * @param m_db model database
-     */
-    void
-    setModelDatabase(const typename Source<PointT>::ConstPtr &m_db)
-    {
-        m_db_ = m_db;
-    }
+  virtual bool needNormals() const = 0;
 
-    /**
-     * @brief getModelDatabase
-     * @return model database
-     */
-    typename Source<PointT>::ConstPtr
-    getModelDatabase() const
-    {
-        return m_db_;
-    }
+  /**
+   * @brief initialize the recognizer (extract features, create FLANN,...)
+   * @param[in] path to model database. If training directory exists, will load trained model from disk; if not,
+   * computed features will be stored on disk (in each
+   * object model folder, a feature folder is created with data)
+   * @param[in] retrain if set, will re-compute features and store to disk, no matter if they already exist or not
+   */
+  virtual void initialize(const bf::path &trained_dir = "", bool retrain = false) {
+    (void)retrain;
+    (void)trained_dir;
+    PCL_WARN("initialize is not implemented for this class.");
+  }
 
-    void
-    setTablePlane( const Eigen::Vector4f &table_plane)
-    {
-        table_plane_ = table_plane;
-        table_plane_set_ = true;
-    }
+  /**
+   * @brief setInputCloud
+   * @param cloud to be recognized
+   */
+  void setInputCloud(const typename pcl::PointCloud<PointT>::ConstPtr cloud) {
+    scene_ = cloud;
+  }
 
+  /**
+   * @brief getObjectHypothesis
+   * @return generated object hypothesis
+   */
+  std::vector<ObjectHypothesesGroup> getObjectHypothesis() const {
+    return obj_hypotheses_;
+  }
 
-    /**
-     * @brief setNormalEstimator sets the normal estimator used for computing surface normals (currently only used at training)
-     * @param normal_estimator
-     */
-    void
-    setNormalEstimator(const typename NormalEstimator<PointT>::Ptr &normal_estimator)
-    {
-        normal_estimator_ = normal_estimator;
-    }
+  /**
+   * @brief setSceneNormals
+   * @param normals normals of the input cloud
+   */
+  void setSceneNormals(const pcl::PointCloud<pcl::Normal>::ConstPtr &normals) {
+    scene_normals_ = normals;
+  }
 
+  /**
+   * @brief setModelDatabase
+   * @param m_db model database
+   */
+  void setModelDatabase(const typename Source<PointT>::ConstPtr &m_db) {
+    m_db_ = m_db;
+  }
 
-    /**
-     * @brief setVisualizationParameter sets the PCL visualization parameter (only used if some visualization is enabled)
-     * @param vis_param
-     */
-    void
-    setVisualizationParameter(const PCLVisualizationParams::ConstPtr &vis_param)
-    {
-        vis_param_ = vis_param;
-    }
+  /**
+   * @brief getModelDatabase
+   * @return model database
+   */
+  typename Source<PointT>::ConstPtr getModelDatabase() const {
+    return m_db_;
+  }
 
-    /**
-     * @brief getElapsedTimes
-     * @return compuation time measurements for various components
-     */
-    std::vector<std::pair<std::string, float> >
-    getElapsedTimes() const
-    {
-        return elapsed_time_;
-    }
+  void setTablePlane(const Eigen::Vector4f &table_plane) {
+    table_plane_ = table_plane;
+    table_plane_set_ = true;
+  }
 
-    virtual bool requiresSegmentation() const = 0;
-    virtual void do_recognize () = 0;
+  /**
+   * @brief setNormalEstimator sets the normal estimator used for computing surface normals (currently only used at
+   * training)
+   * @param normal_estimator
+   */
+  void setNormalEstimator(const typename NormalEstimator<PointT>::Ptr &normal_estimator) {
+    normal_estimator_ = normal_estimator;
+  }
 
-    void
-    recognize ()
-    {
-        elapsed_time_.clear();
-        obj_hypotheses_.clear();
-        CHECK ( scene_ ) << "Input scene is not set!";
+  /**
+   * @brief setVisualizationParameter sets the PCL visualization parameter (only used if some visualization is enabled)
+   * @param vis_param
+   */
+  void setVisualizationParameter(const PCLVisualizationParams::ConstPtr &vis_param) {
+    vis_param_ = vis_param;
+  }
 
-        if( needNormals() )
-            CHECK ( scene_normals_ && scene_->points.size() == scene_normals_->points.size()) << "Recognizer needs normals but they are not set!";
+  /**
+   * @brief getElapsedTimes
+   * @return compuation time measurements for various components
+   */
+  std::vector<std::pair<std::string, float>> getElapsedTimes() const {
+    return elapsed_time_;
+  }
 
-        do_recognize();
-    }
+  virtual bool requiresSegmentation() const = 0;
+  virtual void do_recognize() = 0;
+
+  void recognize() {
+    elapsed_time_.clear();
+    obj_hypotheses_.clear();
+    CHECK(scene_) << "Input scene is not set!";
+
+    if (needNormals())
+      CHECK(scene_normals_ && scene_->points.size() == scene_normals_->points.size())
+          << "Recognizer needs normals but they are not set!";
+
+    do_recognize();
+  }
 };
 }

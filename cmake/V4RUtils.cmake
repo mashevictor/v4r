@@ -1,22 +1,3 @@
-# Debugging function
-function(v4r_cmake_dump_vars)
-  cmake_parse_arguments(DUMP "" "TOFILE" "" ${ARGN})
-  set(regex "${DUMP_UNPARSED_ARGUMENTS}")
-  get_cmake_property(_variableNames VARIABLES)
-  set(VARS "")
-  foreach(_variableName ${_variableNames})
-    if(_variableName MATCHES "${regex}")
-      set(VARS "${VARS}${_variableName}=${${_variableName}}\n")
-    endif()
-  endforeach()
-  if(DUMP_TOFILE)
-    file(WRITE ${CMAKE_BINARY_DIR}/${DUMP_TOFILE} "${VARS}")
-  else()
-    message(AUTHOR_WARNING "${VARS}")
-  endif()
-endfunction()
-
-
 # Search packages for host system instead of packages for target system
 # in case of cross compilation thess macro should be defined by toolchain file
 if(NOT COMMAND find_host_package)
@@ -47,29 +28,16 @@ macro(v4r_debug_message)
   message(STATUS "${__msg}")
 endmacro()
 
-macro(v4r_check_environment_variables)
-  foreach(_var ${ARGN})
-    if(NOT DEFINED ${_var} AND DEFINED ENV{${_var}})
-      set(__value "$ENV{${_var}}")
-      file(TO_CMAKE_PATH "${__value}" __value) # Assume that we receive paths
-      set(${_var} "${__value}")
-      message(STATUS "Update variable ${_var} from environment: ${${_var}}")
-    endif()
-  endforeach()
-endmacro()
-
-# rename modules target to world if needed
-macro(_v4r_fix_target target_var)
-endmacro()
-
 # adds include directories in such way that directories from the V4R source tree go first
 function(v4r_include_directories)
-  v4r_debug_message("v4r_include_directories( ${ARGN} )")
+  # v4r_debug_message("v4r_include_directories( ${ARGN} )")
   set(__add_before "")
   foreach(dir ${ARGN})
     get_filename_component(__abs_dir "${dir}" ABSOLUTE)
     if("${__abs_dir}" MATCHES "^${V4R_SOURCE_DIR}" OR "${__abs_dir}" MATCHES "^${V4R_BINARY_DIR}")
       list(APPEND __add_before "${dir}")
+    elseif(CMAKE_COMPILER_IS_GNUCXX AND NOT CMAKE_CXX_COMPILER_VERSION VERSION_LESS "6.0" AND dir MATCHES "/usr/include$")
+      # workaround for GCC 6.x bug
     else()
       include_directories(AFTER SYSTEM "${dir}")
     endif()
@@ -79,7 +47,6 @@ endfunction()
 
 # adds include directories in such way that directories from the V4R source tree go first
 function(v4r_target_include_directories target)
-  _v4r_fix_target(target)
   set(__params_private "")
   set(__params_system "")
   foreach(dir ${ARGN})
@@ -90,27 +57,23 @@ function(v4r_target_include_directories target)
       list(APPEND __params_system "${dir}")
     endif()
   endforeach()
-  if(HAVE_CUDA OR CMAKE_VERSION VERSION_LESS 2.8.11)
-    include_directories(${__params_private})
-    include_directories(SYSTEM ${__params_system})
-  else()
-    if(TARGET ${target})
-      if(__params_private)
-        target_include_directories(${target} PRIVATE ${__params_private})
-      endif()
-      if(__params_system)
-        target_include_directories(${target} SYSTEM ${__params_system})
-      endif()
-    else()
-      set(__new_inc "${V4R_TARGET_INCLUDE_DIRS_${target}};${__params_private};${__params_system}")
-      set(V4R_TARGET_INCLUDE_DIRS_${target} "${__new_inc}" CACHE INTERNAL "")
+  if(TARGET ${target})
+    if(__params_private)
+      target_include_directories(${target} PRIVATE ${__params_private})
     endif()
+    if(__params_system)
+      target_include_directories(${target} SYSTEM PRIVATE ${__params_system})
+    endif()
+  else()
+    v4r_append(V4R_TARGET_SYSTEM_INCLUDE_DIRS_${target} ${__params_system})
+    v4r_append(V4R_TARGET_PRIVATE_INCLUDE_DIRS_${target} ${__params_private})
   endif()
 endfunction()
 
 # clears all passed variables
 macro(v4r_clear_vars)
   foreach(_var ${ARGN})
+    unset(${_var})
     unset(${_var} CACHE)
   endforeach()
 endmacro()
@@ -126,14 +89,17 @@ set(V4R_COMPILER_FAIL_REGEX
     "[Uu]nknown option"                         # HP
     "[Ww]arning: [Oo]ption"                     # SunPro
     "command option .* is not recognized"       # XL
-    "not supported in this configuration; ignored"       # AIX
+    "not supported in this configuration, ignored"       # AIX (';' is replaced with ',')
     "File with unknown suffix passed to linker" # PGI
     "WARNING: unknown flag:"                    # Open64
   )
 
 MACRO(v4r_check_compiler_flag LANG FLAG RESULT)
+  set(_fname "${ARGN}")
   if(NOT DEFINED ${RESULT})
-    if("_${LANG}_" MATCHES "_CXX_")
+    if(_fname)
+      # nothing
+    elseif("_${LANG}_" MATCHES "_CXX_")
       set(_fname "${CMAKE_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/CMakeTmp/src.cxx")
       if("${CMAKE_CXX_FLAGS} ${FLAG} " MATCHES "-Werror " OR "${CMAKE_CXX_FLAGS} ${FLAG} " MATCHES "-Werror=unknown-pragmas ")
         FILE(WRITE "${_fname}" "int main() { return 0; }\n")
@@ -158,19 +124,39 @@ MACRO(v4r_check_compiler_flag LANG FLAG RESULT)
       unset(_fname)
     endif()
     if(_fname)
-      MESSAGE(STATUS "Performing Test ${RESULT}")
+      if(NOT "x${ARGN}" STREQUAL "x")
+        file(RELATIVE_PATH __msg "${CMAKE_SOURCE_DIR}" "${ARGN}")
+        set(__msg " (check file: ${__msg})")
+      else()
+        set(__msg "")
+      endif()
+      MESSAGE(STATUS "Performing Test ${RESULT}${__msg}")
       TRY_COMPILE(${RESULT}
         "${CMAKE_BINARY_DIR}"
         "${_fname}"
+        CMAKE_FLAGS "-DCMAKE_EXE_LINKER_FLAGS=${CMAKE_EXE_LINKER_FLAGS}"   # CMP0056 do this on new CMake
         COMPILE_DEFINITIONS "${FLAG}"
         OUTPUT_VARIABLE OUTPUT)
 
-      FOREACH(_regex ${V4R_COMPILER_FAIL_REGEX})
-        IF("${OUTPUT}" MATCHES "${_regex}")
-          SET(${RESULT} 0)
-          break()
-        ENDIF()
-      ENDFOREACH()
+      if(${RESULT})
+        string(REPLACE ";" "," OUTPUT_LINES "${OUTPUT}")
+        string(REPLACE "\n" ";" OUTPUT_LINES "${OUTPUT_LINES}")
+        foreach(_regex ${V4R_COMPILER_FAIL_REGEX})
+          if(NOT ${RESULT})
+            break()
+          endif()
+          foreach(_line ${OUTPUT_LINES})
+            if("${_line}" MATCHES "${_regex}")
+              file(APPEND ${CMAKE_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/CMakeError.log
+                  "Build output check failed:\n"
+                  "    Regex: '${_regex}'\n"
+                  "    Output line: '${_line}'\n")
+              set(${RESULT} 0)
+              break()
+            endif()
+          endforeach()
+        endforeach()
+      endif()
 
       IF(${RESULT})
         SET(${RESULT} 1 CACHE INTERNAL "Test ${RESULT}")
@@ -178,6 +164,13 @@ MACRO(v4r_check_compiler_flag LANG FLAG RESULT)
       ELSE(${RESULT})
         MESSAGE(STATUS "Performing Test ${RESULT} - Failed")
         SET(${RESULT} "" CACHE INTERNAL "Test ${RESULT}")
+        file(APPEND ${CMAKE_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/CMakeError.log
+            "Compilation failed:\n"
+            "    source file: '${_fname}'\n"
+            "    check option: '${FLAG}'\n"
+            "===== BUILD LOG =====\n"
+            "${OUTPUT}\n"
+            "===== END =====\n\n")
       ENDIF(${RESULT})
     else()
       SET(${RESULT} 0)
@@ -186,6 +179,10 @@ MACRO(v4r_check_compiler_flag LANG FLAG RESULT)
 ENDMACRO()
 
 macro(v4r_check_flag_support lang flag varname)
+  if(CMAKE_BUILD_TYPE)
+    set(CMAKE_TRY_COMPILE_CONFIGURATION ${CMAKE_BUILD_TYPE})
+  endif()
+
   if("_${lang}_" MATCHES "_CXX_")
     set(_lang CXX)
   elseif("_${lang}_" MATCHES "_C_")
@@ -242,24 +239,6 @@ macro(v4r_warnings_disable)
     unset(_msvc_warnings)
     unset(_gxx_warnings)
   endif(NOT ENABLE_NOISY_WARNINGS)
-endmacro()
-
-macro(add_apple_compiler_options the_module)
-  v4r_check_flag_support(OBJCXX "-fobjc-exceptions" HAVE_OBJC_EXCEPTIONS)
-  if(HAVE_OBJC_EXCEPTIONS)
-    foreach(source ${V4R_MODULE_${the_module}_SOURCES})
-      if("${source}" MATCHES "\\.mm$")
-        get_source_file_property(flags "${source}" COMPILE_FLAGS)
-        if(flags)
-          set(flags "${_flags} -fobjc-exceptions")
-        else()
-          set(flags "-fobjc-exceptions")
-        endif()
-
-        set_source_files_properties("${source}" PROPERTIES COMPILE_FLAGS "${flags}")
-      endif()
-    endforeach()
-  endif()
 endmacro()
 
 # Provides an option that the user can optionally select.
@@ -469,15 +448,13 @@ endmacro()
 
 # convert list of paths to libraries names without lib prefix
 macro(v4r_convert_to_lib_name var)
-  set(__tmp "")
+  set(tmp "")
   foreach(path ${ARGN})
-    get_filename_component(__tmp_name "${path}" NAME_WE)
-    string(REGEX REPLACE "^lib" "" __tmp_name ${__tmp_name})
-    list(APPEND __tmp "${__tmp_name}")
+    get_filename_component(tmp_name "${path}" NAME)
+    v4r_get_libname(tmp_name "${tmp_name}")
+    list(APPEND tmp "${tmp_name}")
   endforeach()
-  set(${var} ${__tmp})
-  unset(__tmp)
-  unset(__tmp_name)
+  set(${var} ${tmp} PARENT_SCOPE)
 endmacro()
 
 
@@ -504,49 +481,6 @@ function(v4r_install_target)
   if(DEFINED __package)
     list(APPEND ${__package}_TARGETS ${__target})
     set(${__package}_TARGETS "${${__package}_TARGETS}" CACHE INTERNAL "List of ${__package} targets")
-  endif()
-
-  if(INSTALL_CREATE_DISTRIB)
-    if(MSVC AND NOT BUILD_SHARED_LIBS)
-      set(__target "${ARGV0}")
-
-      set(isArchive 0)
-      set(isDst 0)
-      unset(__dst)
-      foreach(e ${ARGN})
-        if(isDst EQUAL 1)
-          set(__dst "${e}")
-          break()
-        endif()
-        if(isArchive EQUAL 1 AND e STREQUAL "DESTINATION")
-          set(isDst 1)
-        endif()
-        if(e STREQUAL "ARCHIVE")
-          set(isArchive 1)
-        else()
-          set(isArchive 0)
-        endif()
-      endforeach()
-
-#      message(STATUS "Process ${__target} dst=${__dst}...")
-      if(DEFINED __dst)
-        if(CMAKE_VERSION VERSION_LESS 2.8.12)
-          get_target_property(fname ${__target} LOCATION_DEBUG)
-          if(fname MATCHES "\\.lib$")
-            string(REGEX REPLACE "\\.lib$" ".pdb" fname "${fname}")
-            install(FILES ${fname} DESTINATION ${__dst} CONFIGURATIONS Debug)
-          endif()
-
-          get_target_property(fname ${__target} LOCATION_RELEASE)
-          if(fname MATCHES "\\.lib$")
-            string(REGEX REPLACE "\\.lib$" ".pdb" fname "${fname}")
-            install(FILES ${fname} DESTINATION ${__dst} CONFIGURATIONS Release)
-          endif()
-        else()
-          # CMake 2.8.12 brokes PDB support in STATIC libraries for MSVS
-        endif()
-      endif()
-    endif()
   endif()
 endfunction()
 
@@ -592,98 +526,19 @@ macro(v4r_parse_header FILENAME FILE_VAR)
   endforeach()
 endmacro()
 
-# read single version define from the header file
-macro(v4r_parse_header2 LIBNAME HDR_PATH VARNAME)
-  v4r_clear_vars(${LIBNAME}_VERSION_MAJOR
-                 ${LIBNAME}_VERSION_MAJOR
-                 ${LIBNAME}_VERSION_MINOR
-                 ${LIBNAME}_VERSION_PATCH
-                 ${LIBNAME}_VERSION_TWEAK
-                 ${LIBNAME}_VERSION_STRING)
-  set(${LIBNAME}_H "")
-  if(EXISTS "${HDR_PATH}")
-    file(STRINGS "${HDR_PATH}" ${LIBNAME}_H REGEX "^#define[ \t]+${VARNAME}[ \t]+\"[^\"]*\".*$" LIMIT_COUNT 1)
-  endif()
-
-  if(${LIBNAME}_H)
-    string(REGEX REPLACE "^.*[ \t]${VARNAME}[ \t]+\"([0-9]+).*$" "\\1" ${LIBNAME}_VERSION_MAJOR "${${LIBNAME}_H}")
-    string(REGEX REPLACE "^.*[ \t]${VARNAME}[ \t]+\"[0-9]+\\.([0-9]+).*$" "\\1" ${LIBNAME}_VERSION_MINOR  "${${LIBNAME}_H}")
-    string(REGEX REPLACE "^.*[ \t]${VARNAME}[ \t]+\"[0-9]+\\.[0-9]+\\.([0-9]+).*$" "\\1" ${LIBNAME}_VERSION_PATCH "${${LIBNAME}_H}")
-    set(${LIBNAME}_VERSION_MAJOR ${${LIBNAME}_VERSION_MAJOR} ${ARGN})
-    set(${LIBNAME}_VERSION_MINOR ${${LIBNAME}_VERSION_MINOR} ${ARGN})
-    set(${LIBNAME}_VERSION_PATCH ${${LIBNAME}_VERSION_PATCH} ${ARGN})
-    set(${LIBNAME}_VERSION_STRING "${${LIBNAME}_VERSION_MAJOR}.${${LIBNAME}_VERSION_MINOR}.${${LIBNAME}_VERSION_PATCH}")
-
-    # append a TWEAK version if it exists:
-    set(${LIBNAME}_VERSION_TWEAK "")
-    if("${${LIBNAME}_H}" MATCHES "^.*[ \t]${VARNAME}[ \t]+\"[0-9]+\\.[0-9]+\\.[0-9]+\\.([0-9]+).*$")
-      set(${LIBNAME}_VERSION_TWEAK "${CMAKE_MATCH_1}" ${ARGN})
-    endif()
-    if(${LIBNAME}_VERSION_TWEAK)
-      set(${LIBNAME}_VERSION_STRING "${${LIBNAME}_VERSION_STRING}.${${LIBNAME}_VERSION_TWEAK}" ${ARGN})
-    else()
-      set(${LIBNAME}_VERSION_STRING "${${LIBNAME}_VERSION_STRING}" ${ARGN})
-    endif()
-  endif()
-endmacro()
-
-# read single version info from the pkg file
-macro(v4r_parse_pkg LIBNAME PKG_PATH SCOPE)
-  if(EXISTS "${PKG_PATH}/${LIBNAME}.pc")
-    file(STRINGS "${PKG_PATH}/${LIBNAME}.pc" line_to_parse REGEX "^Version:[ \t]+[0-9.]*.*$" LIMIT_COUNT 1)
-    STRING(REGEX REPLACE ".*Version: ([^ ]+).*" "\\1" ALIASOF_${LIBNAME}_VERSION "${line_to_parse}" )
-  endif()
-endmacro()
-
-################################################################################################
-# short command to setup source group
-function(v4r_source_group group)
-  cmake_parse_arguments(SG "" "DIRBASE" "GLOB;GLOB_RECURSE;FILES" ${ARGN})
-  set(files "")
-  if(SG_FILES)
-    list(APPEND files ${SG_FILES})
-  endif()
-  if(SG_GLOB)
-    file(GLOB srcs ${SG_GLOB})
-    list(APPEND files ${srcs})
-  endif()
-  if(SG_GLOB_RECURSE)
-    file(GLOB_RECURSE srcs ${SG_GLOB_RECURSE})
-    list(APPEND files ${srcs})
-  endif()
-  if(SG_DIRBASE)
-    foreach(f ${files})
-      file(RELATIVE_PATH fpart "${SG_DIRBASE}" "${f}")
-      if(fpart MATCHES "^\\.\\.")
-        message(AUTHOR_WARNING "Can't detect subpath for source_group command: Group=${group} FILE=${f} DIRBASE=${SG_DIRBASE}")
-        set(fpart "")
-      else()
-        get_filename_component(fpart "${fpart}" PATH)
-        if(fpart)
-          set(fpart "/${fpart}") # add '/'
-          string(REPLACE "/" "\\" fpart "${fpart}")
-        endif()
-      endif()
-      source_group("${group}${fpart}" FILES ${f})
-    endforeach()
-  else()
-    source_group(${group} FILES ${files})
-  endif()
-endfunction()
-
 function(v4r_target_link_libraries target)
-  _v4r_fix_target(target)
   set(LINK_DEPS ${ARGN})
   target_link_libraries(${target} ${LINK_DEPS})
 endfunction()
 
 function(_v4r_append_target_includes target)
-  if(DEFINED V4R_TARGET_INCLUDE_DIRS_${target})
-    target_include_directories(${target} PRIVATE ${V4R_TARGET_INCLUDE_DIRS_${target}})
-    if (TARGET ${target}_object)
-      target_include_directories(${target}_object PRIVATE ${V4R_TARGET_INCLUDE_DIRS_${target}})
-    endif()
-    unset(V4R_TARGET_INCLUDE_DIRS_${target} CACHE)
+  if(V4R_TARGET_SYSTEM_INCLUDE_DIRS_${target})
+    target_include_directories(${target} SYSTEM PRIVATE ${V4R_TARGET_SYSTEM_INCLUDE_DIRS_${target}})
+    unset(V4R_TARGET_SYSTEM_INCLUDE_DIRS_${target} CACHE)
+  endif()
+  if(V4R_TARGET_PRIVATE_INCLUDE_DIRS_${target})
+    target_include_directories(${target} PRIVATE ${V4R_TARGET_PRIVATE_INCLUDE_DIRS_${target}})
+    unset(V4R_TARGET_PRIVATE_INCLUDE_DIRS_${target} CACHE)
   endif()
 endfunction()
 
@@ -712,28 +567,15 @@ function(v4r_add_library target)
 
   add_library(${target} ${ARGN} ${cuda_objs})
 
-  # Add OBJECT library (added in cmake 2.8.8) to use in compound modules
-  if (NOT CMAKE_VERSION VERSION_LESS "2.8.8"
-      AND NOT V4R_MODULE_${target}_CHILDREN
-      AND NOT V4R_MODULE_${target}_CLASS STREQUAL "BINDINGS"
-      AND NOT ${target} STREQUAL "v4r_ts"
-    )
-    set(sources ${ARGN})
-    v4r_list_filterout(sources "\\\\.(cl|inc)$")
-    add_library(${target}_object OBJECT ${sources})
-    set_target_properties(${target}_object PROPERTIES
-      EXCLUDE_FROM_ALL True
-      EXCLUDE_FROM_DEFAULT_BUILD True
-      POSITION_INDEPENDENT_CODE True
-      )
-    if (ENABLE_SOLUTION_FOLDERS)
-      set_target_properties(${target}_object PROPERTIES FOLDER "object_libraries")
-    endif()
-    unset(sources)
-  endif()
-
   _v4r_append_target_includes(${target})
 endfunction()
+
+macro(v4r_get_libname var_name)
+  get_filename_component(__libname "${ARGN}" NAME)
+  # libv4r_core.so.3.3 -> opencv_core
+  string(REGEX REPLACE "^lib(.+)\\.(a|so)(\\.[.0-9]+)?$" "\\1" __libname "${__libname}")
+  set(${var_name} "${__libname}")
+endmacro()
 
 # build the list of v4r libs and dependencies for all modules
 #  _modules - variable to hold list of all modules
@@ -779,75 +621,37 @@ macro(v4r_get_all_libs _modules _extra _3rdparty)
   endforeach()
 endmacro()
 
-function(v4r_download)
-  cmake_parse_arguments(DL "" "PACKAGE;HASH;URL;DESTINATION_DIR;DOWNLOAD_DIR" "" ${ARGN})
-  if(NOT DL_DOWNLOAD_DIR)
-    set(DL_DOWNLOAD_DIR "${DL_DESTINATION_DIR}/downloads")
-  endif()
-  if(DEFINED DL_DESTINATION_DIR)
-    set(DESTINATION_TARGET "${DL_DESTINATION_DIR}/${DL_PACKAGE}")
-    if(EXISTS "${DESTINATION_TARGET}")
-      file(MD5 "${DESTINATION_TARGET}" target_md5)
-      if(NOT target_md5 STREQUAL DL_HASH)
-        file(REMOVE "${DESTINATION_TARGET}")
-      else()
-        set(DOWNLOAD_PACKAGE_LOCATION "" PARENT_SCOPE)
-        unset(DOWNLOAD_PACKAGE_LOCATION)
-        return()
-      endif()
-    endif()
-  endif()
-  set(DOWNLOAD_TARGET "${DL_DOWNLOAD_DIR}/${DL_HASH}/${DL_PACKAGE}")
-  get_filename_component(DOWNLOAD_TARGET_DIR "${DOWNLOAD_TARGET}" PATH)
-  if(EXISTS "${DOWNLOAD_TARGET}")
-    file(MD5 "${DOWNLOAD_TARGET}" target_md5)
-    if(NOT target_md5 STREQUAL DL_HASH)
-      message(WARNING "Download: Local copy of ${DL_PACKAGE} has invalid MD5 hash: ${target_md5} (expected: ${DL_HASH})")
-      file(REMOVE "${DOWNLOAD_TARGET}")
-      file(REMOVE_RECURSE "${DOWNLOAD_TARGET_DIR}")
-    endif()
-  endif()
 
-  if(NOT EXISTS "${DOWNLOAD_TARGET}")
-    set(__url "")
-    foreach(__url_i ${DL_URL})
-      if(NOT ("${__url_i}" STREQUAL ""))
-        set(__url "${__url_i}")
-        break()
+# Append elements to an internal cached list (help string is preserved)
+# A new list is created if the variable does not exist yet
+macro(v4r_append _list)
+  if(NOT DEFINED ${_list})
+    set(${_list} ${ARGN} CACHE INTERNAL "")
+  else()
+    get_property(_help_string CACHE "${_list}" PROPERTY HELPSTRING)
+    list(APPEND ${_list} ${ARGN})
+    set(${_list} ${${_list}} CACHE INTERNAL "${_help_string}")
+  endif()
+endmacro()
+
+
+# Print all cache variables matching a given string
+macro(v4r_print_cache_variables _string)
+  if(NOT ${_string} STREQUAL "")
+    message(STATUS "")
+    message(STATUS "List of cache variables matching ${_string}")
+    message(STATUS "")
+    get_cmake_property(_vars VARIABLES)
+    foreach(_var ${_vars})
+      if(_var MATCHES ${_string})
+        get_property(_help_string CACHE "${_var}" PROPERTY HELPSTRING)
+        if(NOT ${_help_string} STREQUAL "")
+          message(STATUS "# ${_help_string}")
+        endif()
+        message(STATUS "${_var}='${${_var}}'")
+        message(STATUS "")
       endif()
     endforeach()
-    if("${__url}" STREQUAL "")
-      message(FATAL_ERROR "Download URL is not specified for package ${DL_PACKAGE}")
-    endif()
-
-    if(NOT EXISTS "${DOWNLOAD_TARGET_DIR}")
-      file(MAKE_DIRECTORY ${DOWNLOAD_TARGET_DIR})
-    endif()
-    message(STATUS "Downloading ${DL_PACKAGE}...")
-    #message(STATUS "    ${__url}${DL_PACKAGE}")
-    file(DOWNLOAD "${__url}${DL_PACKAGE}" "${DOWNLOAD_TARGET}"
-         TIMEOUT 600 STATUS __status
-         EXPECTED_MD5 ${DL_HASH})
-    if(NOT __status EQUAL 0)
-      message(FATAL_ERROR "Failed to download ${DL_PACKAGE}. Status=${__status}")
-    else()
-      # Don't remove this code, because EXPECTED_MD5 parameter doesn't fail "file(DOWNLOAD)" step on wrong hash
-      file(MD5 "${DOWNLOAD_TARGET}" target_md5)
-      if(NOT target_md5 STREQUAL DL_HASH)
-        message(FATAL_ERROR "Downloaded copy of ${DL_PACKAGE} has invalid MD5 hash: ${target_md5} (expected: ${DL_HASH})")
-      endif()
-    endif()
-    message(STATUS "Downloading ${DL_PACKAGE}... Done")
   endif()
+endmacro()
 
-  if(DEFINED DL_DESTINATION_DIR)
-    execute_process(COMMAND ${CMAKE_COMMAND} -E copy_if_different "${DOWNLOAD_TARGET}" "${DL_DESTINATION_DIR}/"
-                    RESULT_VARIABLE __result)
-
-    if(NOT __result EQUAL 0)
-      message(FATAL_ERROR "Downloader: Failed to copy package from ${DOWNLOAD_TARGET} to ${DL_DESTINATION_DIR} with error ${__result}")
-    endif()
-  endif()
-
-  set(DOWNLOAD_PACKAGE_LOCATION ${DOWNLOAD_TARGET} PARENT_SCOPE)
-endfunction()

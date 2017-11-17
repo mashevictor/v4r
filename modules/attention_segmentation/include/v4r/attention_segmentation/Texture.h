@@ -37,7 +37,6 @@
 **
 ****************************************************************************/
 
-
 /**
  * @file Texture.h
  * @author Richtsfeld
@@ -49,39 +48,34 @@
 #ifndef SURFACE_TEXTURE_H
 #define SURFACE_TEXTURE_H
 
-#include <vector>
 #include <stdio.h>
+#include <vector>
 
-#include <opencv2/opencv.hpp>
 #include <v4r/core/macros.h>
+#include <opencv2/opencv.hpp>
 
 #include "v4r/attention_segmentation//SurfaceModel.h"
 
+namespace v4r {
 
-namespace v4r
-{
-
-class V4R_EXPORTS Texture
-{
-private:
-
+class V4R_EXPORTS Texture {
+ private:
   bool computed;
   bool have_edges;
   cv::Mat edges;
   bool have_indices;
   pcl::PointIndices::Ptr indices;
-  
-  int width, height;
-  
-  double textureRate;                                      ///< Texture rate for each surface
 
-public:
-  
+  int width, height;
+
+  double textureRate;  ///< Texture rate for each surface
+
+ public:
   typedef boost::shared_ptr<Texture> Ptr;
-  
+
   Texture();
   ~Texture();
-  
+
   /** Set input point cloud **/
   // sets input cloud
   void setInputEdges(cv::Mat &_edges);
@@ -90,19 +84,22 @@ public:
   V4R_EXPORTS void setIndices(std::vector<int> &_indices);
   void setIndices(cv::Rect rect);
 
-  double getTextureRate() {return textureRate;};
-  bool getComputed() {return computed;};
-  
+  double getTextureRate() {
+    return textureRate;
+  };
+  bool getComputed() {
+    return computed;
+  };
+
   /** Compute the texture **/
   void compute();
-  
+
   /** Compare surface texture **/
   double compare(Texture::Ptr t);
 };
 
 /*************************** INLINE METHODES **************************/
 
-} //--END--
+}  //--END--
 
 #endif
-

@@ -37,52 +37,46 @@
 **
 ****************************************************************************/
 
-
-
 #ifndef IKN_SALIENCYMAP
 #define IKN_SALIENCYMAP
 
 #include <v4r/core/macros.h>
 #include "v4r/attention_segmentation/BaseMap.h"
 
-namespace v4r
-{
+namespace v4r {
 
-class V4R_EXPORTS IKNSaliencyMap : public BaseMap
-{
-public:
-  IKNSaliencyMap();//
-  ~IKNSaliencyMap();//
-  
-  void setWeights(int weightOfColor_, int weightOfIntensities_, int weightOfOrientations_);//
-  void getWeights(int &weightOfColor_, int &weightOfIntensities_, int &weightOfOrientations_);//
-  
-  void setNumberOfOrientations(int numberOfOrientations_);//
-  int getNumberOfOrientations();//
+class V4R_EXPORTS IKNSaliencyMap : public BaseMap {
+ public:
+  IKNSaliencyMap();   //
+  ~IKNSaliencyMap();  //
+
+  void setWeights(int weightOfColor_, int weightOfIntensities_, int weightOfOrientations_);     //
+  void getWeights(int &weightOfColor_, int &weightOfIntensities_, int &weightOfOrientations_);  //
+
+  void setNumberOfOrientations(int numberOfOrientations_);  //
+  int getNumberOfOrientations();                            //
 
   virtual int calculate();
-  virtual void reset();//
-  virtual void print();//
-  
-private:
-  
+  virtual void reset();  //
+  virtual void print();  //
+
+ private:
   cv::Mat R, G, B, Y, I;
-  int     weightOfColor;
-  int     weightOfIntensities;
-  int     weightOfOrientations;
-  int     numberOfOrientations;
-  
+  int weightOfColor;
+  int weightOfIntensities;
+  int weightOfOrientations;
+  int numberOfOrientations;
+
   void initializePyramid(IttiPyramid::Ptr pyramid, cv::Mat &IM, bool changeSign_ = false);
   void createColorChannels();
   int createFeatureMapsI(IttiPyramid::Ptr pyramid);
   int createFeatureMapsO(IttiPyramid::Ptr pyramidO, float angle);
   int createFeatureMapsRG(IttiPyramid::Ptr pyramidR, IttiPyramid::Ptr pyramidG);
-  
-protected:  
-  virtual int checkParameters();//
-  
+
+ protected:
+  virtual int checkParameters();  //
 };
 
-} // v4r
+}  // v4r
 
-#endif //IKN_SALIENCYMAP
+#endif  // IKN_SALIENCYMAP

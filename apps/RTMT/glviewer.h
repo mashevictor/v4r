@@ -37,7 +37,6 @@
 **
 ****************************************************************************/
 
-
 /**
  * @file glviewer.h
  * @author Johann Prankl (prankl@acin.tuwien.ac.at), Thomas Moerwald
@@ -46,83 +45,71 @@
  *
  */
 
-
-
 #ifndef _GRAB_PCD_GL_VIEWER_H_
 #define _GRAB_PCD_GL_VIEWER_H_
 
 #ifndef Q_MOC_RUN
 #include <qgraphicswidget.h>
+#include <QElapsedTimer>
 #include <QGLWidget>
 #include <QMouseEvent>
-#include <QTimer>
-#include <QElapsedTimer>
-#include <QThread>
 #include <QMutex>
+#include <QThread>
+#include <QTimer>
 
+#include <boost/smart_ptr.hpp>
 #include <string>
 #include <vector>
-#include <boost/smart_ptr.hpp>
 
-#include <opencv2/opencv.hpp>
+#include <pcl/octree/octree.h>
+#include <pcl/octree/octree_pointcloud_voxelcentroid.h>
 #include <pcl/point_cloud.h>
 #include <pcl/point_types.h>
-#include <pcl/octree/octree_pointcloud_voxelcentroid.h>
-#include <pcl/octree/octree.h>
+#include <opencv2/opencv.hpp>
 
 #include "Camera.h"
+#include "OctreeVoxelCentroidContainerXYZRGB.hpp"
 #include "params.h"
 #include "sensor.h"
-#include "OctreeVoxelCentroidContainerXYZRGB.hpp"
 
 #include <QGraphicsView>
 #endif
 
-
-class GLGraphicsView : public QGraphicsView
-{
+class GLGraphicsView : public QGraphicsView {
   Q_OBJECT
 
-signals:
+ signals:
   void mouse_moved(QMouseEvent *event);
   void mouse_pressed(QMouseEvent *event);
   void key_pressed(QKeyEvent *event);
   void wheel_event(QWheelEvent *event);
 
+ public:
+  GLGraphicsView(QWidget *widget = 0) : QGraphicsView(widget) {}
 
-public:
-  GLGraphicsView(QWidget* widget=0) : QGraphicsView(widget) { }
-
-  void mouseMoveEvent(QMouseEvent *event)
-  {
+  void mouseMoveEvent(QMouseEvent *event) {
     emit mouse_moved(event);
   }
 
-  void mousePressEvent(QMouseEvent *event)
-  {
+  void mousePressEvent(QMouseEvent *event) {
     emit mouse_pressed(event);
   }
 
-  void keyPressEvent(QKeyEvent *event)
-  {
+  void keyPressEvent(QKeyEvent *event) {
     emit key_pressed(event);
   }
 
-  void wheelEvent(QWheelEvent *event)
-  {
+  void wheelEvent(QWheelEvent *event) {
     emit wheel_event(event);
   }
-
-
 };
 
-class GLViewer : public QGLWidget
-{
+class GLViewer : public QGLWidget {
   Q_OBJECT
 
-public:
+ public:
   //! Default constructor.
-  GLViewer(QWidget* _parent=0);
+  GLViewer(QWidget *_parent = 0);
 
   //! Destructor.
   virtual ~GLViewer();
@@ -136,16 +123,16 @@ public:
   void selectROI(bool enable);
   void resetView(float fw = 0.);
 
-signals:
+ signals:
   void segment_image(int x, int y);
   void select_roi(int x, int y);
 
-public slots:
+ public slots:
   void draw();
 
   void new_image(const pcl::PointCloud<pcl::PointXYZRGB>::Ptr &_cloud, const cv::Mat_<cv::Vec3b> &_image);
-  void update_model_cloud(const boost::shared_ptr< Sensor::AlignedPointXYZRGBVector > &_oc_cloud);
-  void update_cam_trajectory(const boost::shared_ptr< std::vector<Sensor::CameraLocation> > &_cam_trajectory);
+  void update_model_cloud(const boost::shared_ptr<Sensor::AlignedPointXYZRGBVector> &_oc_cloud);
+  void update_cam_trajectory(const boost::shared_ptr<std::vector<Sensor::CameraLocation>> &_cam_trajectory);
   void update_visualization();
   void update_boundingbox(const std::vector<Eigen::Vector3f> &edges, const Eigen::Matrix4f &pose);
 
@@ -156,13 +143,12 @@ public slots:
   void key_pressed(QKeyEvent *event);
   void wheel_event(QWheelEvent *event);
 
-private:
-
+ private:
   //! Initializes OpenGL states (triggered by Qt).
   void initializeGL();
 
   //! Draws a coordinate frame at the origin (0,0,0).
-  void drawCoordinates(float length=1.0, const Eigen::Matrix4f &pose=Eigen::Matrix4f::Identity());
+  void drawCoordinates(float length = 1.0, const Eigen::Matrix4f &pose = Eigen::Matrix4f::Identity());
 
   //! Grabs an Image and draws it.
   void drawImage();
@@ -179,7 +165,6 @@ private:
 
   Eigen::Vector4f pt00, pt0x, pt0y, pt0z;
   Eigen::Vector4f pt10, pt1x, pt1y, pt1z;
-
 
   size_t m_width;
   size_t m_height;
@@ -214,16 +199,12 @@ private:
 
   RGBDCameraParameter cam_params;
 
-protected:
-
+ protected:
   // Qt mouse events
-  virtual void mousePressEvent(QMouseEvent* event);
-  virtual void mouseMoveEvent(QMouseEvent* event);
-  virtual void wheelEvent(QWheelEvent* event);
+  virtual void mousePressEvent(QMouseEvent *event);
+  virtual void mouseMoveEvent(QMouseEvent *event);
+  virtual void wheelEvent(QWheelEvent *event);
   virtual void keyPressEvent(QKeyEvent *event);
-
 };
 
-
-
-#endif // GLWIDGET_H
+#endif  // GLWIDGET_H

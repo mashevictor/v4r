@@ -37,46 +37,41 @@
 **
 ****************************************************************************/
 
-
 /**
  * @file main.cpp
  * @author Johann Prankl (prankl@acin.tuwien.ac.at)
  * @date 2017
  * @brief
  *
- */ 
+ */
 
 #ifndef KP_FEATURE_SELECTION_HH
 #define KP_FEATURE_SELECTION_HH
 
-#include <iostream>
-#include <fstream>
 #include <float.h>
-#include <vector>
-#include <opencv2/core/core.hpp>
-#include <opencv2/imgproc/imgproc.hpp>
-#include <opencv2/features2d/features2d.hpp>
+#include <v4r/common/ClusteringRNN.h>
 #include <Eigen/Dense>
+#include <fstream>
+#include <iostream>
+#include <opencv2/core/core.hpp>
+#include <opencv2/features2d/features2d.hpp>
+#include <opencv2/imgproc/imgproc.hpp>
 #include <stdexcept>
 #include <v4r/common/impl/SmartPtr.hpp>
-#include <v4r/common/ClusteringRNN.h>
+#include <vector>
 
-namespace v4r 
-{
+namespace v4r {
 
-class V4R_EXPORTS FeatureSelection
-{
-public:
-  class Parameter
-  {
-  public:
+class V4R_EXPORTS FeatureSelection {
+ public:
+  class Parameter {
+   public:
     float thr_image_px;
     float thr_desc;
-    Parameter(float _thr_image_px=1.5, float _thr_desc=0.55)
-    : thr_image_px(_thr_image_px), thr_desc(_thr_desc) {}
+    Parameter(float _thr_image_px = 1.5, float _thr_desc = 0.55) : thr_image_px(_thr_image_px), thr_desc(_thr_desc) {}
   };
 
-private:
+ private:
   Parameter param;
 
   ClusteringRNN rnn;
@@ -84,25 +79,20 @@ private:
   DataMatrix2Df descs;
   DataMatrix2Df pts;
 
-public:
+ public:
   cv::Mat dbg;
 
-  FeatureSelection(const Parameter &p=Parameter());
+  FeatureSelection(const Parameter &p = Parameter());
   ~FeatureSelection();
 
   void compute(std::vector<cv::KeyPoint> &keys, cv::Mat &descriptors);
 
-  typedef SmartPtr< ::v4r::FeatureSelection> Ptr;
-  typedef SmartPtr< ::v4r::FeatureSelection const> ConstPtr;
+  typedef SmartPtr<::v4r::FeatureSelection> Ptr;
+  typedef SmartPtr<::v4r::FeatureSelection const> ConstPtr;
 };
-
-
 
 /*************************** INLINE METHODES **************************/
 
-
-
-} //--END--
+}  //--END--
 
 #endif
-

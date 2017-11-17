@@ -1,4 +1,7 @@
-project(${METSLIB_LIBRARY})
-install(DIRECTORY . DESTINATION "${V4R_3P_INCLUDE_INSTALL_PATH}/metslib")
-set(${METSLIB_LIBRARY}_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/.. CACHE INTERNAL "METSlib include directory")
-set(${METSLIB_LIBRARY}_VERSION "0.5.3" CACHE INTERNAL "METSlib version")
+cmake_minimum_required(VERSION 2.8 FATAL_ERROR)
+project(METSlib)
+
+install(DIRECTORY .
+        DESTINATION "include/metslib"
+        FILES_MATCHING PATTERN "*.hh"
+)

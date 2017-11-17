@@ -1,5 +1,5 @@
 /**
- *  Copyright (C) 2012  
+ *  Copyright (C) 2012
  *    Ekaterina Potapova
  *    Automation and Control Institute
  *    Vienna University of Technology
@@ -21,7 +21,6 @@
  *  along with this program.  If not, see http://www.gnu.org/licenses/
  */
 
-
 #include <opencv2/opencv.hpp>
 
 #include "v4r/attention_segmentation/AttentionModule.h"
@@ -30,90 +29,85 @@
 // This program shows the use of TJ to extract attention points
 void printUsage(const char *argv0);
 
-void printUsage(const char *argv0)
-{
+void printUsage(const char *argv0) {
   printf(
-    "Extracts attention points using TJ\n"
-    "usage: %s image.png saliency.png output.txt result.png\n"
-    "  image.png             ... color image\n"
-    "  saliency.png          ... saliency image\n"
-    "  points.txt            ... output text file with points\n"
-    "  result.png            ... output file name\n", argv0);
-  printf(" Example: %s 1 image.png saliency.png points.txt result.png\n",argv0);
+      "Extracts attention points using TJ\n"
+      "usage: %s image.png saliency.png output.txt result.png\n"
+      "  image.png             ... color image\n"
+      "  saliency.png          ... saliency image\n"
+      "  points.txt            ... output text file with points\n"
+      "  result.png            ... output file name\n",
+      argv0);
+  printf(" Example: %s 1 image.png saliency.png points.txt result.png\n", argv0);
 }
 
-int main(int argc, char** argv)
-{
-  if(argc != 5)
-  {
+int main(int argc, char **argv) {
+  if (argc != 5) {
     printUsage(argv[0]);
-    return(0);
+    return (0);
   }
-  
-  srand ( time(NULL) );
-  
+
+  srand(time(NULL));
+
   std::string image_name(argv[1]);
   std::string saliency_map_name(argv[2]);
   std::string output_file_name(argv[3]);
   std::string output_png_name(argv[4]);
-    
-  cv::Mat image = cv::imread(image_name,-1);
-  cv::Mat map = cv::imread(saliency_map_name,-1);
-  map.convertTo(map,CV_32F,1.0f/255);
-    
+
+  cv::Mat image = cv::imread(image_name, -1);
+  cv::Mat map = cv::imread(saliency_map_name, -1);
+  map.convertTo(map, CV_32F, 1.0f / 255);
+
   std::vector<v4r::ConnectedComponent> connectedComponents;
-    
+
   float th = 0.1;
-  v4r::extractConnectedComponents(map,connectedComponents,th);
-  v4r::drawConnectedComponents(connectedComponents,image,cv::Scalar(255,0,0));
-  //std::cerr << "Number of connected components: " << connectedComponents.size() << std::endl;
-    
+  v4r::extractConnectedComponents(map, connectedComponents, th);
+  v4r::drawConnectedComponents(connectedComponents, image, cv::Scalar(255, 0, 0));
+  // std::cerr << "Number of connected components: " << connectedComponents.size() << std::endl;
+
   std::vector<v4r::SaliencyLine> saliencyLine;
-  cv::Mat points_image = cv::Mat_<uchar>::zeros(image.rows,image.cols);
+  cv::Mat points_image = cv::Mat_<uchar>::zeros(image.rows, image.cols);
   std::vector<v4r::PointSaliency> saliencyPoints;
-    
-  for(unsigned int i = 0; i < connectedComponents.size(); ++ i)
-  {
-    //std::cerr << i << " " << connectedComponents.size() << std::endl;
-    cv::Mat mask = cv::Mat_<uchar>::zeros(image.rows,image.cols);
-    v4r::drawConnectedComponent(connectedComponents.at(i),mask,cv::Scalar(1));
-    //cv::imshow("mask",255*mask);
-    //cv::waitKey();
-      
+
+  for (unsigned int i = 0; i < connectedComponents.size(); ++i) {
+    // std::cerr << i << " " << connectedComponents.size() << std::endl;
+    cv::Mat mask = cv::Mat_<uchar>::zeros(image.rows, image.cols);
+    v4r::drawConnectedComponent(connectedComponents.at(i), mask, cv::Scalar(1));
+    // cv::imshow("mask",255*mask);
+    // cv::waitKey();
+
     v4r::SaliencyLine saliencyLineCurent;
     v4r::PointSaliency pointSaliencyCurrent;
-    //std::cerr << "here 0" << std::endl;
-    if(v4r::extractSaliencyLine(mask,map,saliencyLineCurent))
-    {
-      //std::vector<cv::Point> saliencyLineCurent_points;
-      //v4r::createSimpleLine(saliencyLineCurent,saliencyLineCurent_points);
-      //std::cerr << saliencyLineCurent_points.size() << std::endl;
-      //v4r::drawAttentionPoints(image,saliencyLineCurent_points);
-      //cv::imshow("skeleton",image);
-      //cv::waitKey();
-      
+    // std::cerr << "here 0" << std::endl;
+    if (v4r::extractSaliencyLine(mask, map, saliencyLineCurent)) {
+      // std::vector<cv::Point> saliencyLineCurent_points;
+      // v4r::createSimpleLine(saliencyLineCurent,saliencyLineCurent_points);
+      // std::cerr << saliencyLineCurent_points.size() << std::endl;
+      // v4r::drawAttentionPoints(image,saliencyLineCurent_points);
+      // cv::imshow("skeleton",image);
+      // cv::waitKey();
+
       saliencyLine.push_back(saliencyLineCurent);
-      //std::cerr << "here 1" << std::endl;
-      v4r::selectSaliencyCenterPoint(saliencyLineCurent,pointSaliencyCurrent);
-      //std::cerr << "here 2" << std::endl;
+      // std::cerr << "here 1" << std::endl;
+      v4r::selectSaliencyCenterPoint(saliencyLineCurent, pointSaliencyCurrent);
+      // std::cerr << "here 2" << std::endl;
       saliencyPoints.push_back(pointSaliencyCurrent);
-      
     }
-    //std::cerr << "here 3" << std::endl;
+    // std::cerr << "here 3" << std::endl;
   }
-    
-  std::sort(saliencyPoints.begin(),saliencyPoints.end(),v4r::saliencyPointsSort);
-    
+
+  std::sort(saliencyPoints.begin(), saliencyPoints.end(), v4r::saliencyPointsSort);
+
   std::vector<cv::Point> attentionPoints;
-  v4r::createAttentionPoints(saliencyPoints,attentionPoints);
-  
-  v4r::writeAttentionPoints(attentionPoints,output_file_name);
-  
-  v4r::drawAttentionPoints(image,attentionPoints,10);
-  
-  cv::imwrite(output_png_name,image);
-  
-  //cv::imshow("attention points", image);
-  //cv::imshow("saliency map", map);
-  //cv::waitKey();
+  v4r::createAttentionPoints(saliencyPoints, attentionPoints);
+
+  v4r::writeAttentionPoints(attentionPoints, output_file_name);
+
+  v4r::drawAttentionPoints(image, attentionPoints, 10);
+
+  cv::imwrite(output_png_name, image);
+
+  // cv::imshow("attention points", image);
+  // cv::imshow("saliency map", map);
+  // cv::waitKey();
 }

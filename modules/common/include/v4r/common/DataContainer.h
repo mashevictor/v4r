@@ -37,59 +37,46 @@
 **
 ****************************************************************************/
 
-
 /**
  * @file main.cpp
  * @author Johann Prankl (prankl@acin.tuwien.ac.at)
  * @date 2017
  * @brief
  *
- */ 
+ */
 
 #ifndef V4R_DATACONTAINER_HH
 #define V4R_DATACONTAINER_HH
 
 #include <stdio.h>
-#include <iostream>
-#include <fstream>
-#include <vector>
-#include <stdexcept>
 #include <string.h>
+#include <fstream>
+#include <iostream>
+#include <stdexcept>
 #include <v4r/common/impl/SmartPtr.hpp>
+#include <vector>
 
-namespace v4r 
-{
+namespace v4r {
 
 /**
  * DataContainer
  */
-class V4R_EXPORTS DataContainer
-{
-public:
-  enum Type
-  {
-    FLOAT_2D,
-    FLOAT3_2D,
-    FLOAT4_2D,
-    UCHAR_2D,
-    INT_2D,
-    UINT_2D,
-    MAX_TYPE,
-    UNDEF = MAX_TYPE
-  };
+class V4R_EXPORTS DataContainer {
+ public:
+  enum Type { FLOAT_2D, FLOAT3_2D, FLOAT4_2D, UCHAR_2D, INT_2D, UINT_2D, MAX_TYPE, UNDEF = MAX_TYPE };
 
-public:
+ public:
   Type type;
 
-  DataContainer(const Type &_type=UNDEF) {type=_type;};
+  DataContainer(const Type &_type = UNDEF) {
+    type = _type;
+  };
   virtual ~DataContainer(){};
 
-  typedef SmartPtr< ::v4r::DataContainer > Ptr;
-  typedef SmartPtr< ::v4r::DataContainer const> ConstPtr;
+  typedef SmartPtr<::v4r::DataContainer> Ptr;
+  typedef SmartPtr<::v4r::DataContainer const> ConstPtr;
 };
 
-
-} //--END--
+}  //--END--
 
 #endif
-

@@ -37,7 +37,6 @@
 **
 ****************************************************************************/
 
-
 /**
  * @file types.h
  * @author Thomas Faeulhammer (faeulhammer@acin.tuwien.ac.at)
@@ -47,13 +46,11 @@
  */
 #pragma once
 
-namespace v4r
-{
-        enum KeypointType
-        {
-            UniformSampling = 0x01, // 00000001
-            ISS = 0x02, // 00000010
-            NARF  = 0x04, // 00000100
-            HARRIS3D  = 0x08 // 00000100
-        };
+namespace v4r {
+enum KeypointType {
+  UniformSampling = 0x01,  // 00000001
+  ISS = 0x02,              // 00000010
+  NARF = 0x04,             // 00000100
+  HARRIS3D = 0x08          // 00000100
+};
 }

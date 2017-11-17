@@ -37,7 +37,6 @@
 **
 ****************************************************************************/
 
-
 /**
  * @file main.cpp
  * @author Johann Prankl (prankl@acin.tuwien.ac.at), Aitor Aldoma (aldoma@acin.tuwien.ac.at)
@@ -46,16 +45,13 @@
  *
  */
 
-
-
-#include "mainwindow.h"
 #include <QApplication>
+#include "mainwindow.h"
 
-int main(int argc, char *argv[])
-{
+int main(int argc, char *argv[]) {
   QApplication a(argc, argv);
   MainWindow w;
   w.show();
-  
+
   return a.exec();
 }

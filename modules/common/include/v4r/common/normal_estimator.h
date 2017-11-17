@@ -37,7 +37,6 @@
 **
 ****************************************************************************/
 
-
 /**
  * @file normal_estimator.h
  * @author Thomas Faeulhammer (faeulhammer@acin.tuwien.ac.at), Aitor Aldoma (aldoma@acin.tuwien.ac.at)
@@ -47,69 +46,58 @@
  */
 #pragma once
 
+#include <pcl/PointIndices.h>
 #include <pcl/point_cloud.h>
 #include <pcl/point_types.h>
-#include <pcl/PointIndices.h>
 #include <v4r/core/macros.h>
 
-namespace v4r
-{
+namespace v4r {
 
-enum NormalEstimatorType
-{
-    PCL_DEFAULT = 0x01, // 00000001
-    PCL_INTEGRAL_NORMAL = 0x02, // 00000010
-    Z_ADAPTIVE  = 0x04, // 00000100
-    PRE_PROCESS = 0x08 // 00001000
+enum NormalEstimatorType {
+  PCL_DEFAULT = 0x01,          // 00000001
+  PCL_INTEGRAL_NORMAL = 0x02,  // 00000010
+  Z_ADAPTIVE = 0x04,           // 00000100
 };
 
+template <typename PointT>
+class V4R_EXPORTS NormalEstimator {
+ protected:
+  typename pcl::PointCloud<PointT>::ConstPtr input_;  ///< input cloud
+  pcl::PointCloud<pcl::Normal>::Ptr normal_;          ///< computed surface normals for input cloud
+  std::vector<int>
+      indices_;  ///< indices of the segmented object (extracted keypoints outside of this will be neglected)
 
-template<typename PointT>
-class V4R_EXPORTS NormalEstimator
-{
-protected:
-    typename pcl::PointCloud<PointT>::ConstPtr input_; ///< input cloud
-    pcl::PointCloud<pcl::Normal>::Ptr normal_; ///< computed surface normals for input cloud
-    std::vector<int> indices_;  ///< indices of the segmented object (extracted keypoints outside of this will be neglected)
+ public:
+  virtual ~NormalEstimator() {}
 
-public:
-    virtual ~NormalEstimator(){ }
+  /**
+   * @brief setInputCloud
+   * @param input input cloud
+   */
+  void setInputCloud(const typename pcl::PointCloud<PointT>::ConstPtr &input) {
+    input_ = input;
+  }
 
-    /**
-     * @brief setInputCloud
-     * @param input input cloud
-     */
-    void
-    setInputCloud (const typename pcl::PointCloud<PointT>::ConstPtr & input)
-    {
-        input_ = input;
-    }
+  /**
+   * @brief setIndices
+   * @param indices indices of the segmented object (extracted keypoints outside of this will be neglected)
+   */
+  void setIndices(const std::vector<int> &indices) {
+    indices_ = indices;
+  }
 
-    /**
-     * @brief setIndices
-     * @param indices indices of the segmented object (extracted keypoints outside of this will be neglected)
-     */
-    void
-    setIndices(const std::vector<int> &indices)
-    {
-        indices_ = indices;
-    }
+  /**
+   * @brief getNormalEstimatorType
+   * @return unique type id of normal estimator(as stated in keypoint/types.h)
+   */
+  virtual int getNormalEstimatorType() const = 0;
 
-    /**
-     * @brief getNormalEstimatorType
-     * @return unique type id of normal estimator(as stated in keypoint/types.h)
-     */
-    virtual int getNormalEstimatorType() const = 0;
+  /**
+   * @brief compute
+   */
+  virtual pcl::PointCloud<pcl::Normal>::Ptr compute() = 0;
 
-    /**
-     * @brief compute
-     */
-    virtual
-    pcl::PointCloud<pcl::Normal>::Ptr
-    compute () = 0;
-
-    typedef boost::shared_ptr< NormalEstimator<PointT> > Ptr;
-    typedef boost::shared_ptr< NormalEstimator<PointT> const> ConstPtr;
+  typedef boost::shared_ptr<NormalEstimator<PointT>> Ptr;
+  typedef boost::shared_ptr<NormalEstimator<PointT> const> ConstPtr;
 };
-
 }

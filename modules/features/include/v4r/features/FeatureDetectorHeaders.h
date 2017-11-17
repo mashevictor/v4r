@@ -37,14 +37,13 @@
 **
 ****************************************************************************/
 
-
 /**
  * @file main.cpp
  * @author Johann Prankl (prankl@acin.tuwien.ac.at)
  * @date 2017
  * @brief
  *
- */ 
+ */
 
 #ifndef V4R_FEATURE_DETECTOR_HEADERS_HH
 #define V4R_FEATURE_DETECTOR_HEADERS_HH
@@ -52,9 +51,7 @@
 #include "FeatureDetector.h"
 #include "FeatureDetector_K_HARRIS.h"
 // #include "FeatureDetector_D_FREAK.h"
-#include "FeatureDetector_KD_ORB.h"
 #include "FeatureDetector_KD_FAST_IMGD.h"
-
+#include "FeatureDetector_KD_ORB.h"
 
 #endif
-

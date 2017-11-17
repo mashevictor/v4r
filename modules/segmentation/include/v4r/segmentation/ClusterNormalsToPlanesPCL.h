@@ -37,68 +37,64 @@
 **
 ****************************************************************************/
 
-
 /**
  * @file main.cpp
  * @author Johann Prankl (prankl@acin.tuwien.ac.at)
  * @date 2017
  * @brief
  *
- */ 
+ */
 
 #pragma once
 
-#include <iostream>
-#include <vector>
-#include <queue>
-#include <set>
 #include <flann/flann.h>
-#include <opencv2/opencv.hpp>
-#include <Eigen/Dense>
+#include <pcl/common/angles.h>
+#include <pcl/point_cloud.h>
+#include <pcl/point_types.h>
 #include <v4r/common/plane_model.h>
 #include <v4r/core/macros.h>
-#include <pcl/common/angles.h>
-#include <pcl/point_types.h>
-#include <pcl/point_cloud.h>
+#include <Eigen/Dense>
+#include <iostream>
+#include <opencv2/opencv.hpp>
+#include <queue>
+#include <set>
+#include <vector>
 
+namespace v4r {
 
-namespace v4r
-{
-
-class ClusterNormalsToPlanesPCLParameter
-{
-public:
-  double thrAngle;             ///< Threshold of angle for normal clustering
-  double inlDist;              ///< Maximum inlier distance
-  unsigned minPoints;              ///< Minimum number of points for a plane
+class ClusterNormalsToPlanesPCLParameter {
+ public:
+  double thrAngle;     ///< Threshold of angle for normal clustering
+  double inlDist;      ///< Maximum inlier distance
+  unsigned minPoints;  ///< Minimum number of points for a plane
   bool least_squares_refinement;
   bool smooth_clustering;
-  double thrAngleSmooth;             ///< Threshold of angle for normal clustering
-  double inlDistSmooth;              ///< Maximum inlier distance
+  double thrAngleSmooth;  ///< Threshold of angle for normal clustering
+  double inlDistSmooth;   ///< Maximum inlier distance
   unsigned minPointsSmooth;
-  int K_; // k in nearest neighor search when doing smooth clustering in unorganized point clouds
-  int normal_computation_method_; ///< defines the method used for normal computation (only used when point cloud is downsampled / unorganized)
+  int K_;  // k in nearest neighor search when doing smooth clustering in unorganized point clouds
+  int normal_computation_method_;  ///< defines the method used for normal computation (only used when point cloud is
+                                   /// downsampled / unorganized)
 
-  ClusterNormalsToPlanesPCLParameter(
-          double thrAngleNC=30, double _inlDist=0.01, unsigned _minPoints=9, bool _least_squares_refinement=true, bool _smooth_clustering=false,
-            double _thrAngleSmooth=30, double _inlDistSmooth=0.02, unsigned _minPointsSmooth=3, int K=5, int normal_computation_method = 2)
-  : thrAngle(thrAngleNC), inlDist(_inlDist), minPoints(_minPoints), least_squares_refinement(_least_squares_refinement), smooth_clustering(_smooth_clustering),
-    thrAngleSmooth(_thrAngleSmooth), inlDistSmooth(_inlDistSmooth), minPointsSmooth(_minPointsSmooth), K_(K), normal_computation_method_ (normal_computation_method) {}
+  ClusterNormalsToPlanesPCLParameter(double thrAngleNC = 30, double _inlDist = 0.01, unsigned _minPoints = 9,
+                                     bool _least_squares_refinement = true, bool _smooth_clustering = false,
+                                     double _thrAngleSmooth = 30, double _inlDistSmooth = 0.02,
+                                     unsigned _minPointsSmooth = 3, int K = 5, int normal_computation_method = 2)
+  : thrAngle(thrAngleNC), inlDist(_inlDist), minPoints(_minPoints), least_squares_refinement(_least_squares_refinement),
+    smooth_clustering(_smooth_clustering), thrAngleSmooth(_thrAngleSmooth), inlDistSmooth(_inlDistSmooth),
+    minPointsSmooth(_minPointsSmooth), K_(K), normal_computation_method_(normal_computation_method) {}
 };
 
 /**
  * ClusterNormalsToPlanes
  */
-template< typename PointT >
-class V4R_EXPORTS ClusterNormalsToPlanesPCL
-{
-
+template <typename PointT>
+class V4R_EXPORTS ClusterNormalsToPlanesPCL {
   /**
    * @brief The Plane class
    */
-  class Plane
-  {
-  public:
+  class Plane {
+   public:
     bool is_plane;
     Eigen::Vector3f pt;
     Eigen::Vector3f normal;
@@ -117,22 +113,26 @@ class V4R_EXPORTS ClusterNormalsToPlanesPCL
       indices[0] = (int)idx;
     }
 
-    inline void add(const Eigen::Vector3f &_pt, const Eigen::Vector3f &_n, size_t idx) {    // update average normal and point
+    inline void add(const Eigen::Vector3f &_pt, const Eigen::Vector3f &_n,
+                    size_t idx) {  // update average normal and point
       double w = indices.size() / double(indices.size() + 1);
-      pt = pt  * w + _pt / double(indices.size() + 1); // this should be numerically more stable than the previous version (but more division / computationally expensive)
-      normal =  normal * w + _n/double(indices.size() + 1);
+      pt = pt * w + _pt / double(indices.size() + 1);  // this should be numerically more stable than the previous
+                                                       // version (but more division / computationally expensive)
+      normal = normal * w + _n / double(indices.size() + 1);
       indices.push_back((int)idx);
     }
 
-    inline unsigned size() {return indices.size(); }
+    inline unsigned size() {
+      return indices.size();
+    }
 
-    Plane(bool _is_plane=false) : is_plane(_is_plane) {}
+    Plane(bool _is_plane = false) : is_plane(_is_plane) {}
     ~Plane() {}
-    typedef boost::shared_ptr< ::v4r::ClusterNormalsToPlanesPCL<PointT>::Plane> Ptr;
-    typedef boost::shared_ptr< ::v4r::ClusterNormalsToPlanesPCL<PointT>::Plane const> ConstPtr;
+    typedef boost::shared_ptr<::v4r::ClusterNormalsToPlanesPCL<PointT>::Plane> Ptr;
+    typedef boost::shared_ptr<::v4r::ClusterNormalsToPlanesPCL<PointT>::Plane const> ConstPtr;
   };
 
-private:
+ private:
   typedef flann::L1<float> DistT;
   ClusterNormalsToPlanesPCLParameter param;
   float cos_rad_thr_angle, cos_rad_thr_angle_smooth;
@@ -140,42 +140,41 @@ private:
   std::vector<bool> mask_;
   std::vector<int> queue_;
 
-  boost::shared_ptr< flann::Index<DistT> > flann_index; // for unorganized point clouds;
+  boost::shared_ptr<flann::Index<DistT>> flann_index;  // for unorganized point clouds;
 
-  
   // cluster normals
-  void doClustering(const typename pcl::PointCloud<PointT>::ConstPtr &cloud, const pcl::PointCloud<pcl::Normal> &normals, std::vector<typename ClusterNormalsToPlanesPCL<PointT>::Plane::Ptr> &planes);
+  void doClustering(const typename pcl::PointCloud<PointT>::ConstPtr &cloud,
+                    const pcl::PointCloud<pcl::Normal> &normals,
+                    std::vector<typename ClusterNormalsToPlanesPCL<PointT>::Plane::Ptr> &planes);
   // cluster normals from point
-  void clusterNormals(const typename pcl::PointCloud<PointT>::ConstPtr &cloud, const pcl::PointCloud<pcl::Normal> &normals, size_t idx, Plane &plane);
+  void clusterNormals(const typename pcl::PointCloud<PointT>::ConstPtr &cloud,
+                      const pcl::PointCloud<pcl::Normal> &normals, size_t idx, Plane &plane);
   // cluster normals from point for an unorganized pointcloud
-  void clusterNormalsUnorganized(const typename pcl::PointCloud<PointT>::ConstPtr &cloud, const pcl::PointCloud<pcl::Normal> &normals, size_t idx, Plane &plane);
+  void clusterNormalsUnorganized(const typename pcl::PointCloud<PointT>::ConstPtr &cloud,
+                                 const pcl::PointCloud<pcl::Normal> &normals, size_t idx, Plane &plane);
   // do a smooth clustering
-  void smoothClustering(const typename pcl::PointCloud<PointT>::ConstPtr &cloud, const pcl::PointCloud<pcl::Normal> &normals, size_t idx, Plane &plane);
+  void smoothClustering(const typename pcl::PointCloud<PointT>::ConstPtr &cloud,
+                        const pcl::PointCloud<pcl::Normal> &normals, size_t idx, Plane &plane);
   // adds normals to each point of segmented patches
 
-public:
-
-  ClusterNormalsToPlanesPCL(const ClusterNormalsToPlanesPCLParameter &_p=ClusterNormalsToPlanesPCLParameter())
-      : param(_p)
-  {
-      cos_rad_thr_angle = cos( pcl::deg2rad(param.thrAngle) );
-      cos_rad_thr_angle_smooth = cos( pcl::deg2rad(param.thrAngleSmooth) );
+ public:
+  ClusterNormalsToPlanesPCL(const ClusterNormalsToPlanesPCLParameter &_p = ClusterNormalsToPlanesPCLParameter())
+  : param(_p) {
+    cos_rad_thr_angle = cos(pcl::deg2rad(param.thrAngle));
+    cos_rad_thr_angle_smooth = cos(pcl::deg2rad(param.thrAngleSmooth));
   }
 
-  ~ClusterNormalsToPlanesPCL()
-  {}
+  ~ClusterNormalsToPlanesPCL() {}
 
   /** Compute planes by surface normal grouping **/
-  void compute(const typename pcl::PointCloud<PointT>::ConstPtr &cloud, const pcl::PointCloud<pcl::Normal> &normals, std::vector<PlaneModel<PointT> > &_planes);
+  void compute(const typename pcl::PointCloud<PointT>::ConstPtr &cloud, const pcl::PointCloud<pcl::Normal> &normals,
+               std::vector<PlaneModel<PointT>> &_planes);
 
   /** Compute a plane starting from a seed point **/
-  void compute(const typename pcl::PointCloud<PointT>::ConstPtr &cloud, const pcl::PointCloud<pcl::Normal> &normals, int x, int y, PlaneModel<PointT> &pm);
+  void compute(const typename pcl::PointCloud<PointT>::ConstPtr &cloud, const pcl::PointCloud<pcl::Normal> &normals,
+               int x, int y, PlaneModel<PointT> &pm);
 
-
-  typedef boost::shared_ptr< ::v4r::ClusterNormalsToPlanesPCL<PointT> > Ptr;
-  typedef boost::shared_ptr< ::v4r::ClusterNormalsToPlanesPCL<PointT> const> ConstPtr;
+  typedef boost::shared_ptr<::v4r::ClusterNormalsToPlanesPCL<PointT>> Ptr;
+  typedef boost::shared_ptr<::v4r::ClusterNormalsToPlanesPCL<PointT> const> ConstPtr;
 };
-
 }
-
-

@@ -37,7 +37,6 @@
 **
 ****************************************************************************/
 
-
 /**
  * @file SVMPredictorSingle.h
  * @author Andreas Richtsfeld
@@ -49,64 +48,60 @@
 #ifndef SVM_PREDICTOR_SINGLE_H
 #define SVM_PREDICTOR_SINGLE_H
 
-#include <vector>
-#include <iostream>
-#include <fstream>
-#include <string>
-#include <cstring>
-#include <stdlib.h>
-#include <stdio.h>
 #include <float.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <cstring>
+#include <fstream>
+#include <iostream>
 #include <ostream>
+#include <string>
+#include <vector>
 
-#include "v4r/attention_segmentation/svm.h"
 #include "v4r/attention_segmentation//SurfaceModel.h"
+#include "v4r/attention_segmentation/svm.h"
 
-namespace svm
-{
-  
-  
+namespace svm {
+
 /**
- * @brief Class SVMPredictorSingle: 
+ * @brief Class SVMPredictorSingle:
  */
-class SVMPredictorSingle
-{
- 
-public:
-  
-private:
-  
+class SVMPredictorSingle {
+ public:
+ private:
   std::string model_filename;
-  
+
   bool have_model_filename;
   bool have_model_node;
   bool have_relations;
   bool have_type;
-  
-  struct svm_model *model;                      ///< SVM model
-  
-  bool predict_probability;                     ///< Predict with probability values
+
+  struct svm_model *model;  ///< SVM model
+
+  bool predict_probability;  ///< Predict with probability values
   std::vector<v4r::Relation> relations;
   int type;
-  int max_nr_attr;                              ///< Maximum attributes = maximum size of feature vector
-  struct svm_node *node;                        ///< node of svm
-  bool scale;                                   ///< set scaling on/off
-  double lower, upper;                          ///< lower/upper limits
-  std::vector<double> feature_max;              ///< maximum feature value for scaling
-  std::vector<double> feature_min;              ///< minimum feature value for scaling
+  int max_nr_attr;                  ///< Maximum attributes = maximum size of feature vector
+  struct svm_node *node;            ///< node of svm
+  bool scale;                       ///< set scaling on/off
+  double lower, upper;              ///< lower/upper limits
+  std::vector<double> feature_max;  ///< maximum feature value for scaling
+  std::vector<double> feature_min;  ///< minimum feature value for scaling
   std::vector<bool> feature_scaled;
-  
+
   void checkSmallPatches(unsigned int max_size);
   void scaleValues(std::vector<double> &val);
-  
+
   bool have_surfaces;
-  std::vector<v4r::SurfaceModel::Ptr> surfaces;              ///< Surfaces
-  
-public:
-  SVMPredictorSingle(); 
+  std::vector<v4r::SurfaceModel::Ptr> surfaces;  ///< Surfaces
+
+ public:
+  SVMPredictorSingle();
   ~SVMPredictorSingle();
-  
-  void setPredictProbability(bool _predict_probability) { predict_probability = _predict_probability; };
+
+  void setPredictProbability(bool _predict_probability) {
+    predict_probability = _predict_probability;
+  };
   void setModelFilename(std::string _model_filename);
   void setRelations(std::vector<v4r::Relation> _relations);
   /** Set surfaces **/
@@ -116,20 +111,16 @@ public:
   void compute();
   /** Set scaling of result vector **/
   void setScaling(bool _scale, std::string filename);
-  
+
   /** Get modified relations **/
   inline std::vector<v4r::Relation> getRelations();
-  
+
   double predict(std::vector<double> &val, std::vector<double> &prob);
-  
 };
 
-inline std::vector<v4r::Relation> SVMPredictorSingle::getRelations()
-{
+inline std::vector<v4r::Relation> SVMPredictorSingle::getRelations() {
   return relations;
 }
-
 }
 
-#endif //SVM_PREDICTOR_SINGLE_H
-
+#endif  // SVM_PREDICTOR_SINGLE_H

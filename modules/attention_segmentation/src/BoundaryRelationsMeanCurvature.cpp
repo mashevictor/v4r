@@ -37,7 +37,6 @@
 **
 ****************************************************************************/
 
-
 /**
  * @file BoundaryRelationsMeanCurvature.h
  * @author Potapova
@@ -48,49 +47,39 @@
 
 #include "v4r/attention_segmentation/BoundaryRelationsMeanCurvature.h"
 
-namespace v4r
-{
-
+namespace v4r {
 
 /************************************************************************************
  * Constructor/Destructor
  */
 
-BoundaryRelationsMeanCurvature::BoundaryRelationsMeanCurvature():
-BoundaryRelationsBase()
-{
-}
+BoundaryRelationsMeanCurvature::BoundaryRelationsMeanCurvature() : BoundaryRelationsBase() {}
 
-BoundaryRelationsMeanCurvature::~BoundaryRelationsMeanCurvature()
-{
-}
+BoundaryRelationsMeanCurvature::~BoundaryRelationsMeanCurvature() {}
 
-v4r::meanVal BoundaryRelationsMeanCurvature::compute()
-{
+v4r::meanVal BoundaryRelationsMeanCurvature::compute() {
   //@ep: TODO check reconditions
-  if(!have_cloud)
-  {
+  if (!have_cloud) {
     printf("[BoundaryRelationsMeanCurvature::compute] Error: No input cloud set.\n");
     exit(0);
   }
 
-  if(!have_normals)
-  {
+  if (!have_normals) {
     printf("[BoundaryRelationsMeanCurvature::compute] Error: No input normals.\n");
     exit(0);
   }
 
-  if(!have_boundary)
-  {
+  if (!have_boundary) {
     printf("[BoundaryRelationsMeanCurvature::compute] Error: No input border.\n");
     exit(0);
   }
-  
+
   v4r::meanVal meanCurvature;
-  
-  if(boundary.size() <= 0)
-  {
-    printf("[BoundaryRelationsMeanCurvature::compute] Warning: Boundary size is 0. This means that constants are different everywhere!\n");
+
+  if (boundary.size() <= 0) {
+    printf(
+        "[BoundaryRelationsMeanCurvature::compute] Warning: Boundary size is 0. This means that constants are "
+        "different everywhere!\n");
     meanCurvature.mean = 0;
     meanCurvature.stddev = 0;
     return meanCurvature;
@@ -103,87 +92,88 @@ v4r::meanVal BoundaryRelationsMeanCurvature::compute()
   double totalCurvatureStdDev = 0.;
   std::vector<double> valuesCurvature;
   valuesCurvature.reserve(boundaryLength);
-  for(unsigned int i=0; i<boundary.size(); i++)
-  {
+  for (unsigned int i = 0; i < boundary.size(); i++) {
     pcl::PointXYZRGB p1 = cloud->points.at(boundary.at(i).idx1);
     pcl::PointXYZRGB p2 = cloud->points.at(boundary.at(i).idx2);
 
-    if(checkNaN(p1) || checkNaN(p2))
-    {
+    if (checkNaN(p1) || checkNaN(p2)) {
       boundaryLength--;
       continue;
     }
- 
+
     cv::Vec3f p0n;
     p0n[0] = normals->points.at(boundary.at(i).idx1).normal_x;
     p0n[1] = normals->points.at(boundary.at(i).idx1).normal_y;
     p0n[2] = normals->points.at(boundary.at(i).idx1).normal_z;
-    
+
     cv::Vec3f p1n;
     p1n[0] = normals->points.at(boundary.at(i).idx2).normal_x;
     p1n[1] = normals->points.at(boundary.at(i).idx2).normal_y;
     p1n[2] = normals->points.at(boundary.at(i).idx2).normal_z;
-    
-//     cv::Vec3f pp;
-//     pp[0] = p1.x - p2.x;
-//     pp[1] = p1.y - p2.y;
-//     pp[2] = p1.z - p2.z;
-//     cv::Vec3f pp_dir = cv::normalize(pp);
-    
+
+    //     cv::Vec3f pp;
+    //     pp[0] = p1.x - p2.x;
+    //     pp[1] = p1.y - p2.y;
+    //     pp[2] = p1.z - p2.z;
+    //     cv::Vec3f pp_dir = cv::normalize(pp);
+
     //@ep: BUG this section is wrong, see above
     cv::Vec3f pp;
-    if(boundary.at(i).direction == 0) {
-      pp[0] = -1.0; pp[1] = 0.0; pp[2] = 0.0;
-    }
-    else if(boundary.at(i).direction == 1) {
-      pp[0] = -1.0; pp[1] = -1.0; pp[2] = 0.0;
-    }
-    else if(boundary.at(i).direction == 2) {
-      pp[0] = 0.0; pp[1] = -1.0; pp[2] = 0.0;
-    }
-    else if(boundary.at(i).direction == 3) {
-      pp[0] = 1.0; pp[1] = -1.0; pp[2] = 0.0;
+    if (boundary.at(i).direction == 0) {
+      pp[0] = -1.0;
+      pp[1] = 0.0;
+      pp[2] = 0.0;
+    } else if (boundary.at(i).direction == 1) {
+      pp[0] = -1.0;
+      pp[1] = -1.0;
+      pp[2] = 0.0;
+    } else if (boundary.at(i).direction == 2) {
+      pp[0] = 0.0;
+      pp[1] = -1.0;
+      pp[2] = 0.0;
+    } else if (boundary.at(i).direction == 3) {
+      pp[0] = 1.0;
+      pp[1] = -1.0;
+      pp[2] = 0.0;
     }
     cv::Vec3f pp_dir = cv::normalize(pp);
     //@ep: end of BUG
-    
+
     double a_p0_pp = acos(p0n.ddot(pp_dir));
-    pp_dir = -pp_dir; // invert direction between points
+    pp_dir = -pp_dir;  // invert direction between points
     double a_p1_pp = acos(p1n.ddot(pp_dir));
 
-    //double curvature = fabs(a_p0_pp + a_p1_pp - M_PI);
+    // double curvature = fabs(a_p0_pp + a_p1_pp - M_PI);
     //@ep: BUG the next line is wrong, see above
     double curvature = a_p0_pp + a_p1_pp - M_PI;
-    
+
     valuesCurvature.push_back(curvature);
     totalCurvature += curvature;
-    
   }
 
   // normalize curvature sum and calculate curvature variance
   //@ep: this shoule be separate function in the utils
-  if(boundaryLength > 0)
-  {
-//     FILE *f = std::fopen("curvature.txt", "a");
-    
-//     fprintf(f,"%d;",boundaryLength);
-    
+  if (boundaryLength > 0) {
+    //     FILE *f = std::fopen("curvature.txt", "a");
+
+    //     fprintf(f,"%d;",boundaryLength);
+
     totalCurvature /= boundaryLength;
-    for(unsigned i=0; i<valuesCurvature.size(); i++)
-    {
+    for (unsigned i = 0; i < valuesCurvature.size(); i++) {
       //@ep: BUG why is it standart deviation???
       totalCurvatureStdDev += fabs(valuesCurvature.at(i) - totalCurvature);
-//       fprintf(f,"%d,",valuesCurvature.at(i));
+      //       fprintf(f,"%d,",valuesCurvature.at(i));
     }
-    //@ep: BUG I have commented it to be consistent with the old code, because there it is devided by the length of the 2D neighbours, not 3D
-    //totalCurvatureStdDev /= boundaryLength;
-    
-//    fprintf(f,"\n");
-//    fclose(f);
-  }
-  else
-  {
-    std::printf("[BoundaryRelationsMeanCurvature::compute] Warning: Number of valid points is zero: totalCurvature: %4.3f\n", totalCurvature);
+    //@ep: BUG I have commented it to be consistent with the old code, because there it is devided by the length of the
+    //2D neighbours, not 3D
+    // totalCurvatureStdDev /= boundaryLength;
+
+    //    fprintf(f,"\n");
+    //    fclose(f);
+  } else {
+    std::printf(
+        "[BoundaryRelationsMeanCurvature::compute] Warning: Number of valid points is zero: totalCurvature: %4.3f\n",
+        totalCurvature);
     totalCurvature = 0.;
     totalCurvatureStdDev = 0.;
   }
@@ -194,16 +184,4 @@ v4r::meanVal BoundaryRelationsMeanCurvature::compute()
   return meanCurvature;
 }
 
-} // end surface
-
-
-
-
-
-
-
-
-
-
-
-
+}  // end surface

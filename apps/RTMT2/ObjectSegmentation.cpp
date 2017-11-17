@@ -37,62 +37,62 @@
 **
 ****************************************************************************/
 
-
 /**
  * @file main.cpp
  * @author Johann Prankl (prankl@acin.tuwien.ac.at)
  * @date 2017
  * @brief
  *
- */ 
+ */
 
 #ifndef Q_MOC_RUN
 #include "ObjectSegmentation.h"
 
-#include <cmath>
-#include <boost/filesystem.hpp>
 #include <pcl/sample_consensus/ransac.h>
 #include <pcl/sample_consensus/sac_model_plane.h>
+#include <boost/filesystem.hpp>
+#include <cmath>
 
-#include <opencv2/highgui/highgui.hpp>
-#include <opencv2/imgproc/imgproc.hpp>
-#include <v4r/keypoints/impl/invPose.hpp>
-#include <v4r/keypoints/impl/PoseIO.hpp>
-#include <v4r/common/convertCloud.h>
-#include <v4r/common/convertNormals.h>
-#include <v4r/common/convertImage.h>
-#include <v4r/reconstruction/impl/projectPointToImage.hpp>
+#include <pcl/filters/voxel_grid.h>
 #include <pcl/io/ply_io.h>
 #include <pcl/sample_consensus/model_types.h>
-#include <pcl/segmentation/sac_segmentation.h>
-#include <pcl/filters/voxel_grid.h>
-#include <v4r/common/noise_models.h>
-#include <v4r/registration/noise_model_based_cloud_integration.h>
-#include <v4r/registration/MvLMIcp.h>
 #include <pcl/segmentation/extract_clusters.h>
+#include <pcl/segmentation/sac_segmentation.h>
+#include <v4r/common/convertCloud.h>
+#include <v4r/common/convertImage.h>
+#include <v4r/common/convertNormals.h>
+#include <v4r/common/noise_models.h>
+#include <v4r/registration/MvLMIcp.h>
+#include <v4r/registration/noise_model_based_cloud_integration.h>
+#include <opencv2/highgui/highgui.hpp>
+#include <opencv2/imgproc/imgproc.hpp>
+#include <v4r/keypoints/impl/PoseIO.hpp>
+#include <v4r/keypoints/impl/invPose.hpp>
+#include <v4r/reconstruction/impl/projectPointToImage.hpp>
 #endif
 
 using namespace std;
-
 
 /**
  * @brief ObjectSegmentation::ObjectSegmentation
  */
 ObjectSegmentation::ObjectSegmentation()
- : cmd(UNDEF), m_run(false), create_cloud(true), create_views(true), create_mesh(true), create_tex_mesh(true), create_tracking_model(true),
-   voxel_size(0.001),poisson_depth(7), poisson_samples(2), max_dist(0.01f), max_iterations(50), diff_type(1), use_mvicp(true), use_noise(false),
-   filter_largest_cluster(true), edge_radius_px(5), max_point_dist(0.03),
-   bb_min(Eigen::Vector3f(-FLT_MAX,-FLT_MAX,-FLT_MAX)), bb_max(Eigen::Vector3f(FLT_MAX,FLT_MAX,FLT_MAX)),
-   object_base_transform(Eigen::Matrix4f::Identity()), seg_offs(0.01)
-{
+: cmd(UNDEF), m_run(false), create_cloud(true), create_views(true), create_mesh(true), create_tex_mesh(true),
+  create_tracking_model(true), voxel_size(0.001), poisson_depth(7), poisson_samples(2), max_dist(0.01f),
+  max_iterations(50), diff_type(1), use_mvicp(true), use_noise(false), filter_largest_cluster(true), edge_radius_px(5),
+  max_point_dist(0.03), bb_min(Eigen::Vector3f(-FLT_MAX, -FLT_MAX, -FLT_MAX)),
+  bb_max(Eigen::Vector3f(FLT_MAX, FLT_MAX, FLT_MAX)), object_base_transform(Eigen::Matrix4f::Identity()),
+  seg_offs(0.01) {
   tmp_cloud0.reset(new pcl::PointCloud<pcl::PointXYZRGB>());
   tmp_cloud1.reset(new pcl::PointCloud<pcl::PointXYZRGB>());
   tmp_cloud2.reset(new pcl::PointCloud<pcl::PointXYZRGB>());
   ncloud_filt.reset(new pcl::PointCloud<pcl::PointXYZRGBNormal>());
 
-  intrinsic = cv::Mat_<double>::eye(3,3);
-  intrinsic(0,0) = cam_params.f[0]; intrinsic(1,1) = cam_params.f[1];
-  intrinsic(0,2) = cam_params.c[0]; intrinsic(1,2) = cam_params.c[1];
+  intrinsic = cv::Mat_<double>::eye(3, 3);
+  intrinsic(0, 0) = cam_params.f[0];
+  intrinsic(1, 1) = cam_params.f[1];
+  intrinsic(0, 2) = cam_params.c[0];
+  intrinsic(1, 2) = cam_params.c[1];
 
   ba_param.depth_error_scale = 100;
   ba_param.px_error_scale = 1;
@@ -110,18 +110,12 @@ ObjectSegmentation::ObjectSegmentation()
   ba.setCameraParameter(intrinsic, dist_coeffs);
   dist_coeffs.copyTo(dist_coeffs_opti);
   intrinsic.copyTo(intrinsic_opti);
-
 }
 
 /**
  * @brief ObjectSegmentation::~ObjectSegmentation
  */
-ObjectSegmentation::~ObjectSegmentation()
-{
-
-}
-
-
+ObjectSegmentation::~ObjectSegmentation() {}
 
 /******************************** public *******************************/
 
@@ -129,18 +123,15 @@ ObjectSegmentation::~ObjectSegmentation()
  * @brief ObjectSegmentation::start
  * @param cam_id
  */
-void ObjectSegmentation::start()
-{
+void ObjectSegmentation::start() {
   QThread::start();
 }
 
 /**
  * @brief ObjectSegmentation::stop
  */
-void ObjectSegmentation::stop()
-{
-  if(m_run)
-  {
+void ObjectSegmentation::stop() {
+  if (m_run) {
     m_run = false;
     this->wait();
   }
@@ -150,21 +141,17 @@ void ObjectSegmentation::stop()
  * @brief ObjectSegmentation::isRunning
  * @return
  */
-bool ObjectSegmentation::isRunning()
-{
+bool ObjectSegmentation::isRunning() {
   return m_run;
 }
-
 
 /**
  * @brief ObjectSegmentation::finishedSegmentation
  */
-void ObjectSegmentation::finishModelling()
-{
+void ObjectSegmentation::finishModelling() {
   cmd = FINISH_OBJECT_MODELLING;
   start();
 }
-
 
 /**
  * @brief ObjectSegmentation::savePointClouds
@@ -172,21 +159,20 @@ void ObjectSegmentation::finishModelling()
  * @param _modelname
  * @return
  */
-bool ObjectSegmentation::savePointClouds(const std::string &_folder, const std::string &_modelname)
-{
-  if (clouds.size()==0)
+bool ObjectSegmentation::savePointClouds(const std::string &_folder, const std::string &_modelname) {
+  if (clouds.size() == 0)
     return false;
 
   char filename[PATH_MAX];
-  boost::filesystem::create_directories(_folder + "/models/" + _modelname + "/views" );
+  boost::filesystem::create_directories(_folder + "/models/" + _modelname + "/views");
 
   // store global model
-  if (create_cloud && ncloud_filt->points.size()>0)
+  if (create_cloud && ncloud_filt->points.size() > 0)
     pcl::io::savePCDFileBinary(_folder + "/models/" + _modelname + "/3D_model.pcd", *ncloud_filt);
-  if (create_mesh && mesh.polygons.size()>0)
+  if (create_mesh && mesh.polygons.size() > 0)
     pcl::io::savePLYFile(_folder + "/models/" + _modelname + "/mesh.ply", mesh);
 
-  boost::filesystem::create_directories(_folder + "/models/" + _modelname + "/views" );
+  boost::filesystem::create_directories(_folder + "/models/" + _modelname + "/views");
 
   std::string cloud_names = _folder + "/models/" + _modelname + "/views/cloud_%08d.pcd";
   std::string image_names = _folder + "/models/" + _modelname + "/views/image_%08d.jpg";
@@ -194,35 +180,33 @@ bool ObjectSegmentation::savePointClouds(const std::string &_folder, const std::
   std::string mask_names = _folder + "/models/" + _modelname + "/views/mask_%08d.png";
   std::string idx_names = _folder + "/models/" + _modelname + "/views/object_indices_%08d.txt";
 
-
-  if (create_views)
-  {
-    for (unsigned i=0; i<clouds.size(); i++)
-    {
-      if (indices[i].empty()) continue;
+  if (create_views) {
+    for (unsigned i = 0; i < clouds.size(); i++) {
+      if (indices[i].empty())
+        continue;
 
       // store indices
       snprintf(filename, PATH_MAX, idx_names.c_str(), i);
-      std::ofstream mask_f (filename);
-      for(unsigned j=0; j < indices[i].size(); j++)
+      std::ofstream mask_f(filename);
+      for (unsigned j = 0; j < indices[i].size(); j++)
         mask_f << indices[i][j] << std::endl;
       mask_f.close();
 
       // store cloud
-      snprintf(filename,PATH_MAX, cloud_names.c_str(), i);
+      snprintf(filename, PATH_MAX, cloud_names.c_str(), i);
       pcl::io::savePCDFileBinary(filename, *clouds[i]);
 
       // store image
       v4r::convertImage(*clouds[i], image);
-      snprintf(filename,PATH_MAX, image_names.c_str(), i);
+      snprintf(filename, PATH_MAX, image_names.c_str(), i);
       cv::imwrite(filename, image);
 
       // store poses
-      snprintf(filename,PATH_MAX, pose_names.c_str(), i);
+      snprintf(filename, PATH_MAX, pose_names.c_str(), i);
       v4r::writePose(filename, std::string(), inv_poses[i]);
 
       // store masks
-      snprintf(filename,PATH_MAX, mask_names.c_str(), i);
+      snprintf(filename, PATH_MAX, mask_names.c_str(), i);
       cv::imwrite(filename, masks[i]);
     }
   }
@@ -234,13 +218,12 @@ bool ObjectSegmentation::savePointClouds(const std::string &_folder, const std::
   return true;
 }
 
-void ObjectSegmentation::set_roi_params(const double &_bbox_scale_xy, const double &_bbox_scale_height, const double &_seg_offs)
-{
+void ObjectSegmentation::set_roi_params(const double &_bbox_scale_xy, const double &_bbox_scale_height,
+                                        const double &_seg_offs) {
   seg_offs = _seg_offs;
 }
 
-void ObjectSegmentation::setDirectories(const std::string &_folder, const std::string &_modelname)
-{
+void ObjectSegmentation::setDirectories(const std::string &_folder, const std::string &_modelname) {
   folder = _folder;
   model_name = _modelname;
 }
@@ -250,8 +233,9 @@ void ObjectSegmentation::setDirectories(const std::string &_folder, const std::s
  * @param _cameras
  * @param _clouds
  */
-void ObjectSegmentation::setData(const std::vector<v4r::TSFFrame::Ptr> &_map_frames, const Eigen::Matrix4f &_base_transform, const Eigen::Vector3f &_bb_min, const Eigen::Vector3f &_bb_max)
-{
+void ObjectSegmentation::setData(const std::vector<v4r::TSFFrame::Ptr> &_map_frames,
+                                 const Eigen::Matrix4f &_base_transform, const Eigen::Vector3f &_bb_min,
+                                 const Eigen::Vector3f &_bb_max) {
   map_frames = _map_frames;
   object_base_transform = _base_transform;
   bb_min = _bb_min;
@@ -263,8 +247,7 @@ void ObjectSegmentation::setData(const std::vector<v4r::TSFFrame::Ptr> &_map_fra
  * @param _intrinsic
  * @param _dist_coeffs
  */
-void ObjectSegmentation::setCameraParameter(const cv::Mat &_intrinsic, const cv::Mat &_dist_coeffs)
-{
+void ObjectSegmentation::setCameraParameter(const cv::Mat &_intrinsic, const cv::Mat &_dist_coeffs) {
   if (_intrinsic.empty())
     return;
   _intrinsic.copyTo(intrinsic);
@@ -274,58 +257,48 @@ void ObjectSegmentation::setCameraParameter(const cv::Mat &_intrinsic, const cv:
   intrinsic.copyTo(intrinsic_opti);
 }
 
-
-
-
 /*********************************** private *******************************************/
 /**
  * @brief ObjectSegmentation::run
  * main loop
  */
-void ObjectSegmentation::run()
-{
-  m_run=true;
+void ObjectSegmentation::run() {
+  m_run = true;
 
-  switch (cmd)
-  {
-  case FINISH_OBJECT_MODELLING:
-  {
-    if (map_frames.size()>0)
-    {
-      ba.optimize(map_frames);
-      getSegmentedViews();
-      if (use_mvicp) optimizePosesMultiviewICP();
-      createCloudModel();
+  switch (cmd) {
+    case FINISH_OBJECT_MODELLING: {
+      if (map_frames.size() > 0) {
+        ba.optimize(map_frames);
+        getSegmentedViews();
+        if (use_mvicp)
+          optimizePosesMultiviewICP();
+        createCloudModel();
 
-      if (create_tracking_model)
-      {
-        tm.setCameraParameter(intrinsic_opti, dist_coeffs_opti);
-        tm.createTrackingModel(map_frames, masks, object_base_transform);
+        if (create_tracking_model) {
+          tm.setCameraParameter(intrinsic_opti, dist_coeffs_opti);
+          tm.createTrackingModel(map_frames, masks, object_base_transform);
+        }
+
+        if (folder.size() > 0 && model_name.size() > 0) {
+          savePointClouds(folder, model_name);
+        }
+
+        // emit printStatus(std::string("Status: Finised object modelling"));
+        emit update_model_cloud(ncloud_filt);
+        emit update_visualization();
+      } else {
+        emit printStatus(std::string("Status: No data for object modelling available!"));
       }
 
-      if (folder.size()>0 && model_name.size()>0)
-      {
-        savePointClouds(folder, model_name);
-      }
-
-      //emit printStatus(std::string("Status: Finised object modelling"));
-      emit update_model_cloud(ncloud_filt);
-      emit update_visualization();
+      emit finishedModelling();
+      break;
     }
-    else
-    {
-      emit printStatus(std::string("Status: No data for object modelling available!"));
-    }
-
-    emit finishedModelling();
-    break;
-  }
-  default:
-    break;
+    default:
+      break;
   }
 
   cmd = UNDEF;
-  m_run=false;
+  m_run = false;
 }
 
 /**
@@ -337,27 +310,28 @@ void ObjectSegmentation::run()
  * @param bb_max
  * @param roi_offs
  */
-void ObjectSegmentation::createMaskFromROI(const v4r::DataMatrix2D<Eigen::Vector3f> &cloud, cv::Mat_<unsigned char> &mask, const Eigen::Matrix4f &_object_base_transform, const Eigen::Vector3f &_bb_min, const Eigen::Vector3f &_bb_max, const double &_roi_offs)
-{
+void ObjectSegmentation::createMaskFromROI(const v4r::DataMatrix2D<Eigen::Vector3f> &cloud,
+                                           cv::Mat_<unsigned char> &mask, const Eigen::Matrix4f &_object_base_transform,
+                                           const Eigen::Vector3f &_bb_min, const Eigen::Vector3f &_bb_max,
+                                           const double &_roi_offs) {
   Eigen::Vector3f pt;
   Eigen::Matrix4f inv_pose;
 
-  v4r::invPose(_object_base_transform,inv_pose);
+  v4r::invPose(_object_base_transform, inv_pose);
 
-  Eigen::Matrix3f R = inv_pose.topLeftCorner<3,3>();
-  Eigen::Vector3f t = inv_pose.block<3,1>(0,3);
+  Eigen::Matrix3f R = inv_pose.topLeftCorner<3, 3>();
+  Eigen::Vector3f t = inv_pose.block<3, 1>(0, 3);
 
   mask = cv::Mat_<unsigned char>::zeros(cloud.rows, cloud.cols);
 
-  for (unsigned i=0; i<cloud.data.size(); i++)
-  {
+  for (unsigned i = 0; i < cloud.data.size(); i++) {
     const Eigen::Vector3f &pt0 = cloud.data[i];
 
-    if (!std::isnan(pt0[0]) && !std::isnan(pt0[1]) && !std::isnan(pt0[2]))
-    {
-      pt = R*pt0 + t;
+    if (!std::isnan(pt0[0]) && !std::isnan(pt0[1]) && !std::isnan(pt0[2])) {
+      pt = R * pt0 + t;
 
-      if (pt[0]>_bb_min[0] && pt[0]<_bb_max[0] && pt[1]>_bb_min[1] && pt[1]<_bb_max[1] && pt[2]>_roi_offs && pt[2]<_bb_max[2])
+      if (pt[0] > _bb_min[0] && pt[0] < _bb_max[0] && pt[1] > _bb_min[1] && pt[1] < _bb_max[1] && pt[2] > _roi_offs &&
+          pt[2] < _bb_max[2])
         mask(i) = 255;
     }
   }
@@ -369,18 +343,20 @@ void ObjectSegmentation::createMaskFromROI(const v4r::DataMatrix2D<Eigen::Vector
  * @param pose
  * @param mask
  */
-void ObjectSegmentation::getMaskFromBasePlane(const pcl::PointCloud<pcl::PointXYZRGB> &cloud, const Eigen::Matrix4f &pose, cv::Mat_<unsigned char> &mask, std::vector<int> &indices)
-{
+void ObjectSegmentation::getMaskFromBasePlane(const pcl::PointCloud<pcl::PointXYZRGB> &cloud,
+                                              const Eigen::Matrix4f &pose, cv::Mat_<unsigned char> &mask,
+                                              std::vector<int> &indices) {
   indices.clear();
-  if (bb_min[0]==-FLT_MAX && bb_max[0]==FLT_MAX && bb_min[1]==-FLT_MAX && bb_max[1]==FLT_MAX && bb_min[2]==-FLT_MAX && bb_max[2]==FLT_MAX)
-  {
-    mask = cv::Mat_<unsigned char>::ones(cloud.height,cloud.width)*255;
-    for (int i=0; i<mask.cols*mask.rows; i++)
-      if (mask(i)>128) indices.push_back(i);
+  if (bb_min[0] == -FLT_MAX && bb_max[0] == FLT_MAX && bb_min[1] == -FLT_MAX && bb_max[1] == FLT_MAX &&
+      bb_min[2] == -FLT_MAX && bb_max[2] == FLT_MAX) {
+    mask = cv::Mat_<unsigned char>::ones(cloud.height, cloud.width) * 255;
+    for (int i = 0; i < mask.cols * mask.rows; i++)
+      if (mask(i) > 128)
+        indices.push_back(i);
     return;
   }
 
-  mask = cv::Mat_<unsigned char>::zeros(cloud.height,cloud.width);
+  mask = cv::Mat_<unsigned char>::zeros(cloud.height, cloud.width);
 
   Eigen::Matrix4f inv_pose;
   v4r::invPose(pose, inv_pose);
@@ -392,30 +368,29 @@ void ObjectSegmentation::getMaskFromBasePlane(const pcl::PointCloud<pcl::PointXY
   pcl::transformPointCloud(cloud, rc0, inv_pose);
   rc1 = rc0;
 
-  for (unsigned i=0; i<rc1.points.size(); i++)
-  {
+  for (unsigned i = 0; i < rc1.points.size(); i++) {
     pcl::PointXYZRGB &pt = rc1.points[i];
-    if (!std::isnan(pt.z))
-    {
-      if (fabs(pt.z)>seg_offs)
-        pt.getVector3fMap() = Eigen::Vector3f(std::numeric_limits<float>::quiet_NaN(),std::numeric_limits<float>::quiet_NaN(),std::numeric_limits<float>::quiet_NaN());
+    if (!std::isnan(pt.z)) {
+      if (fabs(pt.z) > seg_offs)
+        pt.getVector3fMap() =
+            Eigen::Vector3f(std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN(),
+                            std::numeric_limits<float>::quiet_NaN());
     }
   }
 
-  pcl::removeNaNFromPointCloud (rc1, rc2, inds);
+  pcl::removeNaNFromPointCloud(rc1, rc2, inds);
 
-  double a,b,c,d;
-  if (rc2.points.size()>3)
-  {
-    pcl::ModelCoefficients::Ptr coefficients (new pcl::ModelCoefficients);
-    pcl::PointIndices::Ptr inliers (new pcl::PointIndices);
+  double a, b, c, d;
+  if (rc2.points.size() > 3) {
+    pcl::ModelCoefficients::Ptr coefficients(new pcl::ModelCoefficients);
+    pcl::PointIndices::Ptr inliers(new pcl::PointIndices);
     pcl::SACSegmentation<pcl::PointXYZRGB> seg;
-    seg.setOptimizeCoefficients (true);
-    seg.setModelType (pcl::SACMODEL_PLANE);
-    seg.setMethodType (pcl::SAC_RANSAC);
-    seg.setDistanceThreshold (0.01);
+    seg.setOptimizeCoefficients(true);
+    seg.setModelType(pcl::SACMODEL_PLANE);
+    seg.setMethodType(pcl::SAC_RANSAC);
+    seg.setDistanceThreshold(0.01);
 
-    seg.setInputCloud (tmp_cloud2);
+    seg.setInputCloud(tmp_cloud2);
     seg.segment(*inliers, *coefficients);
 
     a = coefficients->values[0];
@@ -424,60 +399,55 @@ void ObjectSegmentation::getMaskFromBasePlane(const pcl::PointCloud<pcl::PointXY
     d = coefficients->values[3];
   }
 
-  for (unsigned i=0; i<rc0.points.size(); i++)
-  {
+  for (unsigned i = 0; i < rc0.points.size(); i++) {
     pcl::PointXYZRGB &pt = rc0.points[i];
-    if (!std::isnan(pt.z))
-    {
-      if (rc2.points.size()<=3 || pcl::pointToPlaneDistanceSigned(pt,a,b,c,d)>seg_offs)
+    if (!std::isnan(pt.z)) {
+      if (rc2.points.size() <= 3 || pcl::pointToPlaneDistanceSigned(pt, a, b, c, d) > seg_offs)
         mask(i) = 255;
     }
   }
 
-  cv::Mat element = cv::getStructuringElement( cv::MORPH_ELLIPSE, cv::Size( 2*param.morph_size + 1, 2*param.morph_size+1 ), cv::Point( param.morph_size, param.morph_size ) );
+  cv::Mat element =
+      cv::getStructuringElement(cv::MORPH_ELLIPSE, cv::Size(2 * param.morph_size + 1, 2 * param.morph_size + 1),
+                                cv::Point(param.morph_size, param.morph_size));
   cv::morphologyEx(mask, tmp_mask, cv::MORPH_OPEN, element);
   cv::morphologyEx(tmp_mask, mask, cv::MORPH_CLOSE, element);
 
-  for (int i=0; i<mask.cols*mask.rows; i++)
-    if (mask(i)>128) indices.push_back(i);
+  for (int i = 0; i < mask.cols * mask.rows; i++)
+    if (mask(i) > 128)
+      indices.push_back(i);
 }
 
-
-void ObjectSegmentation::getSegmentedViews()
-{
+void ObjectSegmentation::getSegmentedViews() {
   clouds.resize(map_frames.size());
   inv_poses.resize(map_frames.size());
   masks.resize(map_frames.size());
   indices.resize(map_frames.size());
 
-  for (unsigned i=0; i<map_frames.size(); i++)
-  {
+  for (unsigned i = 0; i < map_frames.size(); i++) {
     clouds[i].reset(new pcl::PointCloud<pcl::PointXYZRGB>());
     v4r::TSFData::convert(map_frames[i]->sf_cloud, *clouds[i]);
-    v4r::invPose(map_frames[i]->pose*object_base_transform, inv_poses[i]);
-    getMaskFromBasePlane(*clouds[i], map_frames[i]->pose*object_base_transform, masks[i], indices[i]);
+    v4r::invPose(map_frames[i]->pose * object_base_transform, inv_poses[i]);
+    getMaskFromBasePlane(*clouds[i], map_frames[i]->pose * object_base_transform, masks[i], indices[i]);
   }
 }
 
-void ObjectSegmentation::createObjectCloudFilteredNguyen()
-{
-  if (clouds.size()==0 || masks.size()!=clouds.size())
+void ObjectSegmentation::createObjectCloudFilteredNguyen() {
+  if (clouds.size() == 0 || masks.size() != clouds.size())
     return;
 
   v4r::NguyenNoiseModelParameter nmparam;
   v4r::NguyenNoiseModel<pcl::PointXYZRGB> nm(nmparam);
-  std::vector< std::vector<std::vector<float> > > pt_properties (clouds.size());
-  std::vector<pcl::PointCloud<pcl::PointXYZRGB>::ConstPtr > ptr_clouds(clouds.size());
-  pcl::PointCloud<pcl::PointXYZRGBNormal>::Ptr ncloud(new pcl::PointCloud<pcl::PointXYZRGBNormal>() );
+  std::vector<std::vector<std::vector<float>>> pt_properties(clouds.size());
+  std::vector<pcl::PointCloud<pcl::PointXYZRGB>::ConstPtr> ptr_clouds(clouds.size());
+  pcl::PointCloud<pcl::PointXYZRGBNormal>::Ptr ncloud(new pcl::PointCloud<pcl::PointXYZRGBNormal>());
   pcl::PointCloud<pcl::Normal>::Ptr ns;
 
-  if (clouds.size()>0)
-  {
+  if (clouds.size() > 0) {
     normals.resize(clouds.size());
     ptr_clouds.resize(clouds.size());
 
-    for (unsigned i=0; i<clouds.size(); i++)
-    {
+    for (unsigned i = 0; i < clouds.size(); i++) {
       ptr_clouds[i] = clouds[i];
       ns.reset((new pcl::PointCloud<pcl::Normal>()));
       v4r::TSFData::convert(map_frames[i]->sf_cloud, *ns);
@@ -489,8 +459,8 @@ void ObjectSegmentation::createObjectCloudFilteredNguyen()
     }
 
     v4r::NMBasedCloudIntegrationParameter _nmparam;
-    _nmparam.octree_resolution_ = voxel_size; //0.001
-    _nmparam.min_px_distance_to_depth_discontinuity_ = edge_radius_px; //3
+    _nmparam.octree_resolution_ = voxel_size;                           // 0.001
+    _nmparam.min_px_distance_to_depth_discontinuity_ = edge_radius_px;  // 3
     _nmparam.min_points_per_voxel_ = 1;
     tmp_cloud0.reset(new pcl::PointCloud<pcl::PointXYZRGB>);
     v4r::NMBasedCloudIntegration<pcl::PointXYZRGB> nmIntegration(_nmparam);
@@ -509,56 +479,48 @@ void ObjectSegmentation::createObjectCloudFilteredNguyen()
     pcl::concatenateFields(*tmp_cloud0, *big_normals, *ncloud);
 
     // filter ec
-    if (filter_largest_cluster)
-    {
-      pcl::search::KdTree<pcl::PointXYZRGBNormal>::Ptr tree (new pcl::search::KdTree<pcl::PointXYZRGBNormal>);
-      tree->setInputCloud (ncloud);
+    if (filter_largest_cluster) {
+      pcl::search::KdTree<pcl::PointXYZRGBNormal>::Ptr tree(new pcl::search::KdTree<pcl::PointXYZRGBNormal>);
+      tree->setInputCloud(ncloud);
 
       std::vector<pcl::PointIndices> cluster_indices;
       pcl::EuclideanClusterExtraction<pcl::PointXYZRGBNormal> ec;
-      ec.setClusterTolerance (max_point_dist);
-      ec.setMinClusterSize (50);
-      ec.setSearchMethod (tree);
-      ec.setInputCloud (ncloud);
-      ec.extract (cluster_indices);
+      ec.setClusterTolerance(max_point_dist);
+      ec.setMinClusterSize(50);
+      ec.setSearchMethod(tree);
+      ec.setInputCloud(ncloud);
+      ec.extract(cluster_indices);
 
       int cnt_max = 0;
       std::vector<pcl::PointIndices>::const_iterator it_max = cluster_indices.end();
 
-      for (std::vector<pcl::PointIndices>::const_iterator it = cluster_indices.begin (); it != cluster_indices.end (); ++it)
-      {
-        if (it->indices.size()>(unsigned)cnt_max)
-        {
+      for (std::vector<pcl::PointIndices>::const_iterator it = cluster_indices.begin(); it != cluster_indices.end();
+           ++it) {
+        if (it->indices.size() > (unsigned)cnt_max) {
           it_max = it;
           cnt_max = it->indices.size();
         }
       }
 
-      if (it_max!=cluster_indices.end())
-      {
+      if (it_max != cluster_indices.end()) {
         pcl::copyPointCloud(*ncloud, it_max->indices, *ncloud_filt);
       }
-    }
-    else
-    {
+    } else {
       pcl::copyPointCloud(*ncloud, *ncloud_filt);
     }
   }
 }
 
-
-void ObjectSegmentation::optimizePosesMultiviewICP()
-{
+void ObjectSegmentation::optimizePosesMultiviewICP() {
   pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud_segmented(new pcl::PointCloud<pcl::PointXYZRGB>);
   std::vector<pcl::PointCloud<pcl::PointXYZRGB>::Ptr> clouds_filtered(clouds.size());
 
-  for (unsigned i=0; i<clouds.size(); i++)
-  {
+  for (unsigned i = 0; i < clouds.size(); i++) {
     clouds_filtered[i].reset(new pcl::PointCloud<pcl::PointXYZRGB>());
     pcl::copyPointCloud(*clouds[i], indices[i], *cloud_segmented);
     pcl::VoxelGrid<pcl::PointXYZRGB> filter;
     filter.setInputCloud(cloud_segmented);
-    //filter.setInputCloud(clouds[i]);
+    // filter.setInputCloud(clouds[i]);
     filter.setDownsampleAllData(true);
     filter.setLeafSize(voxel_size, voxel_size, voxel_size);
     filter.filter(*clouds_filtered[i]);
@@ -576,23 +538,20 @@ void ObjectSegmentation::optimizePosesMultiviewICP()
   //  v4r::invPose(map_frames[i]->pose*object_base_transform, inv_poses[i]);
   Eigen::Matrix4f pose, inv_object_base;
   v4r::invPose(object_base_transform, inv_object_base);
-  for (unsigned i=0; i<map_frames.size(); i++)
-  {
+  for (unsigned i = 0; i < map_frames.size(); i++) {
     v4r::invPose(inv_poses[i], pose);
-    map_frames[i]->pose = pose*inv_object_base;
+    map_frames[i]->pose = pose * inv_object_base;
     map_frames[i]->delta_cloud_rgb_pose.setIdentity();
   }
 }
 
-void ObjectSegmentation::createCloudModel()
-{
-  if (create_cloud || create_mesh || create_tex_mesh)
-  {
+void ObjectSegmentation::createCloudModel() {
+  if (create_cloud || create_mesh || create_tex_mesh) {
     // optimize map
     ba.getCameraParameter(intrinsic_opti, dist_coeffs_opti);
 
     // create model in global coordinates
-    cout<<"Create pointcloud model..."<<endl;
+    cout << "Create pointcloud model..." << endl;
     v4r::TSFGlobalCloudFilteringSimple gfilt;
     v4r::TSFGlobalCloudFilteringSimple::Parameter filt_param;
     filt_param.filter_largest_cluster = filter_largest_cluster;
@@ -607,50 +566,41 @@ void ObjectSegmentation::createCloudModel()
     gfilt.setBaseTransform(object_base_transform);
     gfilt.setROI(bb_min, bb_max);
 
-    if (use_noise)
-    {
+    if (use_noise) {
       createObjectCloudFilteredNguyen();
-    }
-    else
-    {
+    } else {
       gfilt.getGlobalCloudMasked(map_frames, masks, *ncloud_filt);
     }
 
-    cout<<"Creat mesh..."<<endl;
-    if (create_mesh || create_tex_mesh)
-    {
+    cout << "Creat mesh..." << endl;
+    if (create_mesh || create_tex_mesh) {
       gfilt.getMesh(ncloud_filt, mesh);
     }
 
-    if (create_tex_mesh)
-    {
-      cout<<"Texture mapping..."<<endl;
+    if (create_tex_mesh) {
+      cout << "Texture mapping..." << endl;
       v4r::OdmTexturing odmTex;
       std::string tmp_folder = folder + "/tmp/";
       std::string tex_model_folder = folder + "/models/" + model_name + "/";
-      odmTex.textureMapping(map_frames, mesh,intrinsic_opti, object_base_transform, tmp_folder, tex_model_folder);
+      odmTex.textureMapping(map_frames, mesh, intrinsic_opti, object_base_transform, tmp_folder, tex_model_folder);
     }
 
-    cout<<"Finished!"<<endl;
+    cout << "Finished!" << endl;
   }
 }
-
 
 /**
  * @brief ObjectSegmentation::convertImage
  * @param cloud
  * @param image
  */
-void ObjectSegmentation::convertImage(const pcl::PointCloud<pcl::PointXYZRGB> &cloud, cv::Mat_<cv::Vec3b> &_image)
-{
+void ObjectSegmentation::convertImage(const pcl::PointCloud<pcl::PointXYZRGB> &cloud, cv::Mat_<cv::Vec3b> &_image) {
   _image = cv::Mat_<cv::Vec3b>(cloud.height, cloud.width);
 
-  for (unsigned v = 0; v < cloud.height; v++)
-  {
-    for (unsigned u = 0; u < cloud.width; u++)
-    {
-      cv::Vec3b &cv_pt = _image.at<cv::Vec3b> (v, u);
-      const pcl::PointXYZRGB &pt = cloud(u,v);
+  for (unsigned v = 0; v < cloud.height; v++) {
+    for (unsigned u = 0; u < cloud.width; u++) {
+      cv::Vec3b &cv_pt = _image.at<cv::Vec3b>(v, u);
+      const pcl::PointXYZRGB &pt = cloud(u, v);
 
       cv_pt[2] = pt.r;
       cv_pt[1] = pt.g;
@@ -658,6 +608,3 @@ void ObjectSegmentation::convertImage(const pcl::PointCloud<pcl::PointXYZRGB> &c
     }
   }
 }
-
-
-

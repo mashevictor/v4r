@@ -37,62 +37,54 @@
 **
 ****************************************************************************/
 
-
-
 #ifndef LOCATION_MAP_HPP
 #define LOCATION_MAP_HPP
 
 #include <v4r/core/macros.h>
 #include "v4r/attention_segmentation/BaseMap.h"
 
-namespace v4r
-{
+namespace v4r {
 
-enum LocationTypes
-{
-  AM_CENTER       = 0,
-  AM_LEFT_CENTER     ,
-  AM_LEFT            ,
-  AM_RIGHT_CENTER    ,
-  AM_RIGHT           ,
-  AM_TOP_CENTER      ,
-  AM_TOP             ,
-  AM_BOTTOM_CENTER   ,
-  AM_BOTTOM          ,
-  AM_LOCATION_CUSTOM ,
+enum LocationTypes {
+  AM_CENTER = 0,
+  AM_LEFT_CENTER,
+  AM_LEFT,
+  AM_RIGHT_CENTER,
+  AM_RIGHT,
+  AM_TOP_CENTER,
+  AM_TOP,
+  AM_BOTTOM_CENTER,
+  AM_BOTTOM,
+  AM_LOCATION_CUSTOM,
 };
-  
-class V4R_EXPORTS LocationSaliencyMap: public BaseMap
-{
-public:
-  
+
+class V4R_EXPORTS LocationSaliencyMap : public BaseMap {
+ public:
   LocationSaliencyMap();
   ~LocationSaliencyMap();
-  
+
   void setLocation(int location_);
   void setCenter(cv::Point _center_point);
-/**
- * calculates location map
- * */
+  /**
+   * calculates location map
+   * */
   virtual int calculate();
-  
+
   virtual void reset();
   virtual void print();
 
-private:
-
-/**
- * parameters for location saliency map
- * */
+ private:
+  /**
+   * parameters for location saliency map
+   * */
 
   int location;
   cv::Point center_point;
 
-protected:
+ protected:
   virtual int checkParameters();
-
 };
 
-} // namespace v4r
+}  // namespace v4r
 
-#endif //LOCATION_MAP_HPP
+#endif  // LOCATION_MAP_HPP

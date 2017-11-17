@@ -25,78 +25,80 @@
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-
 #ifndef TREE_H
 #define TREE_H
 
-#include <vector>
+#include <math.h>
 #include <stdlib.h>
 #include <time.h>
-#include "boost/random.hpp"
-#include <math.h>
 #include <fstream>
+#include <vector>
+#include "boost/random.hpp"
 
 #include <boost/archive/text_iarchive.hpp>
 #include <boost/archive/text_oarchive.hpp>
 #include <boost/serialization/vector.hpp>
 
-#include "node.h"
 #include "classificationdata.h"
+#include "node.h"
 
 #include <v4r/core/macros.h>
 
-namespace v4r
-{
+namespace v4r {
 
 namespace RandomForest {
 
-class V4R_EXPORTS Tree
-{
-private:
+class V4R_EXPORTS Tree {
+ private:
   friend class boost::serialization::access;
-  template<class Archive>
-  void serialize(Archive & ar, const unsigned int version)
-  {
-    ar & nodes;
-    ar & rootNodeIdx;
-    ar & maxDepth;
-    ar & testedSplittingFunctions;
+  template <class Archive>
+  void serialize(Archive& ar, const unsigned int version) {
+    (void)version;
+    ar& nodes;
+    ar& rootNodeIdx;
+    ar& maxDepth;
+    ar& testedSplittingFunctions;
   }
-  
+
   int verbosityLevel;
-  boost::mt19937* randomGenerator;  
+  boost::mt19937* randomGenerator;
   std::vector<Node> nodes;
   int rootNodeIdx;
   int maxDepth;
   int testedSplittingFunctions;
-  
-  int trainRecursively(ClassificationData& data, std::vector< unsigned int > indices, int maxDepth, int testedSplittingFunctions, float minInformationGain, int minPointsForSplit, bool allNodesStoreLabelDistribution, int currentDepth);
-  int trainRecursivelyParallel(ClassificationData& data, std::vector< unsigned int > indices, int maxDepth, int testedSplittingFunctions, float minInformationGain, int minPointsForSplit, bool allNodesStoreLabelDistribution, int currentDepth);
-  
-public:
+
+  int trainRecursively(ClassificationData& data, std::vector<unsigned int> indices, int maxDepth,
+                       int testedSplittingFunctions, float minInformationGain, int minPointsForSplit,
+                       bool allNodesStoreLabelDistribution, int currentDepth);
+  int trainRecursivelyParallel(ClassificationData& data, std::vector<unsigned int> indices, int maxDepth,
+                               int testedSplittingFunctions, float minInformationGain, int minPointsForSplit,
+                               bool allNodesStoreLabelDistribution, int currentDepth);
+
+ public:
   Tree();
   Tree(boost::mt19937* randomGenerator);
   inline Node* GetRootNode();
-  std::vector< float >& Classify(std::vector< float >& point);
-  std::vector< float >& Classify(std::vector< float >& point, int depth);
-  int GetResultingLeafNode(std::vector< float > point);
+  std::vector<float>& Classify(std::vector<float>& point);
+  std::vector<float>& Classify(std::vector<float>& point, int depth);
+  int GetResultingLeafNode(std::vector<float> point);
   void ClearLeafNodes();
   void RefineLeafNodes(ClassificationData& data, int nPoints, int labelIdx);
-  void UpdateLeafNodes(std::vector<int> labels, std::map<int, unsigned int >& pointsPerLabel);
+  void UpdateLeafNodes(std::vector<int> labels, std::map<int, unsigned int>& pointsPerLabel);
   void EraseSplitNodeLabelDistributions();
-  void Train(ClassificationData& data, std::vector< unsigned int >& indices, int maxDepth, int testedSplittingFunctions, float minInformationGain, int minPointsForSplit, bool allNodesStoreLabelDistribution, int verbosityLevel = 1);
-  void TrainParallel(ClassificationData& data, std::vector< unsigned int >& indices, int maxDepth, int testedSplittingFunctions, float minInformationGain, int minPointsForSplit, bool allNodesStoreLabelDistribution, int verbosityLevel = 1);
+  void Train(ClassificationData& data, std::vector<unsigned int>& indices, int maxDepth, int testedSplittingFunctions,
+             float minInformationGain, int minPointsForSplit, bool allNodesStoreLabelDistribution,
+             int verbosityLevel = 1);
+  void TrainParallel(ClassificationData& data, std::vector<unsigned int>& indices, int maxDepth,
+                     int testedSplittingFunctions, float minInformationGain, int minPointsForSplit,
+                     bool allNodesStoreLabelDistribution, int verbosityLevel = 1);
   void CreateVisualization(std::string filename);
-  void CreateNodeVisualization(Node* node, int idx, std::ofstream& os);  
+  void CreateNodeVisualization(Node* node, int idx, std::ofstream& os);
   virtual ~Tree();
 };
 
-inline Node* Tree::GetRootNode()
-{
+inline Node* Tree::GetRootNode() {
   return &nodes[rootNodeIdx];
 }
-
 }
-
 }
-#endif // TREE_H
+#endif  // TREE_H

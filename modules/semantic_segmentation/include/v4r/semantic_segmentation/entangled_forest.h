@@ -37,7 +37,6 @@
 **
 ****************************************************************************/
 
-
 /**
  * @file   entangled_forest.h
  * @author Daniel Wolf (wolf@acin.tuwien.ac.at)
@@ -46,21 +45,20 @@
  *
  */
 
-
 #pragma once
 
-#include <algorithm>
-#include <time.h>
-#include <random>
-#include <fstream>
 #include <string.h>
+#include <time.h>
+#include <algorithm>
+#include <fstream>
+#include <random>
 
+#include <boost/archive/binary_iarchive.hpp>
+#include <boost/archive/binary_oarchive.hpp>
 #include <boost/archive/text_iarchive.hpp>
 #include <boost/archive/text_oarchive.hpp>
-#include <boost/archive/binary_oarchive.hpp>
-#include <boost/archive/binary_iarchive.hpp>
-#include <boost/serialization/vector.hpp>
 #include <boost/serialization/map.hpp>
+#include <boost/serialization/vector.hpp>
 
 #include <v4r/core/macros.h>
 #include <v4r/semantic_segmentation/entangled_data.h>
@@ -79,80 +77,79 @@ namespace v4r {
 
 class EntangledForestTree;
 
-class V4R_EXPORTS EntangledForest
-{   
-private:
-    friend class boost::serialization::access;
-    template<class Archive>
-    void serialize(Archive & ar, const unsigned int version)
-    {
-        ar & mTrees;
-        ar & mLabelMap;
-        ar & mMaxDepth;
-        ar & mNTrees;
-        ar & mSampledSplitFunctionParameters;
-        ar & mSampledSplitFunctionThresholds;
-        ar & mMinInformationGain;
-        ar & mMinPointsForSplit;
-        ar & mBaggingRatio;
+class V4R_EXPORTS EntangledForest {
+ private:
+  friend class boost::serialization::access;
+  template <class Archive>
+  void serialize(Archive &ar, const unsigned int version) {
+    ar &mTrees;
+    ar &mLabelMap;
+    ar &mMaxDepth;
+    ar &mNTrees;
+    ar &mSampledSplitFunctionParameters;
+    ar &mSampledSplitFunctionThresholds;
+    ar &mMinInformationGain;
+    ar &mMinPointsForSplit;
+    ar &mBaggingRatio;
 
-        if(version >= 2)
-        {
-            ar & mLabelNames;
-        }
+    if (version >= 2) {
+      ar &mLabelNames;
     }
+  }
 
-    std::mt19937 mRandomGenerator;
-    std::vector<EntangledForestTree*> mTrees;
-    int mMaxDepth;
-    int mNTrees;
-    int mSampledSplitFunctionParameters;   // new
-    int mSampledSplitFunctionThresholds;   // new
-    float mMinInformationGain;
-    int mMinPointsForSplit;
-    float mBaggingRatio;
+  std::mt19937 mRandomGenerator;
+  std::vector<EntangledForestTree *> mTrees;
+  int mMaxDepth;
+  int mNTrees;
+  int mSampledSplitFunctionParameters;  // new
+  int mSampledSplitFunctionThresholds;  // new
+  float mMinInformationGain;
+  int mMinPointsForSplit;
+  float mBaggingRatio;
 
-    // for evaluation, split nodes can also store label distributions, to be able to traverse
-    // trees only down to a certain depth for classification
-    bool mSplitNodesStoreLabelDistribution;
+  // for evaluation, split nodes can also store label distributions, to be able to traverse
+  // trees only down to a certain depth for classification
+  bool mSplitNodesStoreLabelDistribution;
 
-    int mNLabels;
-    std::map<int, int> mLabelMap;
-    std::vector<std::string> mLabelNames;
+  int mNLabels;
+  std::map<int, int> mLabelMap;
+  std::vector<std::string> mLabelNames;
 
-public:
-    EntangledForest();
-    // new
-    EntangledForest(int nTrees, int maxDepth = 8, float baggingRatio = 0.5, int sampledSplitFunctionParameters = 100, int sampledSplitFunctionThresholds = 50, float minInformationGain = 0.02, int minPointsForSplit = 5);
-    void Train(EntangledForestData *trainingData, bool tryUniformBags, int verbosityLevel = 1);
+ public:
+  EntangledForest();
+  // new
+  EntangledForest(int nTrees, int maxDepth = 8, float baggingRatio = 0.5, int sampledSplitFunctionParameters = 100,
+                  int sampledSplitFunctionThresholds = 50, float minInformationGain = 0.02, int minPointsForSplit = 5);
+  void Train(EntangledForestData *trainingData, bool tryUniformBags, int verbosityLevel = 1);
 
-    void UpdateRandomGenerator();   // neccessary after load from file
+  void UpdateRandomGenerator();  // neccessary after load from file
 
-    void Classify(EntangledForestData* data, std::vector<int> &result, int maxDepth = -1, int useNTrees = -1); //, bool reweightLeafDistributions = false);
-    void GetHardClassificationResult(std::vector<std::vector<double> > &softResult, std::vector<int> &result);
-    void SoftClassify(EntangledForestData *data, std::vector<std::vector<double> > &result, int maxDepth = -1, int useNTrees = -1); //, bool reweightLeafDistributions = false);   // new version)
+  void Classify(EntangledForestData *data, std::vector<int> &result, int maxDepth = -1,
+                int useNTrees = -1);  //, bool reweightLeafDistributions = false);
+  void GetHardClassificationResult(std::vector<std::vector<double>> &softResult, std::vector<int> &result);
+  void SoftClassify(EntangledForestData *data, std::vector<std::vector<double>> &result, int maxDepth = -1,
+                    int useNTrees = -1);  //, bool reweightLeafDistributions = false);   // new version)
 
-    void SaveToFile(std::string filename);
-    void SaveToBinaryFile(std::string filename);
-    static void LoadFromFile(std::string filename, EntangledForest &f);
-    static void LoadFromBinaryFile(std::string filename, EntangledForest &f);
-    std::vector<int> GetLabels();
-    std::map<int, int> GetLabelMap();
-    int GetNrOfLabels();
-    std::vector<std::string>& GetLabelNames();
-    bool SetLabelNames(std::vector<std::string>& names);
+  void SaveToFile(std::string filename);
+  void SaveToBinaryFile(std::string filename);
+  static void LoadFromFile(std::string filename, EntangledForest &f);
+  static void LoadFromBinaryFile(std::string filename, EntangledForest &f);
+  std::vector<int> GetLabels();
+  std::map<int, int> GetLabelMap();
+  int GetNrOfLabels();
+  std::vector<std::string> &GetLabelNames();
+  bool SetLabelNames(std::vector<std::string> &names);
 
-    EntangledForestTree* GetTree(int idx);
-    int GetNrOfTrees();
-    void saveMatlab(std::string filename);
-    void Merge(EntangledForest &f);
+  EntangledForestTree *GetTree(int idx);
+  int GetNrOfTrees();
+  void saveMatlab(std::string filename);
+  void Merge(EntangledForest &f);
 
-    void updateLeafs(EntangledForestData *trainingData, int updateDepth, double updateWeight, bool tryUniformBags);
+  void updateLeafs(EntangledForestData *trainingData, int updateDepth, double updateWeight, bool tryUniformBags);
 
-    void correctTreeIndices();
-    virtual ~EntangledForest();
+  void correctTreeIndices();
+  virtual ~EntangledForest();
 };
-
 }
 
 BOOST_CLASS_VERSION(v4r::EntangledForest, 2)

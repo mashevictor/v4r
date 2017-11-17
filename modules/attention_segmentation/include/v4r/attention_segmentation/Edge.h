@@ -37,7 +37,6 @@
 **
 ****************************************************************************/
 
-
 /**
  * @file Edge.h
  * @author Andreas Richtsfeld
@@ -49,18 +48,14 @@
 #ifndef GC_EDGE_H
 #define GC_EDGE_H
 
-namespace gc
-{
- 
-struct Edge
-{
-  int type;   /// type of node
-  float w;    /// weightning factor
-  float w2;   /// optional second weightning factor
-  int a, b;   /// node numbers
-};
+namespace gc {
 
+struct Edge {
+  int type;  /// type of node
+  float w;   /// weightning factor
+  float w2;  /// optional second weightning factor
+  int a, b;  /// node numbers
+};
 }
 
 #endif
-

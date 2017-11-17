@@ -86,6 +86,174 @@ Changelog for package v4r
   Arrange them in lexicographical order
 * Contributors: Johann Prankl, Markus 'Bajo' Bajones, Markus Bajones, Sergey Alexandrov, Simon Schreiberhuber, Thomas Faeulhammer, Thomas Fäulhammer, Unknown, V4R Release Manager
 
+2.0.3 (2017-11-17)
+------------------
+  Cmake updates
+* Remove unused submodules in `_CHILDREN` variables
+* Backport various updates for utils from OpenCV master
+* Remove unused functions/macros
+* Remove Windows-only branch in CMake scripts
+  Fix install rules for third-party dependencies
+  Fix error ‘boost::Q_FOREACH’ has not been declared
+* Do not clear variables after debug cache print
+* Fix install rules for third-party dependencies
+  Install only if enabled and built.
+* Fix error ‘boost::Q_FOREACH’ has not been declared
+  Solution from: https://stackoverflow.com/a/17610731/1525865
+  use our own server, as people reported issues with the keyservers
+  use nullptr instead of NULL
+* use nullptr instead of NULL
+  Add radical
+* Add radical 3rd-party dependency
+* Improve dependency status printing
+  Detect targets and print their location
+* use our own server, as people reported issues with the keyservers
+  Rendering of Normals
+  Fix warnings
+* Fixed one stupid blank space.
+* fix some more warnings
+* fix warnings
+* Reduced the amount of violation of our Coding Style Guideline.
+  Master
+* add glog dependency to io
+* use more bf paths
+* conditionally render based on v4r_rendering available
+* add view rendering to object recognizer
+* allow prefix names of model database input to be changed
+* use bf::path instead of std::string for filepaths
+  Ceres 1.13 clean
+  Remove unneeded CMakeLists.txt files
+  Closes #36
+* Merge remote-tracking branch 'origin/master'
+* Added a normal rendering, in case no normal is provided by the mesh it has a fallback to a per triangle estimation of normals.
+* Updating Readme with Ceres 1.13
+* Delete 3rdpartie's cmakelists
+* Moving 2 Ceres 1.13
+  Update cmake/3rdparty/BuildCeres.cmake
+* add glog dependency to io
+* Remove unneeded CMakeLists.txt files
+* Merge remote-tracking branch 'v4r_origin/master'
+* use more bf paths
+* remove unused stuff
+* conditionally render based on v4r_rendering available
+* add view rendering to object recognizer
+* allow prefix names of model database input to be changed
+* use bf::path instead of std::string for filepaths
+  Fix warnings
+* remove comments
+* fix some warnings
+* fix typos
+  use bf::path instead of std::string for filepaths
+* use bf::path instead of std::string for filepaths
+  Format style
+* fix errors
+  remove redundant if
+* update style guide documentation
+  fix warnings
+* fix remaining style in modules, apps and samples
+* reformat core
+* reformat change_detection, recognition, segmentation and ml
+* reformat features
+* reformat keypoints
+* reformat 'io'
+* add clang-format file
+* remove redundant if
+* remove unused normal estimation with pre-processing
+* fix another bunch of warnings
+* fix warnings
+  Textured rendering
+  Disable Gtest by default and add a download timeout
+  Set universal imported location for source built dependencies
+* Disable Gtest by default and add a download timeout
+  At the moment V4R has no tests, so Gtest is not needed.
+* Set universal imported location for source built dependencies
+  Remove support for using git-apply for patching
+* small fixes in depth map renderer
+* Loading and NOT SCALING the model is default option now. Added option to only render NORTH HEMISPHERE views.
+* Loading and NOT SCALING the model is default option now. Added option to only render NORTH HEMISPHERE views.
+* Remove support for using git-apply for patching
+  Revamp third-party dependency system
+* Disable -Wshadow which floods the logs
+* Remove unused CMake functions/macros
+* Better SYSTEM/PRIVATE include handling
+* Disable annoying debug print in CMake
+* New framework for managing 3rd-party dependencies
+* fix yet another typo in CONTRIBUTING.md
+* fix typo in CONTRIBUTING.md
+* Update CONTRIBUTING.md
+* 2.0.2
+* update changelog and version.h before releasing V4R
+  add ODM and indicate existing libraries inside V4R
+* add brief description on Readme and some styling
+* update readme
+* fix typo
+* add ODM and indicate existing libraries inside V4R
+  revert readme overwrite
+* revert readme overwrite
+  Remove all mentions of Qt4 and always use Qt5
+* Remove all mentions of Qt4 and always use Qt5
+  update author list
+  update contribution page
+  Update readme
+  Remove explicit VTK dependency
+* remove VTK and OpenNI
+* fix style
+* Remove explicit VTK dependency
+* update license URL
+* split issue tracker URL
+* fix URL
+* fix URLs
+  Remove all references to OpenCL
+* update contribution page
+  Textured rendering
+* update author list
+* update Readme
+  fix license
+* Remove all references to OpenCL
+  Was inherited from OpenCV build system, but not used in V4R.
+* fix license
+* update deps
+* fix conflicts
+  Strands to v4r in readme
+* update dependencies description
+* As we build ceres within v4r this is not needed anymore
+* Update readme to get rid of Strands links
+  OpenNURBS does not need to depend on PCL
+* OpenNURBS does not need to depend on PCL
+  The only usage of PCL in the code is PCL_EXPORTS macro, which anyway evaluates to nothing on Unix platform.
+  Build deb packages on all repos when tagged
+  Do not process some RTMT headers with Qt MOC
+  # Conflicts:
+  #   .gitlab-ci.yml
+  cleanup gitlab_CI and build fixes
+* Build deb packages on all repos when tagged
+* Merge remote-tracking branch 'v4r_origin/master'
+* Added rendering of textured meshes.
+* Do not process some RTMT headers with Qt MOC
+  This is to avoid classical Qt MOC/Boost error:
+  usr/include/boost/type_traits/detail/has_binary_operator.hp:50: Parse error at "BOOST_JOIN"
+  apps/RTMT2/CMakeFiles/RTMT2.dir/build.make:87: recipe for target 'apps/RTMT2/moc_OctreeVoxelCentroidContainerXYZRGB.cxx' failed
+* Remove "-dev" string from version
+* Remove duplicate job entry
+* Merge remote-tracking branch 'upstream/master'
+  Merge back the released state from v4r
+* 2.0.1
+* update changelog before releasing V4R
+* Merge remote-tracking branch 'upstream/master'
+  update version in package.xml
+* update version in package.xml
+* Merge remote-tracking branch 'upstream/master'
+  Master
+* bug fix: removed cam.center_x ... it's not available in pcl-stable
+* bug work-fix: removed OdmTexturing::loadMesh (not available in pcl)
+* New RTMT2 version including a modified version of OpenDroneMap texture mapping
+* test odm texturing
+* do not compile multiview recognizer
+* fixed: we did not compile on xenial
+* Add missing headers an source files.
+  Arrange them in lexicographical order
+* Contributors: Georg, Johann Prankl, Markus 'Bajo' Bajones, Markus Bajones, Sergey Alexandrov, Simon Schreiberhuber, Thomas Faeulhammer, Thomas Fäulhammer, Unknown, V4R Release Manager
+
 1.4.9 (2017-07-28)
 ------------------
 * merge master into release

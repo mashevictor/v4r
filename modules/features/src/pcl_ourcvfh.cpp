@@ -40,5 +40,3 @@
 
 template class V4R_EXPORTS v4r::OURCVFHEstimation<pcl::PointXYZRGB, pcl::Normal, pcl::VFHSignature308>;
 template class V4R_EXPORTS v4r::OURCVFHEstimation<pcl::PointXYZ, pcl::Normal, pcl::VFHSignature308>;
-
-
