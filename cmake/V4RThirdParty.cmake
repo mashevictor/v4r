@@ -126,6 +126,8 @@ macro(v4r_build_external_project _Name)
         set(_arg "\"\"")
       elseif(_arg STREQUAL "BUILD_IN_SOURCE")
         set(_in_source TRUE)
+      elseif(_arg STREQUAL "CMAKE_ARGS")
+        set(_arg "${_arg} -G \"${CMAKE_GENERATOR}\"")
       endif()
       set(_params "${_params}${_separator}${_arg}")
       if(_separator STREQUAL " ")
@@ -155,6 +157,7 @@ macro(v4r_build_external_project _Name)
     "project(${_name})\n"
     "include(ExternalProject)\n"
     "ExternalProject_Add(${_name}${_params}\n"
+    "  TIMEOUT 30\n"
     "  TMP_DIR \"${V4R_3P_${_NAME}_BINARY_DIR}/tmp\"\n"
     "  STAMP_DIR \"${V4R_3P_${_NAME}_BINARY_DIR}/stamp\"\n"
     "  DOWNLOAD_DIR \"${V4R_3P_BINARY_DIR}/download\"\n"
