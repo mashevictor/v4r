@@ -4,8 +4,6 @@
 #include <v4r/ml/ml_utils.h>
 #include <v4r/ml/svmWrapper.h>
 #include <fstream>
-#include <iostream>
-#include <set>
 
 namespace v4r {
 

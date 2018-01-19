@@ -1,8 +1,6 @@
 #include <pcl/features/normal_3d_omp.h>
-#include <pcl/search/kdtree.h>
 #include <v4r/common/normal_estimator_pcl.h>
 
-#include <glog/logging.h>
 #include <pcl/impl/instantiate.hpp>
 
 namespace v4r {

@@ -1,3 +1,4 @@
+#include <glog/logging.h>
 #include <v4r/features/global_concatenated.h>
 
 namespace v4r {

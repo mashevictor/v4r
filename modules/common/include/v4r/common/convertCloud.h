@@ -49,7 +49,6 @@
 #define KP_CONVERT_CLOUD_HPP
 
 #include <float.h>
-#include <glog/logging.h>
 #include <omp.h>
 #include <pcl/point_cloud.h>
 #include <pcl/point_types.h>
@@ -157,7 +156,8 @@ inline void convertCloud(const pcl::PointCloud<pcl::PointXYZRGB> &cloud, Eigen::
 
 inline void convertCloud(const pcl::PointCloud<pcl::PointXYZRGB> &cloud, const std::vector<int> &indices,
                          Eigen::Matrix3Xf &matrix) {
-  CHECK(!indices.empty());
+  if (indices.empty())
+    throw std::runtime_error("Indices are empty!");
 
   matrix = Eigen::Matrix3Xf(3, indices.size());
 
@@ -180,7 +180,8 @@ inline void convertCloud(const pcl::PointCloud<pcl::PointXYZ> &cloud, Eigen::Mat
 
 inline void convertCloud(const pcl::PointCloud<pcl::PointXYZ> &cloud, const std::vector<int> &indices,
                          Eigen::Matrix3Xf &matrix) {
-  CHECK(!indices.empty());
+  if (indices.empty())
+    throw std::runtime_error("Indices are empty!");
 
   matrix = Eigen::Matrix3Xf(3, indices.size());
 
@@ -203,7 +204,8 @@ inline void convertCloud(const pcl::PointCloud<pcl::Normal> &normal, Eigen::Matr
 
 inline void convertCloud(const pcl::PointCloud<pcl::Normal> &normal, const std::vector<int> &indices,
                          Eigen::Matrix3Xf &matrix) {
-  CHECK(!indices.empty());
+  if (indices.empty())
+    throw std::runtime_error("Indices are empty!");
 
   matrix = Eigen::Matrix3Xf(3, indices.size());
 

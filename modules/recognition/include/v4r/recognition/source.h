@@ -59,21 +59,21 @@ class V4R_EXPORTS SourceParameter {
   std::string view_prefix_;
   std::string pose_prefix_;
   std::string indices_prefix_;
-  std::string view_folder_name_; //< name of the folder containing the training views (point clouds) of the object
-  std::string name_3D_model_; //< filename of the 3D object model
-  bool has_categories_; //< if true, reads a model database used for classification, i.e. there is another top-level
+  std::string view_folder_name_;  //< name of the folder containing the training views (point clouds) of the object
+  std::string name_3D_model_;     //< filename of the 3D object model
+  bool has_categories_;  //< if true, reads a model database used for classification, i.e. there is another top-level
   // folders for each category and inside each category folder there is the same structure as for instance recognition
 
-  SourceParameter() :
-      view_prefix_("cloud_"), pose_prefix_("pose_"), indices_prefix_("object_indices_"), view_folder_name_("views"),
-      name_3D_model_("3D_model.pcd"), has_categories_(false) {}
+  SourceParameter()
+  : view_prefix_("cloud_"), pose_prefix_("pose_"), indices_prefix_("object_indices_"), view_folder_name_("views"),
+    name_3D_model_("3D_model.pcd"), has_categories_(false) {}
 };
 
 /**
 * \brief Abstract data source class, manages filesystem, incremental training, etc.
 * \author Aitor Aldoma, Thomas Faeulhammer
 */
-template<typename PointT>
+template <typename PointT>
 class V4R_EXPORTS Source {
  private:
   SourceParameter param_;
@@ -84,8 +84,7 @@ class V4R_EXPORTS Source {
   std::vector<typename Model<PointT>::ConstPtr> models_;  ///< all models
 
  public:
-  Source(const SourceParameter &p = SourceParameter())
-      : param_(p) {}
+  Source(const SourceParameter &p = SourceParameter()) : param_(p) {}
 
   /**
    * @brief Source
@@ -95,8 +94,10 @@ class V4R_EXPORTS Source {
    * object indices that indicate the object which filename begins with the string in variable indices_prefix,
    * a 4x4 homogenous camera pose that aligns the training views into a common coordinate system when multiplied with
    * each other which filename begins with the string in variable pose_prefix
+   * @param object_instances_to_load vector of object models to load from model_database_path. If emtpy, all objects
+   * in directory will be loaded.
    */
-  void init(const bf::path &model_database_path);
+  void init(const bf::path &model_database_path, const std::vector<std::string> &object_instances_to_load = {});
 
   /**
   * \brief Get the generated model

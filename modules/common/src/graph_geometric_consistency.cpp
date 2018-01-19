@@ -1,16 +1,13 @@
+#include <glog/logging.h>
 #include <pcl/common/io.h>
 #include <pcl/common/time.h>
-#include <pcl/point_types.h>
 #include <pcl/registration/correspondence_rejection_sample_consensus.h>
-#include <pcl/registration/correspondence_types.h>
 #include <v4r/common/graph_geometric_consistency.h>
 #include <v4r/common/miscellaneous.h>
 #include <boost/graph/biconnected_components.hpp>
 #include <boost/graph/connected_components.hpp>
 #include <boost/graph/copy.hpp>
 #include <boost/graph/prim_minimum_spanning_tree.hpp>
-#include <boost/unordered_map.hpp>
-#include <exception>
 
 struct V4R_EXPORTS ExtendedClique {
   std::vector<size_t> correspondences_;

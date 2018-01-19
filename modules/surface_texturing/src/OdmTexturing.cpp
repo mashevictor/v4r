@@ -1,4 +1,5 @@
 
+#include <pcl/common/transforms.h>
 #include <v4r/common/convertImage.h>
 #include <v4r/surface_texturing/OdmTexturing.h>
 #include <v4r/keypoints/impl/invPose.hpp>
@@ -18,7 +19,7 @@ OdmTexturing::OdmTexturing(const float &delta_angle_view_normal) : log_(false) {
   nrTextures_ = 0;
   padding_ = 15.0;
 
-  mesh_ = pcl::TextureMeshPtr(new pcl::TextureMesh);
+  mesh_ = TextureMeshPtr(new TextureMesh);
   patches_ = std::vector<Patch>(0);
   tTIA_ = std::vector<int>(0);
 }
@@ -67,16 +68,16 @@ void OdmTexturing::textureMapping(const std::vector<v4r::TSFFrame::Ptr> &frames,
     v4r::convertImage(im_cloud, image);
     snprintf(filename, PATH_MAX, image_names.c_str(), i);
     cv::imwrite(filename, image);
-    pcl::TextureMapping<pcl::PointXYZ>::Camera cam;
+    v4r::texture_mapping::Camera cam;
     pose = frames[i]->delta_cloud_rgb_pose * frames[i]->pose * base_transform;
     invPose(pose, inv_pose);
     cam.pose = inv_pose;
     cam.texture_file = filename;
-    cam.focal_length = (intrinsic(0, 0) + intrinsic(1, 1)) / 2.;
-    // cam.focal_length_h = intrinsic(1,1);
-    // cam.focal_length_w = intrinsic(0,0);
-    // cam.center_h = intrinsic(1,2);
-    // cam.center_w = intrinsic(0,2);
+    // cam.focal_length =  (intrinsic(0,0)+intrinsic(1,1))/2.;
+    cam.focal_length_h = intrinsic(1, 1);
+    cam.focal_length_w = intrinsic(0, 0);
+    cam.center_h = intrinsic(1, 2);
+    cam.center_w = intrinsic(0, 2);
     cam.height = image.rows;
     cam.width = image.cols;
     cameras_.push_back(cam);
@@ -308,7 +309,7 @@ void OdmTexturing::loadCameras() {
   bundleFile >> dummyLine;
   for (int i = 0; i < nrCameras; ++i) {
     double val;
-    pcl::TextureMapping<pcl::PointXYZ>::Camera cam;
+    v4r::texture_mapping::Camera cam;
     Eigen::Affine3f transform;
     bundleFile >> val;  // Read focal length from bundle file
     cam.focal_length = val;
@@ -531,7 +532,7 @@ void OdmTexturing::triangleToImageAssignment() {
   pcl::PointXY nanPoint;
   nanPoint.x = std::numeric_limits<float>::quiet_NaN();
   nanPoint.y = std::numeric_limits<float>::quiet_NaN();
-  pcl::texture_mapping::UvIndex uvNull;
+  v4r::texture_mapping::UvIndex uvNull;
   uvNull.idx_cloud = -1;
   uvNull.idx_face = -1;
 
@@ -553,7 +554,7 @@ void OdmTexturing::triangleToImageAssignment() {
     visibility.resize(mesh_->tex_polygons[0].size());
 
     // Vector for remembering the correspondence between uv-coordinates and faces
-    std::vector<pcl::texture_mapping::UvIndex> indexUvToPoints;
+    std::vector<v4r::texture_mapping::UvIndex> indexUvToPoints;
 
     // Count the number of vertices inside the camera frustum
     int countInsideFrustum = 0;
@@ -576,7 +577,7 @@ void OdmTexturing::triangleToImageAssignment() {
         projections->points.push_back((pixelPos2));
 
         // Remember corresponding face
-        pcl::texture_mapping::UvIndex u1, u2, u3;
+        v4r::texture_mapping::UvIndex u1, u2, u3;
         u1.idx_cloud = mesh_->tex_polygons[0][faceIndex].vertices[0];
         u2.idx_cloud = mesh_->tex_polygons[0][faceIndex].vertices[1];
         u3.idx_cloud = mesh_->tex_polygons[0][faceIndex].vertices[2];
@@ -871,10 +872,10 @@ Coords OdmTexturing::recursiveFindCoords(Node &n, float w, float h) {
 
     n.rgt_->used_ = false;
     n.lft_->used_ = false;
-    n.rgt_->rgt_ = nullptr;
-    n.rgt_->lft_ = nullptr;
-    n.lft_->rgt_ = nullptr;
-    n.lft_->lft_ = nullptr;
+    n.rgt_->rgt_ = NULL;
+    n.rgt_->lft_ = NULL;
+    n.lft_->rgt_ = NULL;
+    n.lft_->lft_ = NULL;
 
     // Check how to adjust free space
     if (n.width_ - w > n.height_ - h) {
@@ -975,11 +976,11 @@ void OdmTexturing::createTextures() {
   std::vector<std::vector<pcl::Vertices>> faceVector = std::vector<std::vector<pcl::Vertices>>(nrTextures_ + 1);
 
   // Container for texture coordinates according to submesh. Used to replace texture coordinates in mesh_.
-  std::vector<std::vector<Eigen::Vector2f>> textureCoordinatesVector =
-      std::vector<std::vector<Eigen::Vector2f>>(nrTextures_ + 1);
+  std::vector<std::vector<Eigen::Vector2f, Eigen::aligned_allocator<Eigen::Vector2f>>> textureCoordinatesVector =
+      std::vector<std::vector<Eigen::Vector2f, Eigen::aligned_allocator<Eigen::Vector2f>>>(nrTextures_ + 1);
 
   // Container for materials according to submesh. Used to replace materials in mesh_.
-  std::vector<pcl::TexMaterial> materialVector = std::vector<pcl::TexMaterial>(nrTextures_ + 1);
+  std::vector<TexMaterial> materialVector = std::vector<TexMaterial>(nrTextures_ + 1);
 
   // Setup model according to patches placement
   for (int textureIndex = 0; textureIndex < nrTextures_; ++textureIndex) {
@@ -1040,7 +1041,7 @@ void OdmTexturing::createTextures() {
     }
 
     // Declare material and setup default values
-    pcl::TexMaterial meshMaterial;
+    v4r::TexMaterial meshMaterial;
     meshMaterial.tex_Ka.r = 0.0f;
     meshMaterial.tex_Ka.g = 0.0f;
     meshMaterial.tex_Ka.b = 0.0f;
@@ -1094,7 +1095,7 @@ void OdmTexturing::createTextures() {
   }
 
   // Declare material and setup default values for nonVisibileFaces submesh
-  pcl::TexMaterial meshMaterial;
+  v4r::TexMaterial meshMaterial;
   meshMaterial.tex_Ka.r = 0.0f;
   meshMaterial.tex_Ka.g = 0.0f;
   meshMaterial.tex_Ka.b = 0.0f;

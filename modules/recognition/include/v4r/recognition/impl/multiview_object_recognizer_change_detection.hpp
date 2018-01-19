@@ -45,7 +45,6 @@
  *
  */
 
-#include <glog/logging.h>
 #include <boost/format.hpp>
 #include <boost/program_options.hpp>
 

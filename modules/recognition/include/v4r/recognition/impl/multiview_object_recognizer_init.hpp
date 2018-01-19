@@ -1,6 +1,5 @@
 #include <v4r/recognition/multiview_object_recognizer.h>
 
-#include <glog/logging.h>
 #include <omp.h>
 #include <boost/format.hpp>
 #include <boost/program_options.hpp>

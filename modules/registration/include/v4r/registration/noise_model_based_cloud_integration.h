@@ -63,14 +63,14 @@ class V4R_EXPORTS NMBasedCloudIntegrationParameter {
   float octree_resolution_;      ///< resolution of the octree of the big point cloud
   float focal_length_;  ///< focal length of the cameras; used for reprojection of the points into each image plane
   bool average_;  ///< if true, takes the average color (for each color componenent) and normal within all the points in
-                  ///the leaf of the octree. Otherwise, it takes the point within the octree with the best noise weight
+                  /// the leaf of the octree. Otherwise, it takes the point within the octree with the best noise weight
   float threshold_explained_;  ///< Euclidean distance for a nearby point to explain a query point. Only used if
-                               ///reason_about_points = true
+                               /// reason_about_points = true
   bool reason_about_points_;   ///< if true, projects each point into each viewpoint and checks for occlusion or if it
-                               ///can be explained by the points in the other viewpoints (this should filter lonely
-                               ///points but is computational expensive) --> FILTER NOT IMPLEMENTED SO FAR!!
+                               /// can be explained by the points in the other viewpoints (this should filter lonely
+  /// points but is computational expensive) --> FILTER NOT IMPLEMENTED SO FAR!!
   float min_px_distance_to_depth_discontinuity_;  ///< points of the input cloud within this distance (in pixel) to its
-                                                  ///closest depth discontinuity pixel will be removed
+                                                  /// closest depth discontinuity pixel will be removed
   NMBasedCloudIntegrationParameter()
   : min_points_per_voxel_(1), octree_resolution_(0.003f), focal_length_(525.f), average_(false),
     threshold_explained_(0.02f), reason_about_points_(false), min_px_distance_to_depth_discontinuity_(3.f) {}
@@ -143,7 +143,7 @@ class V4R_EXPORTS NMBasedCloudIntegration {
       Eigen::Vector3f new_normal = new_pt.normal.getNormalVector3fMap();
       new_normal.normalize();
       normal.getNormalVector3fMap() = w_old * normal.getNormalVector3fMap() + w_new * new_normal;
-      normal.curvature = w_old * normal.curvature + w_new * new_pt.normal.curvature;
+      normal.curvature = static_cast<float>(w_old * normal.curvature + w_new * new_pt.normal.curvature);
     }
   };
 
@@ -156,7 +156,7 @@ class V4R_EXPORTS NMBasedCloudIntegration {
       transformations_to_global_;  ///< transform aligning the input point clouds when multiplied
   std::vector<std::vector<std::vector<float>>> pt_properties_;  ///< for each cloud, for each pixel represent lateral
                                                                 ///[idx=0] and axial [idx=1] as well as distance to
-                                                                ///closest depth discontinuity [idx=2]
+                                                                /// closest depth discontinuity [idx=2]
   pcl::PointCloud<pcl::Normal>::Ptr output_normals_;
 
   void cleanUp() {

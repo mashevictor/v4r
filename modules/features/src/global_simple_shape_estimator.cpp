@@ -1,3 +1,4 @@
+#include <glog/logging.h>
 #include <v4r/common/miscellaneous.h>
 #include <v4r/features/global_simple_shape_estimator.h>
 

@@ -7,28 +7,7 @@ if(NOT V4R_DEPENDENCIES_FOUND)
 endif()
 
 v4r_include_directories("${CMAKE_CURRENT_SOURCE_DIR}")
-v4r_include_directories(${OPENNURBS_INCLUDE_DIRS})
 v4r_include_modules(${AttentionSegmentation_DEPS})
-
-if(HAVE_PCL)
-  v4r_include_directories(${PCL_INCLUDE_DIRS})
-  list(APPEND DEP_LIBS ${PCL_LIBRARIES})
-endif()
-
-if(HAVE_OPENCV)
-  v4r_include_directories(${OPENCV_INCLUDE_DIRS})
-  list(APPEND DEP_LIBS ${OPENCV_LIBRARIES})
-endif()
-
-if(HAVE_BOOST)
-  v4r_include_directories(${BOOST_INCLUDE_DIRS})
-  list(APPEND DEP_LIBS ${BOOST_LIBRARIES})
-endif()
-
-if(HAVE_OPENNURBS)
-  v4r_include_directories(${OPENNURBS_INCLUDE_DIRS})
-  list(APPEND DEP_LIBS ${OPENNURBS_LIBRARIES})
-endif()
 
 #add_definitions(-std=c++0x)
 add_definitions(-DEIGEN_YES_I_KNOW_SPARSE_MODULE_IS_NOT_STABLE_YET)

@@ -51,7 +51,6 @@
 #include <pcl/point_types.h>
 #include <v4r/core/macros.h>
 
-#include <glog/logging.h>
 #include <boost/program_options.hpp>
 
 namespace po = boost::program_options;

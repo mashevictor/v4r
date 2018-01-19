@@ -94,10 +94,11 @@ class V4R_EXPORTS GlobalRecognitionPipeline : public RecognitionPipeline<PointT>
    */
   void do_recognize();
 
+  void doInit(const bf::path &trained_dir, bool force_retrain,
+              const std::vector<std::string> &object_instances_to_load);
+
  public:
   GlobalRecognitionPipeline() : visualize_clusters_(false) {}
-
-  void initialize(const bf::path &trained_dir, bool force_retrain = false);
 
   /**
    * @brief addRecognizer

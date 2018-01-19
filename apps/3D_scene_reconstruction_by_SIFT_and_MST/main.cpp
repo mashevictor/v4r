@@ -11,12 +11,8 @@
 #include <v4r/registration/FeatureBasedRegistration.h>
 #include <v4r/registration/fast_icp_with_gc.h>
 #include <v4r_config.h>
-#include <iostream>
-#include <sstream>
 
-#include <boost/filesystem.hpp>
 #include <boost/graph/adjacency_list.hpp>
-#include <boost/graph/graph_traits.hpp>
 #include <boost/graph/kruskal_min_spanning_tree.hpp>
 
 #include <v4r/features/sift_local_estimator.h>
@@ -110,7 +106,6 @@ class scene_registration {
     pass2.setKeepOrganized(true);
     pass2.filter(*cloud_dst_wo_nan);
 
-    float w_after_icp_ = std::numeric_limits<float>::max();
     const float best_overlap_ = 0.75f;
 
     v4r::FastIterativeClosestPointWithGC<PointT> icp;
@@ -124,7 +119,7 @@ class scene_registration {
     icp.setKeepMaxHypotheses(5);
     icp.setMaximumIterations(10);
     icp.align(transform);
-    w_after_icp_ = icp.getFinalTransformation(refined_transform);
+    float w_after_icp_ = icp.getFinalTransformation(refined_transform);
 
     if (w_after_icp_ < 0 || !pcl_isfinite(w_after_icp_))
       w_after_icp_ = std::numeric_limits<float>::max();
@@ -204,9 +199,6 @@ class scene_registration {
         CamConnect edge;
         edge.source_id_ = view_b;
         edge.target_id_ = view_a;
-
-        boost::shared_ptr<flann::Index<DistT>> flann_index;
-        v4r::convertToFLANN<DistT>(grph_[view_b].sift_signatures_, flann_index);
 
         std::vector<Eigen::Matrix4f, Eigen::aligned_allocator<Eigen::Matrix4f>> sift_transforms =
             v4r::Registration::FeatureBasedRegistration<PointT>::estimateViewTransformationBySIFT(

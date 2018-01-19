@@ -2,12 +2,7 @@
 #include <v4r/segmentation/plane_utils.h>
 
 #include <glog/logging.h>
-#include <iostream>
 #include <pcl/impl/instantiate.hpp>
-
-#include <opencv2/calib3d/calib3d.hpp>
-#include <opencv2/highgui/highgui.hpp>
-#include <opencv2/imgproc/imgproc.hpp>
 
 //#define DEBUG_IMAGES
 //#define DEBUG_TEXT

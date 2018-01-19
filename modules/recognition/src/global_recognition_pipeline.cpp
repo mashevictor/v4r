@@ -1,23 +1,22 @@
+#include <glog/logging.h>
 #include <v4r/common/miscellaneous.h>
-#include <v4r/features/types.h>
 #include <v4r/recognition/global_recognition_pipeline.h>
 #include <v4r/segmentation/plane_utils.h>
 
-#include <glog/logging.h>
 #include <pcl/common/time.h>
-#include <pcl/visualization/pcl_visualizer.h>
 
 namespace v4r {
 
 template <typename PointT>
-void GlobalRecognitionPipeline<PointT>::initialize(const bf::path &trained_dir, bool force_retrain) {
+void GlobalRecognitionPipeline<PointT>::doInit(const bf::path &trained_dir, bool force_retrain,
+                                               const std::vector<std::string> &object_instances_to_load) {
   CHECK(!global_recognizers_.empty()) << "No local recognizers provided!";
 
   for (typename GlobalRecognizer<PointT>::Ptr &r : global_recognizers_) {
     r->setModelDatabase(m_db_);
     r->setNormalEstimator(normal_estimator_);
     r->setVisualizationParameter(vis_param_);
-    r->initialize(trained_dir, force_retrain);
+    r->initialize(trained_dir, force_retrain, object_instances_to_load);
   }
 }
 

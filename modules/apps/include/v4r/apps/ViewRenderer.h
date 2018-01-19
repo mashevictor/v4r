@@ -47,11 +47,11 @@
 
 #pragma once
 
-#include <boost/format.hpp>
-#include <boost/program_options.hpp>
 #include <v4r/common/camera.h>
 #include <v4r/core/macros.h>
 #include <v4r_config.h>
+#include <boost/format.hpp>
+#include <boost/program_options.hpp>
 
 namespace po = boost::program_options;
 
@@ -60,45 +60,45 @@ namespace v4r {
 namespace apps {
 
 class V4R_EXPORTS ViewRendererParameter {
-
  public:
-  bool upperHemisphere; //< if true, samples views from the upper hemisphere only (z>0)
-  bool autoscale; //< if true, scales the coordinate system such that the object model is enclosed by the unit sphere
+  bool upperHemisphere;  //< if true, samples views from the upper hemisphere only (z>0)
+  bool autoscale;  //< if true, scales the coordinate system such that the object model is enclosed by the unit sphere
   size_t subdivisions;
   float radius;
+  bool overwrite;
 
-  ViewRendererParameter()
-      : upperHemisphere(false), autoscale(false), subdivisions(0), radius(3.f) {}
+  ViewRendererParameter() : upperHemisphere(false), autoscale(false), subdivisions(0), radius(3.f), overwrite(false) {}
 
-/**
-* @brief init parameters
-* @param command_line_arguments (according to Boost program options library)
-* @return unused parameters (given parameters that were not used in this initialization call)
-*/
+  /**
+  * @brief init parameters
+  * @param command_line_arguments (according to Boost program options library)
+  * @return unused parameters (given parameters that were not used in this initialization call)
+  */
   std::vector<std::string> init(int argc, char **argv) {
     std::vector<std::string> arguments(argv + 1, argv + argc);
     return init(arguments);
   }
 
-/**
- * @brief init parameters
- * @param command_line_arguments (according to Boost program options library)
- * @return unused parameters (given parameters that were not used in this initialization call)
- */
+  /**
+   * @brief init parameters
+   * @param command_line_arguments (according to Boost program options library)
+   * @return unused parameters (given parameters that were not used in this initialization call)
+   */
   std::vector<std::string> init(const std::vector<std::string> &command_line_arguments) {
-
     po::options_description desc(
-        "Depth-map and point cloud Rendering from mesh file\n======================================\n**Allowed options");
-    desc.add_options()("help,h", "produce help message")(
-        "rendering_subdivisions", po::value<size_t>(&subdivisions)->default_value(subdivisions),
-        "defines the number of subdivsions used for rendering")(
-        "rendering_autoscale", po::bool_switch(&autoscale),
-        "scales the model into the unit sphere and translates it to the origin")(
-        "rendering_northHemisphere", po::bool_switch(&upperHemisphere),
-        "only renders the objects from views of the upper hemisphere")(
-        "rendering_radius",
-        po::value<float>(&radius)->default_value(radius, boost::str(boost::format("%.2e") % radius)),
-        "defines the radius used for rendering");
+        "Depth-map and point cloud Rendering from mesh file\n======================================\n**Allowed "
+        "options");
+    desc.add_options()("help,h", "produce help message");
+    desc.add_options()("rendering_subdivisions", po::value<size_t>(&subdivisions)->default_value(subdivisions),
+                       "defines the number of subdivsions used for rendering");
+    desc.add_options()("rendering_autoscale", po::bool_switch(&autoscale),
+                       "scales the model into the unit sphere and translates it to the origin");
+    desc.add_options()("rendering_northHemisphere", po::bool_switch(&upperHemisphere),
+                       "only renders the objects from views of the upper hemisphere");
+    desc.add_options()("rendering_radius",
+                       po::value<float>(&radius)->default_value(radius, boost::str(boost::format("%.2e") % radius)),
+                       "defines the radius used for rendering");
+    desc.add_options()("rendering_overwrite", po::bool_switch(&overwrite), "overwrites existing files in output path");
 
     po::variables_map vm;
     po::parsed_options parsed =
@@ -116,7 +116,6 @@ class V4R_EXPORTS ViewRendererParameter {
     }
     return to_pass_further;
   }
-
 };
 
 /**
@@ -128,12 +127,9 @@ class V4R_EXPORTS ViewRenderer {
   ViewRendererParameter param_;
 
  public:
-  ViewRenderer(const Camera::ConstPtr &cam, const ViewRendererParameter &p)
-      : cam_(cam), param_(p) {}
+  ViewRenderer(const Camera::ConstPtr &cam, const ViewRendererParameter &p) : cam_(cam), param_(p) {}
 
   void render(const bf::path &input_path, const bf::path &out_path = "rendered_views");
 };
-
 }
-
 }

@@ -49,7 +49,6 @@
 
 #include <pcl/common/common.h>
 
-#include <glog/logging.h>
 #include <v4r/common/normals.h>
 #include <v4r/common/pcl_visualization_utils.h>
 #include <v4r/core/macros.h>
@@ -88,6 +87,9 @@ class V4R_EXPORTS RecognitionPipeline {
 
   static std::vector<std::pair<std::string, float>> elapsed_time_;  ///< to measure performance
 
+  virtual void doInit(const bf::path &trained_dir, bool retrain,
+                      const std::vector<std::string> &object_instances_to_load) = 0;
+
   class StopWatch {
     std::string desc_;
     boost::posix_time::ptime start_time_;
@@ -95,12 +97,7 @@ class V4R_EXPORTS RecognitionPipeline {
    public:
     StopWatch(const std::string &desc) : desc_(desc), start_time_(boost::posix_time::microsec_clock::local_time()) {}
 
-    ~StopWatch() {
-      boost::posix_time::ptime end_time = boost::posix_time::microsec_clock::local_time();
-      float elapsed_time = static_cast<float>(((end_time - start_time_).total_milliseconds()));
-      VLOG(1) << desc_ << " took " << elapsed_time << " ms.";
-      elapsed_time_.push_back(std::pair<std::string, float>(desc_, elapsed_time));
-    }
+    ~StopWatch();
   };
 
   PCLVisualizationParams::ConstPtr vis_param_;
@@ -120,11 +117,12 @@ class V4R_EXPORTS RecognitionPipeline {
    * computed features will be stored on disk (in each
    * object model folder, a feature folder is created with data)
    * @param[in] retrain if set, will re-compute features and store to disk, no matter if they already exist or not
+   * @param[in] object_instances_to_load vector of object models to load from model_database_path. If emtpy, all objects
+  * in directory will be loaded.
    */
-  virtual void initialize(const bf::path &trained_dir = "", bool retrain = false) {
-    (void)retrain;
-    (void)trained_dir;
-    PCL_WARN("initialize is not implemented for this class.");
+  void initialize(const bf::path &trained_dir = "", bool retrain = false,
+                  const std::vector<std::string> &object_instances_to_load = {}) {
+    doInit(trained_dir, retrain, object_instances_to_load);
   }
 
   /**
@@ -200,16 +198,6 @@ class V4R_EXPORTS RecognitionPipeline {
   virtual bool requiresSegmentation() const = 0;
   virtual void do_recognize() = 0;
 
-  void recognize() {
-    elapsed_time_.clear();
-    obj_hypotheses_.clear();
-    CHECK(scene_) << "Input scene is not set!";
-
-    if (needNormals())
-      CHECK(scene_normals_ && scene_->points.size() == scene_normals_->points.size())
-          << "Recognizer needs normals but they are not set!";
-
-    do_recognize();
-  }
+  void recognize();
 };
 }

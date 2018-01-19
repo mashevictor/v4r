@@ -47,7 +47,6 @@
 
 #pragma once
 
-#include <glog/logging.h>
 #include <v4r/core/macros.h>
 #include <v4r/recognition/hypotheses_verification.h>
 #include <boost/dynamic_bitset.hpp>
@@ -59,16 +58,16 @@
 #include <metslib/mets.hh>
 
 namespace v4r {
-template <typename ModelT, typename SceneT>
+template <typename PointT>
 class HypothesisVerification;
 
-template <typename ModelT, typename SceneT>
+template <typename PointT>
 class V4R_EXPORTS GHVSAModel : public mets::evaluable_solution {
-  typedef HypothesisVerification<ModelT, SceneT> SAOptimizerT;
+  typedef HypothesisVerification<PointT> SAOptimizerT;
 
  public:
-  typedef boost::shared_ptr<GHVSAModel<ModelT, SceneT>> Ptr;
-  typedef boost::shared_ptr<GHVSAModel<ModelT, SceneT> const> ConstPtr;
+  typedef boost::shared_ptr<GHVSAModel<PointT>> Ptr;
+  typedef boost::shared_ptr<GHVSAModel<PointT> const> ConstPtr;
 
   SAOptimizerT* opt_;
   mets::gol_type cost_;
@@ -146,7 +145,7 @@ class V4R_EXPORTS GHVgeneric_move : public mets::mana_move {
    * Such moves should be done when the temperature is low
    * It is based on the intersection of explained points between hypothesis
    */
-template <typename ModelT, typename SceneT>
+template <typename PointT>
 class V4R_EXPORTS GHVreplace_hyp_move : public GHVgeneric_move {
   size_t active_id_, inactive_id_;  // i_ is an active hypothesis, j_ is an inactive hypothesis
   size_t sol_size_;
@@ -155,36 +154,17 @@ class V4R_EXPORTS GHVreplace_hyp_move : public GHVgeneric_move {
   GHVreplace_hyp_move(size_t active_id, size_t inactive_id, size_t sol_size)
   : active_id_(active_id), inactive_id_(inactive_id), sol_size_(sol_size) {}
 
-  mets::gol_type evaluate(const mets::feasible_solution& cs) const {
-    GHVSAModel<ModelT, SceneT> model;
-    model.copy_from(cs);
-    CHECK(model.solution_[active_id_] && !model.solution_[inactive_id_]);
-    model.solution_.flip(active_id_);
-    model.solution_.flip(inactive_id_);
-    return model.evaluate();
-  }
+  mets::gol_type evaluate(const mets::feasible_solution& cs) const;
 
-  mets::gol_type apply_and_evaluate(mets::feasible_solution& cs) {
-    GHVSAModel<ModelT, SceneT>& model = dynamic_cast<GHVSAModel<ModelT, SceneT>&>(cs);
-    CHECK(model.solution_[active_id_] && !model.solution_[inactive_id_]);
-    model.solution_.flip(active_id_);
-    model.solution_.flip(inactive_id_);
-    return model.apply_and_evaluate();
-  }
+  mets::gol_type apply_and_evaluate(mets::feasible_solution& cs);
 
-  void apply(mets::feasible_solution& s) const {
-    GHVSAModel<ModelT, SceneT>& model = dynamic_cast<GHVSAModel<ModelT, SceneT>&>(s);
-    CHECK(model.solution_[active_id_] && !model.solution_[inactive_id_]);
-    model.solution_.flip(active_id_);
-    model.solution_.flip(inactive_id_);
-    model.apply();
-  }
+  void apply(mets::feasible_solution& s) const;
 
   void unapply(mets::feasible_solution& s) const {
     (void)s;
     // go back
     throw std::runtime_error("Unapply is not implemented right now!");
-    //        GHVSAModel<ModelT, SceneT>& model = dynamic_cast<GHVSAModel<ModelT, SceneT>&> (s);
+    //        GHVSAModel<PointT>& model = dynamic_cast<GHVSAModel<PointT>&> (s);
     //        model.unapply (inactive_id_, !model.solution_[inactive_id_]);
     //        model.unapply (active_id_, !model.solution_[active_id_]);
   }
@@ -207,7 +187,7 @@ class V4R_EXPORTS GHVreplace_hyp_move : public GHVgeneric_move {
 /**
    * @brief Represents a move, activate/deactivate an hypothesis
    */
-template <typename ModelT, typename SceneT>
+template <typename PointT>
 class GHVmove : public GHVgeneric_move {
   size_t index_;
 
@@ -220,20 +200,20 @@ class GHVmove : public GHVgeneric_move {
 
   mets::gol_type evaluate(const mets::feasible_solution& cs) const {
     // mets::copyable copyable = dynamic_cast<mets::copyable> (&cs);
-    GHVSAModel<ModelT, SceneT> model;
+    GHVSAModel<PointT> model;
     model.copy_from(cs);
     model.solution_.flip(index_);
     return model.evaluate();
   }
 
   mets::gol_type apply_and_evaluate(mets::feasible_solution& cs) {
-    GHVSAModel<ModelT, SceneT>& model = dynamic_cast<GHVSAModel<ModelT, SceneT>&>(cs);
+    GHVSAModel<PointT>& model = dynamic_cast<GHVSAModel<PointT>&>(cs);
     model.solution_.flip(index_);
     return model.apply_and_evaluate();
   }
 
   void apply(mets::feasible_solution& s) const {
-    GHVSAModel<ModelT, SceneT>& model = dynamic_cast<GHVSAModel<ModelT, SceneT>&>(s);
+    GHVSAModel<PointT>& model = dynamic_cast<GHVSAModel<PointT>&>(s);
     model.solution_.flip(index_);
     model.apply();
   }
@@ -241,7 +221,7 @@ class GHVmove : public GHVgeneric_move {
   void unapply(mets::feasible_solution& s) const {
     (void)s;
     throw std::runtime_error("Unapply is not implemented right now!");
-    //    GHVSAModel<ModelT, SceneT>& model = dynamic_cast<GHVSAModel<ModelT, SceneT>&> (s);
+    //    GHVSAModel<PointT>& model = dynamic_cast<GHVSAModel<PointT>&> (s);
     //    model.unapply (index_, !model.solution_[index_]);
   }
 
@@ -261,7 +241,7 @@ class GHVmove : public GHVgeneric_move {
   }
 };
 
-template <typename ModelT, typename SceneT>
+template <typename PointT>
 class V4R_EXPORTS GHVmove_manager {
  private:
   bool use_replace_moves_;
@@ -291,12 +271,12 @@ class V4R_EXPORTS GHVmove_manager {
   void refresh(mets::feasible_solution& s);
 };
 
-template <typename ModelT, typename SceneT>
+template <typename PointT>
 class V4R_EXPORTS GHVCostFunctionLogger : public mets::solution_recorder {
-  std::vector<float> costs_;
-  std::vector<float> costs_history_;
+  std::vector<double> costs_;
+  std::vector<double> costs_history_;
   size_t times_evaluated_;
-  boost::function<void(const boost::dynamic_bitset<>&, float, int)> visualize_function_;
+  boost::function<void(const boost::dynamic_bitset<>&, double, size_t)> visualize_function_;
 
  public:
   GHVCostFunctionLogger();
@@ -307,7 +287,7 @@ class V4R_EXPORTS GHVCostFunctionLogger : public mets::solution_recorder {
     costs_[0] = 0.f;
   }
 
-  void setVisualizeFunction(boost::function<void(const boost::dynamic_bitset<>&, float, int)>& f) {
+  void setVisualizeFunction(boost::function<void(const boost::dynamic_bitset<>&, double, size_t)>& f) {
     visualize_function_ = f;
   }
 
@@ -348,7 +328,7 @@ class V4R_EXPORTS GHVCostFunctionLogger : public mets::solution_recorder {
     if (s.cost_function() < best_ever_m.cost_function())  // move accepted
     {
       best_ever_m.copy_from(s);
-      const GHVSAModel<ModelT, SceneT>& ss = static_cast<const GHVSAModel<ModelT, SceneT>&>(sol);
+      const GHVSAModel<PointT>& ss = static_cast<const GHVSAModel<PointT>&>(sol);
       costs_.push_back(ss.cost_);
 
       if (visualize_function_)
@@ -369,7 +349,7 @@ class V4R_EXPORTS GHVCostFunctionLogger : public mets::solution_recorder {
   }
 
   void setBestSolution(const boost::dynamic_bitset<>& sol) {
-    GHVSAModel<ModelT, SceneT>& ss = static_cast<GHVSAModel<ModelT, SceneT>&>(best_ever_m);
+    GHVSAModel<PointT>& ss = static_cast<GHVSAModel<PointT>&>(best_ever_m);
     ss.solution_ = sol;
   }
 

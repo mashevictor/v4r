@@ -55,7 +55,6 @@
 #include <boost/serialization/split_member.hpp>
 #include <boost/serialization/vector.hpp>
 
-#include <v4r/common/pcl_serialization.h>
 #include <v4r/core/macros.h>
 #include <v4r/recognition/model.h>
 #include <v4r/recognition/source.h>
@@ -113,8 +112,8 @@ class V4R_EXPORTS ModelSceneCorrespondence {
   }
 
  public:
-  int scene_id_;          /// Index of scene point.
-  int model_id_;          /// Index of matching model point.
+  size_t scene_id_;       /// Index of scene point.
+  size_t model_id_;       /// Index of matching model point.
   float dist_3D_;         /// Squared distance between the corresponding points in Euclidean 3D space
   float color_distance_;  /// Distance between the corresponding points in color
   float normals_dotp_;    /// Angle in degree between surface normals
@@ -154,7 +153,6 @@ class V4R_EXPORTS HVRecognitionModel {
   std::vector<ModelSceneCorrespondence> model_scene_c_;  ///< correspondences between visible model points and scene
   float model_fit_;  ///< the fitness score of the visible cloud to the model scene (sum of model_scene_c correspondenes
                      /// weight divided by the number of visible points)
-  boost::dynamic_bitset<> visible_pt_is_outlier_;  ///< indicates for each visible point if it is considered an outlier
 
   Eigen::MatrixXf pt_color_;  ///< color values for each point of the (complete) model (row_id). Width is equal to the
                               /// number of color channels

@@ -353,7 +353,7 @@ void Sensor::run() {
   int z = 0;
   double conf_ransac_iter = 0, conf_tracked_points = 0;
   cv::Mat_<cv::Vec3b> im_draw;
-  uint64_t ts = INT_MAX, ts_last;
+  //uint64_t ts = INT_MAX, ts_last;
   Eigen::Matrix4f filt_pose;
   pcl::PointCloud<pcl::PointXYZRGBNormal> filt_cloud;
 

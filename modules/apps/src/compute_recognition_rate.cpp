@@ -1,6 +1,5 @@
 #include <v4r/apps/compute_recognition_rate.h>
 #include <v4r/common/pcl_opencv.h>
-#include <v4r/io/filesystem.h>
 
 #include <pcl/common/angles.h>
 #include <pcl/common/centroid.h>
@@ -9,8 +8,6 @@
 #include <pcl/io/pcd_io.h>
 
 #include <glog/logging.h>
-#include <algorithm>  // std::next_permutation, std::sort
-#include <boost/algorithm/string.hpp>
 #include <boost/program_options.hpp>
 
 namespace po = boost::program_options;
@@ -68,10 +65,7 @@ bool RecognitionEvaluator::computeError(const Eigen::Matrix4f &pose_a, const Eig
           << "(z), is rotational invariant? " << is_rotation_invariant << ", is rotational symmetric? "
           << is_rotational_symmetric;
 
-  if (trans_error > translation_error_threshold_m || rot_error > rotation_error_threshold_deg)
-    return true;
-
-  return false;
+  return trans_error > translation_error_threshold_m || rot_error > rotation_error_threshold_deg;
 }
 
 void RecognitionEvaluator::checkMatchvector(const std::vector<std::pair<int, int>> &rec2gt,
@@ -1094,7 +1088,7 @@ Eigen::MatrixXi RecognitionEvaluator::compute_confusion_matrix() {
 
     for (auto const &gt_model_hyps : gt_hyps_all_models) {
       const std::string &model_name_gt = gt_model_hyps.first;
-      const Model &m = models[model_name_gt];
+      // const Model &m = models[model_name_gt];
 
       for (const Hypothesis &h_gt : gt_model_hyps.second) {
         //        float occlusion = h_gt.occlusion;

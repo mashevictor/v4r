@@ -19,7 +19,7 @@
 namespace po = boost::program_options;
 
 //-m /media/Data/datasets/TUW/model_database_new -g /media/Data/datasets/TUW/annotations -i
-///media/Data/datasets/TUW/test_set/ -v
+/// media/Data/datasets/TUW/test_set/ -v
 
 using namespace v4r;
 

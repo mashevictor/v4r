@@ -56,9 +56,8 @@ struct svm_model {
   double *rho;                /* constants in decision functions (rho[k*(k-1)/2]) */
   double *probA;              /* pariwise probability information */
   double *probB;
-  int *
-      sv_indices; /* sv_indices[0,...,nSV-1] are values in [1,...,num_traning_data] to indicate SVs in the training set
-                     */
+  int *sv_indices; /* sv_indices[0,...,nSV-1] are values in [1,...,num_traning_data] to indicate SVs in the training set
+                      */
 
   /* for classification only */
 

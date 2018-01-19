@@ -1,4 +1,3 @@
-#include <glog/logging.h>
 #include <omp.h>
 #include <v4r/recognition/multi_pipeline_recognizer.h>
 #include <v4r_config.h>

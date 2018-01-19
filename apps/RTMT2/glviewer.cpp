@@ -227,12 +227,15 @@ void GLViewer::initializeGL() {
 }
 
 void GLViewer::resizeGL(int w, int h) {
+  (void)w;
+  (void)h;
   // cout << "[GLViewer::resizeGL] w,h: " << width() << ", " << height() << endl;
   glViewport(0, 0, width(), height());
   updateGL();
 }
 
 void GLViewer::drawCoordinates(float length, const Eigen::Matrix4f &pose) {
+  (void)length;
   pt10 = pose * pt00;
   pt1x = pose * pt0x;
   pt1y = pose * pt0y;

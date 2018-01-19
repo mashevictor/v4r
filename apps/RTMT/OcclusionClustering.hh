@@ -117,9 +117,7 @@ public:
  */
 inline bool OcclusionClustering::isnan(const pcl::PointXYZRGB &pt)
 {
-  if (std::isnan(pt.x) || std::isnan(pt.y) || std::isnan(pt.z))
-    return true;
-  return false;
+  return std::isnan(pt.x) || std::isnan(pt.y) || std::isnan(pt.z);
 }
 
 }

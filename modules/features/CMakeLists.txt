@@ -28,7 +28,6 @@ ${CMAKE_CURRENT_LIST_DIR}/include/v4r/features/all_headers.h
 ${CMAKE_CURRENT_LIST_DIR}/include/v4r/features/ComputeImGradientDescriptors.h
 ${CMAKE_CURRENT_LIST_DIR}/include/v4r/features/FeatureDetector_KD_ORB.h
 ${CMAKE_CURRENT_LIST_DIR}/include/v4r/features/types.h
-${CMAKE_CURRENT_LIST_DIR}/include/v4r/features/crh_estimator.h
 ${CMAKE_CURRENT_LIST_DIR}/include/v4r/features/ourcvfh_estimator.h
 ${CMAKE_CURRENT_LIST_DIR}/include/v4r/features/ComputeImGDescOrientations.h
 ${CMAKE_CURRENT_LIST_DIR}/include/v4r/features/FeatureSelection.h
@@ -55,8 +54,6 @@ ${CMAKE_CURRENT_LIST_DIR}/include/v4r/features/colorshot_local_estimator.h
 )
 
 if(HAVE_CAFFE)
-    list(APPEND FEATURE_LIBRARIES ${CAFFE_LIBRARIES})
-    v4r_include_directories(${CAFFE_INCLUDE_DIRS})
     list(APPEND feat_srcs
             ${CMAKE_CURRENT_LIST_DIR}/src/global_alexnet_cnn_estimator.cpp
         )
@@ -86,4 +83,4 @@ endif()
 v4r_set_module_sources(HEADERS ${feat_headers} SOURCES ${feat_srcs} ${feat_headers})
 v4r_module_include_directories()
 
-v4r_create_module(${FEATURE_LIBRARIES})
+v4r_create_module()

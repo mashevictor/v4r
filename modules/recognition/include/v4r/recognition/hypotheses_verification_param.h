@@ -47,7 +47,6 @@
 
 #pragma once
 
-#include <glog/logging.h>
 #include <v4r/core/macros.h>
 #include <v4r/io/filesystem.h>
 #include <boost/archive/xml_iarchive.hpp>
@@ -157,7 +156,7 @@ class V4R_EXPORTS HV_Parameter {
     smoothing_radius_(2), do_smoothing_(true), do_erosion_(true), erosion_radius_(4), icp_iterations_(10),
     icp_max_correspondence_(0.02f), inlier_threshold_xyz_(0.01),  // 0.005f
     inlier_threshold_normals_dotp_(0.99), inlier_threshold_color_(30.f), sigma_xyz_(0.01f), sigma_normals_(0.05f),
-    sigma_color_(20.f), w_xyz_(1.f / 3.f), w_normals_(1.f / 3.f), w_color_(1.f / 3.f), normal_method_(2),
+    sigma_color_(20.f), w_xyz_(1.f / 3.f), w_normals_(1.f / 3.f), w_color_(1.f / 3.f), normal_method_(0),
     ignore_color_even_if_exists_(false), max_iterations_(5000), clutter_regularizer_(10000.f), use_replace_moves_(true),
     opt_type_(HV_OptimizationType::LocalSearch), use_histogram_specification_(false), initial_status_(false),
     //              color_space_ (color_space),
@@ -185,77 +184,92 @@ class V4R_EXPORTS HV_Parameter {
    */
   std::vector<std::string> init(const std::vector<std::string> &command_line_arguments) {
     po::options_description desc("Hypothesis Verification Parameters\n=====================");
-    desc.add_options()("help,h", "produce help message")(
-        "hv_icp_iterations", po::value<int>(&icp_iterations_)->default_value(icp_iterations_),
-        "number of icp iterations. If 0, no pose refinement will be done")(
-        "hv_icp_max_correspondence", po::value<float>(&icp_max_correspondence_)->default_value(icp_max_correspondence_),
-        "")("hv_clutter_regularizer",
-            po::value<float>(&clutter_regularizer_)
-                ->default_value(clutter_regularizer_, boost::str(boost::format("%.2e") % clutter_regularizer_)),
-            "The penalty multiplier used to penalize unexplained scene points within the clutter influence radius "
-            "<i>radius_neighborhood_clutter_</i> of an explained scene point when they belong to the same smooth "
-            "segment.")(
+    desc.add_options()("help,h", "produce help message");
+    desc.add_options()("hv_icp_iterations", po::value<int>(&icp_iterations_)->default_value(icp_iterations_),
+                       "number of icp iterations. If 0, no pose refinement will be done");
+    desc.add_options()("hv_icp_max_correspondence",
+                       po::value<float>(&icp_max_correspondence_)->default_value(icp_max_correspondence_), "");
+    desc.add_options()(
+        "hv_clutter_regularizer",
+        po::value<float>(&clutter_regularizer_)
+            ->default_value(clutter_regularizer_, boost::str(boost::format("%.2e") % clutter_regularizer_)),
+        "The penalty multiplier used to penalize unexplained scene points within the clutter influence radius "
+        "<i>radius_neighborhood_clutter_</i> of an explained scene point when they belong to the same smooth "
+        "segment.");
+    desc.add_options()(
         "hv_color_inlier_treshold",
         po::value<float>(&inlier_threshold_color_)
             ->default_value(inlier_threshold_color_, boost::str(boost::format("%.2e") % inlier_threshold_color_)),
         "allowed chrominance (AB channel of LAB color space) variance for a point of an object hypotheses to be "
         "considered explained by a corresponding scene point (between 0 and 1, the higher the fewer objects get "
-        "rejected)")(
+        "rejected)");
+    desc.add_options()(
         "hv_sigma_color",
         po::value<float>(&sigma_color_)->default_value(sigma_color_, boost::str(boost::format("%.2e") % sigma_color_)),
         "allowed illumination (L channel of LAB color space) variance for a point of an object hypotheses to be "
         "considered explained by a corresponding scene point (between 0 and 1, the higher the fewer objects get "
-        "rejected)")("hv_sigma_normals_",
-                     po::value<float>(&sigma_normals_)
-                         ->default_value(sigma_normals_, boost::str(boost::format("%.2e") % sigma_normals_)),
-                     "variance for surface normals")(
-        "hv_histogram_specification",
-        po::value<bool>(&use_histogram_specification_)->default_value(use_histogram_specification_), " ")(
-        "hv_ignore_color", po::value<bool>(&ignore_color_even_if_exists_)->default_value(ignore_color_even_if_exists_),
-        " ")("hv_initial_status", po::value<bool>(&initial_status_)->default_value(initial_status_),
-             "sets the initial activation status of each hypothesis to this value before starting optimization. E.g. "
-             "If true, all hypotheses will be active and the cost will be optimized from that initial status.")
-        //                    ("hv_color_space", po::value<int>(&color_space_)->default_value(color_space_), "specifies
-        //                    the color space being used for verification (0... LAB, 1... RGB, 2... Grayscale,
-        //                    3,4,5,6... ?)")
-        ("hv_color_comparison_method",
-         po::value<int>(&color_comparison_method_)->default_value(color_comparison_method_),
-         "method used for color comparison (0... CIE76, 1... CIE94, 2... CIEDE2000)")(
-            "hv_inlier_threshold",
-            po::value<float>(&inlier_threshold_xyz_)
-                ->default_value(inlier_threshold_xyz_, boost::str(boost::format("%.2e") % inlier_threshold_xyz_)),
-            "Represents the maximum distance between model and scene points in order to state that a scene point is "
-            "explained by a model point. Valid model points that do not have any corresponding scene point within this "
-            "threshold are considered model outliers")(
-            "hv_occlusion_threshold",
-            po::value<float>(&occlusion_thres_)
-                ->default_value(occlusion_thres_, boost::str(boost::format("%.2e") % occlusion_thres_)),
-            "Threshold for a point to be considered occluded when model points are back-projected to the scene ( "
-            "depends e.g. on sensor noise)")(
-            "hv_optimizer_type", po::value<int>(&opt_type_)->default_value(opt_type_),
-            "defines the optimization methdod. 0: Local search (converges quickly, but can easily get trapped in local "
-            "minima), 1: Tabu Search, 4; Tabu Search + Local Search (Replace active hypotheses moves), else: Simulated "
-            "Annealing")("hv_resolution_mm", po::value<int>(&resolution_mm_)->default_value(resolution_mm_),
-                         "The resolution of models and scene used to verify hypotheses (in milli meters)")(
-            "hv_min_visible_ratio",
-            po::value<float>(&min_visible_ratio_)
-                ->default_value(min_visible_ratio_, boost::str(boost::format("%.2e") % min_visible_ratio_)),
-            "defines how much of the object has to be visible in order to be included in the verification stage")(
-            "hv_min_ratio_smooth_cluster_explained",
-            po::value<float>(&min_ratio_cluster_explained_)
-                ->default_value(min_ratio_cluster_explained_,
-                                boost::str(boost::format("%.2e") % min_ratio_cluster_explained_)),
-            " defines the minimum ratio a smooth cluster has to be explained by the visible points (given there are at "
-            "least 100 points)")("hv_eps_angle_threshold",
-                                 po::value<float>(&eps_angle_threshold_deg_)->default_value(eps_angle_threshold_deg_),
-                                 "smooth clustering parameter for the angle threshold")(
-            "hv_cluster_tolerance", po::value<float>(&cluster_tolerance_)->default_value(cluster_tolerance_),
-            "smooth clustering parameter for cluster_tolerance")(
-            "hv_curvature_threshold", po::value<float>(&curvature_threshold_)->default_value(curvature_threshold_),
-            "smooth clustering parameter for curvate")(
-            "hv_check_smooth_clusters", po::value<bool>(&check_smooth_clusters_)->default_value(check_smooth_clusters_),
-            "if true, checks for each hypotheses how well it explains occupied smooth surface patches. Hypotheses are "
-            "rejected if they only partially explain smooth clusters.");
+        "rejected)");
+    desc.add_options()("hv_sigma_normals_",
+                       po::value<float>(&sigma_normals_)
+                           ->default_value(sigma_normals_, boost::str(boost::format("%.2e") % sigma_normals_)),
+                       "variance for surface normals");
+    desc.add_options()("hv_histogram_specification",
+                       po::value<bool>(&use_histogram_specification_)->default_value(use_histogram_specification_),
+                       " ");
+    desc.add_options()("hv_ignore_color",
+                       po::value<bool>(&ignore_color_even_if_exists_)->default_value(ignore_color_even_if_exists_),
+                       " ");
+    desc.add_options()(
+        "hv_initial_status", po::value<bool>(&initial_status_)->default_value(initial_status_),
+        "sets the initial activation status of each hypothesis to this value before starting optimization. E.g. "
+        "If true, all hypotheses will be active and the cost will be optimized from that initial status.");
+    desc.add_options()("hv_color_comparison_method",
+                       po::value<int>(&color_comparison_method_)->default_value(color_comparison_method_),
+                       "method used for color comparison (0... CIE76, 1... CIE94, 2... CIEDE2000)");
+    desc.add_options()(
+        "hv_inlier_threshold",
+        po::value<float>(&inlier_threshold_xyz_)
+            ->default_value(inlier_threshold_xyz_, boost::str(boost::format("%.2e") % inlier_threshold_xyz_)),
+        "Represents the maximum distance between model and scene points in order to state that a scene point is "
+        "explained by a model point. Valid model points that do not have any corresponding scene point within this "
+        "threshold are considered model outliers");
+    desc.add_options()(
+        "hv_occlusion_threshold",
+        po::value<float>(&occlusion_thres_)
+            ->default_value(occlusion_thres_, boost::str(boost::format("%.2e") % occlusion_thres_)),
+        "Threshold for a point to be considered occluded when model points are back-projected to the scene ( "
+        "depends e.g. on sensor noise)");
+    desc.add_options()(
+        "hv_optimizer_type", po::value<int>(&opt_type_)->default_value(opt_type_),
+        "defines the optimization methdod. 0: Local search (converges quickly, but can easily get trapped in local "
+        "minima), 1: Tabu Search, 4; Tabu Search + Local Search (Replace active hypotheses moves), else: Simulated "
+        "Annealing");
+    desc.add_options()("hv_resolution_mm", po::value<int>(&resolution_mm_)->default_value(resolution_mm_),
+                       "The resolution of models and scene used to verify hypotheses (in milli meters)");
+    desc.add_options()(
+        "hv_min_visible_ratio",
+        po::value<float>(&min_visible_ratio_)
+            ->default_value(min_visible_ratio_, boost::str(boost::format("%.2e") % min_visible_ratio_)),
+        "defines how much of the object has to be visible in order to be included in the verification stage");
+    desc.add_options()(
+        "hv_min_ratio_smooth_cluster_explained",
+        po::value<float>(&min_ratio_cluster_explained_)
+            ->default_value(min_ratio_cluster_explained_,
+                            boost::str(boost::format("%.2e") % min_ratio_cluster_explained_)),
+        " defines the minimum ratio a smooth cluster has to be explained by the visible points (given there are at "
+        "least 100 points)");
+    desc.add_options()("hv_eps_angle_threshold",
+                       po::value<float>(&eps_angle_threshold_deg_)->default_value(eps_angle_threshold_deg_),
+                       "smooth clustering parameter for the angle threshold");
+    desc.add_options()("hv_cluster_tolerance", po::value<float>(&cluster_tolerance_)->default_value(cluster_tolerance_),
+                       "smooth clustering parameter for cluster_tolerance");
+    desc.add_options()("hv_curvature_threshold",
+                       po::value<float>(&curvature_threshold_)->default_value(curvature_threshold_),
+                       "smooth clustering parameter for curvate");
+    desc.add_options()(
+        "hv_check_smooth_clusters", po::value<bool>(&check_smooth_clusters_)->default_value(check_smooth_clusters_),
+        "if true, checks for each hypotheses how well it explains occupied smooth surface patches. Hypotheses are "
+        "rejected if they only partially explain smooth clusters.");
     po::variables_map vm;
     po::parsed_options parsed =
         po::command_line_parser(command_line_arguments).options(desc).allow_unregistered().run();
@@ -308,13 +322,16 @@ class V4R_EXPORTS HV_Parameter {
     ofs.close();
   }
 
-  void load(const std::string &filename) {
-    if (!v4r::io::existsFile(filename))
-      throw std::runtime_error("Given config file " + filename + " does not exist! Current working directory is " +
-                               boost::filesystem::current_path().string() + ".");
+  void load(const bf::path &filename) {
+    if (!v4r::io::existsFile(filename)) {
+      std::stringstream txt;
+      txt << "Given config file " << filename.string() << " does not exist! Current working directory is "
+          << boost::filesystem::current_path().string() + ".";
+      throw std::runtime_error(txt.str());
+    }
 
-    VLOG(1) << "Loading parameters from file " << filename;
-    std::ifstream ifs(filename);
+    std::cout << "Loading parameters from file " << filename.string() << std::endl;
+    std::ifstream ifs(filename.string());
     boost::archive::xml_iarchive ia(ifs);
     ia >> BOOST_SERIALIZATION_NVP(*this);
     ifs.close();

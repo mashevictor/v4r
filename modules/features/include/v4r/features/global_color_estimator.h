@@ -52,8 +52,6 @@
 #include <v4r/features/global_estimator.h>
 #include <v4r/features/types.h>
 
-#include <glog/logging.h>
-
 #include <boost/archive/xml_iarchive.hpp>
 #include <boost/archive/xml_oarchive.hpp>
 #include <boost/program_options.hpp>

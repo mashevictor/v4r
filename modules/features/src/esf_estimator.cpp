@@ -1,3 +1,4 @@
+#include <glog/logging.h>
 #include <pcl/features/esf.h>
 #include <v4r/features/esf_estimator.h>
 

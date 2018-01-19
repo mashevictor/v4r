@@ -100,7 +100,7 @@ void TemporalSmoothingFilter::operate() {
     shm.unlock();
 
     if (have_todo) {
-      cv::goodFeaturesToTrack(im, points, param.max_count, 0.01, 10, cv::Mat(), 3, 0, 0.04);
+      cv::goodFeaturesToTrack(im, points, param.max_count, 0.01, 10, cv::Mat(), 3, false, 0.04);
       cv::cornerSubPix(im, points, param.subpix_win_size, cv::Size(-1, -1), param.termcrit);
       getPoints3D(cloud, points, points3d);
       filterValidPoints3D(points, points3d);

@@ -2,7 +2,6 @@
 #include <boost/graph/adjacency_matrix.hpp>
 #include <boost/graph/connected_components.hpp>
 #include <boost/graph/copy.hpp>
-#include <boost/graph/graph_traits.hpp>
 #include <boost/graph/prim_minimum_spanning_tree.hpp>
 
 #include <pcl/common/angles.h>
@@ -21,6 +20,7 @@ template <class PointT>
 void v4r::Registration::StablePlanesRegistration<PointT>::mergeTriangles(
     pcl::PolygonMesh::Ptr& mesh_out, pcl::PointCloud<pcl::PointXYZRGBNormal>::Ptr& model_cloud,
     std::vector<stablePlane>& stable_planes) {
+  (void)model_cloud;  // TODO remove from function signature
   pcl::PointCloud<pcl::PointXYZ> hull_cloud;
   pcl::fromPCLPointCloud2(mesh_out->cloud, hull_cloud);
 
@@ -274,7 +274,7 @@ void v4r::Registration::StablePlanesRegistration<PointT>::compute(int s1, int s2
   float step = 30;
   typedef pcl::PointXYZRGBNormal ModelPointT;
 
-  int MAX_PLANES_ = 4;
+  size_t MAX_PLANES_ = 4;
 
 //#define VIS_PLANES
 
@@ -296,7 +296,7 @@ void v4r::Registration::StablePlanesRegistration<PointT>::compute(int s1, int s2
   vis_s2.addCoordinateSystem(0.1);
 #endif
 
-  for (size_t i = 0; i < std::min(MAX_PLANES_, (int)stable_planes_[s2].size()); i++) {
+  for (size_t i = 0; i < std::min(MAX_PLANES_, stable_planes_[s2].size()); i++) {
     std::cout << stable_planes_[s2][i].area_ << std::endl;
     Eigen::Vector3f normal = stable_planes_[s2][i].normal_;
     Eigen::Matrix4f transform;

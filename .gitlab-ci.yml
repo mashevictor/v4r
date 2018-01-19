@@ -33,11 +33,15 @@ ubuntu-trusty-build-package:
     - sudo apt-get install -qq -y wget sed > /dev/null
     - sudo ./setup.sh $UBUNTU_DISTRO $CI_ROS_DISTRO > /dev/null
     - sudo apt-get install -qq -y python-bloom devscripts > /dev/null
+    - sudo cp /usr/local/bin/cmake /usr/bin/cmake
+    - sudo cp /usr/local/bin/ccmake /usr/bin/ccmake
+    - sudo rm -rf /usr/share/cmake*
+    - sudo cp -r /usr/local/share/cmake-3.10 /usr/share
 
   stage: build
   script:
     - bloom-generate debian --os-name ubuntu --os-version $UBUNTU_DISTRO --ros-distro $CI_ROS_DISTRO
-    - sed -i 's/dh  $@/dh  $@ --parallel/' debian/rules
+    - sed -i 's/dh $@/dh $@ --parallel/' debian/rules
     - sed -i 's?v4r\//usr\/lib\/?v4r/usr/lib/:$(CURDIR)/debian/v4r/usr/share/V4R/3rdparty/lib/?' debian/rules
     - debuild -rfakeroot -us -uc -b -j8
     - mkdir build
@@ -88,7 +92,7 @@ ubuntu-xenial-build-package:
   stage: build
   script:
     - bloom-generate debian --os-name ubuntu --os-version $UBUNTU_DISTRO --ros-distro $CI_ROS_DISTRO
-    - sed -i 's/dh  $@/dh  $@ --parallel/' debian/rules
+    - sed -i 's/dh $@/dh $@ --parallel/' debian/rules
     - sed -i 's?v4r\//usr\/lib\/?v4r/usr/lib/:$(CURDIR)/debian/v4r/usr/share/V4R/3rdparty/lib/?' debian/rules
     - cat debian/rules
     - debuild -rfakeroot -us -uc -b -j8

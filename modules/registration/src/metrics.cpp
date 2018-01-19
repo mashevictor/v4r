@@ -26,7 +26,6 @@ void calcEdgeWeightAndRefineTf(const typename pcl::PointCloud<PointT>::ConstPtr 
   pass2.setKeepOrganized(true);
   pass2.filter(*cloud_dst_wo_nan);
 
-  float w_after_icp_ = std::numeric_limits<float>::max();
   const float best_overlap_ = 0.75f;
 
   FastIterativeClosestPointWithGC<PointT> icp;
@@ -40,15 +39,15 @@ void calcEdgeWeightAndRefineTf(const typename pcl::PointCloud<PointT>::ConstPtr 
   icp.setKeepMaxHypotheses(5);
   icp.setMaximumIterations(10);
   icp.align(transform);
-  w_after_icp_ = icp.getFinalTransformation(refined_transform);
+  float w_after_icp = icp.getFinalTransformation(refined_transform);
 
-  if (w_after_icp_ < 0 || !pcl_isfinite(w_after_icp_))
-    w_after_icp_ = std::numeric_limits<float>::max();
+  if (w_after_icp < 0 || !pcl_isfinite(w_after_icp))
+    w_after_icp = std::numeric_limits<float>::max();
   else
-    w_after_icp_ = best_overlap_ - w_after_icp_;
+    w_after_icp = best_overlap_ - w_after_icp;
 
   //    transform = icp_trans; // refined transformation
-  registration_quality = w_after_icp_;
+  registration_quality = w_after_icp;
 }
 
 template V4R_EXPORTS void calcEdgeWeightAndRefineTf<pcl::PointXYZRGB>(

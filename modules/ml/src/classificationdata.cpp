@@ -156,10 +156,8 @@ std::pair<float, float> ClassificationData::GetMinMax(std::vector<unsigned int>:
   float min = GetFeature(*startidx, dimension);
   float max = min;
 
-  float f = 0.0f;
-
   for (std::vector<unsigned int>::iterator i = startidx; i != stopidx; i++) {
-    f = GetFeature(*i, dimension);
+    float f = GetFeature(*i, dimension);
 
     if (f < min)
       min = f;
@@ -174,10 +172,8 @@ std::pair<float, float> ClassificationData::GetMinMax(int dimension) {
   float min = data[dimension];
   float max = min;
 
-  float f = 0.0f;
-
   for (unsigned int i = 0; i < data.size() / dimensions; ++i) {
-    f = data[i * dimensions + dimension];
+    float f = data[i * dimensions + dimension];
 
     if (f < min)
       min = f;

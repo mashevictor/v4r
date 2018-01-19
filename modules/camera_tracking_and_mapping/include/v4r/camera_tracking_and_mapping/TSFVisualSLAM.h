@@ -52,6 +52,8 @@
 #include <pcl/io/io.h>
 #include <pcl/point_cloud.h>
 #include <pcl/point_types.h>
+#include <radical/radiometric_response.h>
+#include <radical/vignetting_response.h>
 #include <v4r/camera_tracking_and_mapping/TSFData.h>
 #include <v4r/core/macros.h>
 #include <Eigen/Dense>
@@ -83,15 +85,23 @@ class V4R_EXPORTS TSFVisualSLAM {
                          // called)
     double diff_cam_distance_map;  // minimum distance the camera must move to select a keyframe
     double diff_delta_angle_map;   // or minimum angle the camera need to rotate to be selected
+    float im_brightness_scale;
 
     TSFPoseTrackerKLT::Parameter pt_param;
     TSFilterCloudsXYZRGB::Parameter filt_param;
     TSFMapping::Parameter map_param;
-    Parameter() : tsf_filtering(true), tsf_mapping(true), diff_cam_distance_map(0.5), diff_delta_angle_map(7.) {}
+    Parameter()
+    : tsf_filtering(true), tsf_mapping(true), diff_cam_distance_map(0.5), diff_delta_angle_map(7.),
+      im_brightness_scale(0.8) {
+      //      // HACK for testing
+      //      path_to_vgn_file = std::string("ps1080.1403190110-sa-cam.vgn");
+      //      path_to_crf_file = std::string("ps1080.1403190110-sa-cam.crf");
+    }
   };
 
  private:
   Parameter param;
+  bool remove_vignetting;
   int tsf_width, tsf_height;
   double upscaling_ratio;
 
@@ -113,8 +123,15 @@ class V4R_EXPORTS TSFVisualSLAM {
 
   Eigen::Matrix4f inv_pose0, inv_pose1;
 
+  cv::Mat im_lin, im_lin_corr;
+
+  boost::shared_ptr<radical::VignettingResponse> vr;
+  boost::shared_ptr<radical::RadiometricResponse> rr;
+
   bool selectFrame(const Eigen::Matrix4f &pose0, const Eigen::Matrix4f &pose1);
   void setScaledCameraParamter(int width, int height);
+  void removeVignetting(const pcl::PointCloud<pcl::PointXYZRGB> &_cloud, cv::Mat &im);
+  void scaleBrightness(cv::Mat &_im_lin, const float &scale);
 
  public:
   TSFVisualSLAM(const Parameter &p = Parameter());
@@ -173,6 +190,8 @@ class V4R_EXPORTS TSFVisualSLAM {
    * @param p
    */
   void setParameter(const Parameter &p);
+
+  void setVignettingCalibrationFiles(const std::string &vgn_file, const std::string &crf_file);
 
   /**
    * @brief setDetectors needed for mapping/ loop closing

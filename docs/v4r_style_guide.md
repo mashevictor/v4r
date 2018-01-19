@@ -103,13 +103,34 @@ int example_int_;
 
 V4R uses the [**Google style guide**](https://google.github.io/styleguide/cppguide.html) (with some minor allowed modifations stated in [.clang-format](../.clang-format)). To apply the style guide in your IDE, please do the following:
 ## CLion:
-Go to "File -> Settings -> Editor -> Code Style -> C/C++" and click on "Set from..." -> Predefined Style --> Google and click Apply/OK.
+You can use External Tools in CLion.
 
+Go to `File->Settings->Tools->External Tools` and click on the plus sign.
+
+A window should pop up. Use a name of your choice.
+
+For the Tool settings tab, use this configuration:
+
+- Program: clang-format
+- Parameters: -i -style=file $FileName$
+- Working directory: $FileDir$
+
+Now, with your file open, you can go to `Tools->External tools` and run the config above. It basically calls clang-format and does inplace formatting.
+
+You can also set a custom keymap to it, just search the name of your external tool in the Settings menu.
 ## QtCreator:
 Use the beautifier plugin (should be integrated in QtCreator 3.*.*). To enable it, go to "Help -> About plugins..." and there check "Beautifier" box in "C++" group.
 Then set the beautifier tool to use the Google style. Go to "Tools -> Options -> Beautifier", then go to Clang Format  and select "Use predefined style: Google". OK
 
-To re-format exisiting files, you can use `clang-format` (install via aptitude). Just run `clang-format -i style=file yourfile.cpp` from the V4R root directory (this applies the style in the `.clang-format` file). If this does not work, just apply the normal Google style `clang-format -i style=google yourfile.cpp`.
+## Terminal
+To re-format exisiting files, you can use `clang-format` (install via aptitude) from the terminal. Just run `clang-format -i style=file yourfile.cpp`. 
+This command will look for a `.clang-format` in the directory of `yourfile.cpp` and iteratively check for this style file in `/..` if it does not find one. 
+To do this recursively for all source files in the current directory, run
+```
+find . -iname *.h -o -iname *.cpp -o -iname *.hpp | xargs clang-format -i -style=file
+``` 
+
+If this does not work, just apply the normal Google style `clang-format -i style=google yourfile.cpp`.
 
 # 3. Structuring
 ## 3.1. Classes and API

@@ -57,7 +57,6 @@
 #include <pcl/visualization/pcl_visualizer.h>
 
 #include <v4r/common/normal_estimator.h>
-#include <v4r/common/pcl_serialization.h>
 #include <v4r/common/pcl_visualization_utils.h>
 #include <v4r/core/macros.h>
 #include <v4r/features/global_estimator.h>
@@ -125,7 +124,8 @@ class V4R_EXPORTS GlobalRecognizerParameter {
 
   GlobalRecognizerParameter(const bf::path &filename) {
     if (!v4r::io::existsFile(filename))
-      throw std::runtime_error("Given config file " + filename.string() + " does not exist! Current working directory is " +
+      throw std::runtime_error("Given config file " + filename.string() +
+                               " does not exist! Current working directory is " +
                                boost::filesystem::current_path().string() + ".");
 
     std::ifstream ifs(filename.string());
@@ -342,6 +342,9 @@ class V4R_EXPORTS GlobalRecognizer {
 
   void validate() const;
 
+  virtual void doInit(const bf::path &trained_dir, bool retrain,
+                      const std::vector<std::string> &object_instances_to_load);
+
  public:
   GlobalRecognizer(const GlobalRecognizerParameter &p = GlobalRecognizerParameter())
   : param_(p), keep_all_hypotheses_(true) {}
@@ -378,8 +381,19 @@ class V4R_EXPORTS GlobalRecognizer {
     return obj_hyps_filtered_;
   }
 
-  virtual void initialize(const bf::path &trained_dir, bool retrain);
-
+  /**
+   * @brief initialize the recognizer (extract features, create FLANN,...)
+   * @param[in] path to model database. If training directory exists, will load trained model from disk; if not,
+   * computed features will be stored on disk (in each
+   * object model folder, a feature folder is created with data)
+   * @param[in] retrain if set, will re-compute features and store to disk, no matter if they already exist or not
+   * @param[in] object_instances_to_load vector of object models to load from model_database_path. If emtpy, all objects
+  * in directory will be loaded.
+   */
+  void initialize(const bf::path &trained_dir = "", bool retrain = false,
+                  const std::vector<std::string> &object_instances_to_load = {}) {
+    doInit(trained_dir, retrain, object_instances_to_load);
+  }
   /**
    * @brief needNormals
    * @return

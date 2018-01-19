@@ -1,8 +1,10 @@
-find_package(Boost "${MIN_VER_BOOST}" COMPONENTS thread program_options serialization system filesystem regex)
+find_package(Boost 1.48 COMPONENTS thread program_options serialization system filesystem regex)
 if(Boost_FOUND)
-  set(BOOST_LIBRARIES "${Boost_LIBRARIES}")
-  set(BOOST_INCLUDE_DIRS "${Boost_INCLUDE_DIRS}")
   set(BOOST_VERSION "${Boost_MAJOR_VERSION}.${Boost_MINOR_VERSION}")
+  v4r_add_imported_library(boost
+    INTERFACE_INCLUDE_DIRECTORIES ${Boost_INCLUDE_DIRS}
+    INTERFACE_LINK_LIBRARIES ${Boost_LIBRARIES}
+  )
   set(HAVE_BOOST TRUE)
 else()
   set(HAVE_BOOST FALSE)

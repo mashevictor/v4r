@@ -60,8 +60,8 @@ using namespace std;
 
 MainWindow::MainWindow(QWidget *parent)
 : QMainWindow(parent), m_ui(new Ui::MainWindow), m_params(new Params(this)), m_sensor(new Sensor()),
-  m_segmentation(new ObjectSegmentation()), m_num_saves_disp(0), m_num_saves_pcd(0), idx_seg(-1), num_clouds(0),
-  bbox_active(false) {
+  m_segmentation(new ObjectSegmentation()), is_model_stored(true), m_num_saves_disp(0), m_num_saves_pcd(0), idx_seg(-1),
+  num_clouds(0), bbox_active(false) {
   m_ui->setupUi(this);
 
   m_glviewer = new GLViewer(this);
@@ -118,6 +118,7 @@ MainWindow::MainWindow(QWidget *parent)
   // object segmentation
   connect(m_sensor, SIGNAL(update_boundingbox(const std::vector<Eigen::Vector3f>, const Eigen::Matrix4f)), m_glviewer,
           SLOT(update_boundingbox(const std::vector<Eigen::Vector3f>, const Eigen::Matrix4f)));
+  connect(m_params, SIGNAL(vignetting_calibration_file_changed()), this, SLOT(vignetting_calibration_file_changed()));
 
   m_params->apply_cam_params();
   m_params->apply_params();
@@ -187,15 +188,34 @@ void MainWindow::printStatus(const std::string &_txt) {
   m_ui->statusLabel->setText(_txt.c_str());
 }
 
+void MainWindow::vignetting_calibration_file_changed() {
+  if (m_params->getVGNfile().size() > 0 && m_params->getCRFfile().size() > 0) {
+    m_segmentation->setCRFfile(m_params->getCRFfile());
+    m_sensor->setVignettingCalibrationFiles(m_params->getVGNfile(), m_params->getCRFfile());
+  }
+}
+
 void MainWindow::on_actionPreferences_triggered() {
   m_params->show();
 }
 
 void MainWindow::on_actionExit_triggered() {
-  QApplication::exit();
+  if (!is_model_stored) {
+    QMessageBox::StandardButton res_btn =
+        QMessageBox::question(this, "Exit dialog", tr("You did not store the model! Are you sure?"),
+                              QMessageBox::Cancel | QMessageBox::No | QMessageBox::Yes, QMessageBox::Yes);
+    if (res_btn == QMessageBox::Yes)
+      QApplication::exit();
+  } else
+    QApplication::exit();
 }
 
 void MainWindow::on_CamStart_clicked() {
+  if (m_params->getVGNfile().size() > 0 && m_params->getCRFfile().size() > 0) {
+    m_segmentation->setCRFfile(m_params->getCRFfile());
+    m_sensor->setVignettingCalibrationFiles(m_params->getVGNfile(), m_params->getCRFfile());
+  }
+
   setStartVis();
 
   m_sensor->start(0);
@@ -223,6 +243,8 @@ void MainWindow::on_TrackerStart_clicked() {
 
   // m_glviewer->drawBoundingBox(false);
   m_ui->statusLabel->setText("Status: Started tracker");
+
+  is_model_stored = false;
 }
 
 void MainWindow::on_TrackerStop_clicked() {
@@ -336,6 +358,8 @@ void MainWindow::on_CreateAndSaveModel_clicked() {
       m_sensor->getCameraParameter(intrinsic, dist_coeffs);
       m_segmentation->setCameraParameter(intrinsic, dist_coeffs);
       m_segmentation->finishModelling();  // starts the modelling thread
+
+      is_model_stored = true;
     }
   }
 }
@@ -363,4 +387,16 @@ void MainWindow::on_ResetROI_clicked() {
   m_glviewer->drawBoundingBox(false);
   m_glviewer->selectROI(false);
   m_sensor->activateROI(0);
+}
+
+void MainWindow::closeEvent(QCloseEvent *event) {
+  if (!is_model_stored) {
+    QMessageBox::StandardButton res_btn =
+        QMessageBox::question(this, "Exit dialog", tr("You did not store the model! Are you sure?"),
+                              QMessageBox::Cancel | QMessageBox::No | QMessageBox::Yes, QMessageBox::Yes);
+    if (res_btn != QMessageBox::Yes)
+      event->ignore();
+    else
+      event->accept();
+  }
 }

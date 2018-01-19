@@ -51,6 +51,7 @@
  * - test tracking confidence
  */
 
+#include <pcl/common/time.h>
 #include <pcl/common/transforms.h>
 #include <v4r/camera_tracking_and_mapping/TSFVisualSLAM.h>
 #include <v4r/common/convertImage.h>
@@ -65,7 +66,8 @@ using namespace std;
 /************************************************************************************
  * Constructor/Destructor
  */
-TSFVisualSLAM::TSFVisualSLAM(const Parameter &p) : tsf_width(0), tsf_height(0), upscaling_ratio(1.), last_ts_filt(-1) {
+TSFVisualSLAM::TSFVisualSLAM(const Parameter &p)
+: remove_vignetting(false), tsf_width(0), tsf_height(0), upscaling_ratio(1.), last_ts_filt(-1) {
   setParameter(p);
   tsfPoseTracker.setData(&data);
   tsfMapping.setData(&data);
@@ -98,6 +100,32 @@ void TSFVisualSLAM::setScaledCameraParamter(int width, int height) {
   tsf_intrinsic(1, 2) = upscaling_ratio * intrinsic(1, 2);
   tsFilter.setCameraParameterTSF(tsf_intrinsic, tsf_width, tsf_height);
   tsfMapping.setCameraParameter(tsf_intrinsic);
+}
+
+/**
+ * @brief TSFilterCloudsXYZRGB::scaleBrightness
+ * @param im_lin
+ * @param scale
+ */
+void TSFVisualSLAM::scaleBrightness(cv::Mat &_im_lin, const float &scale) {
+  for (unsigned i = 0; i < (unsigned)_im_lin.rows * _im_lin.cols; i++) {
+    _im_lin.at<cv::Point3f>(i) *= scale;
+  }
+}
+
+/**
+ * @brief TSFilterCloudsXYZRGB::removeVignetting
+ * @param frames
+ */
+void TSFVisualSLAM::removeVignetting(const pcl::PointCloud<pcl::PointXYZRGB> &_cloud, cv::Mat &im) {
+  if (vr.get() != 0 && rr.get() != 0) {
+    // pcl::ScopeTime t("TSFilterCloudsXYZRGB::removeVignetting");
+    convertImage(_cloud, im);
+    rr->inverseMap(im, im_lin);
+    vr->remove(im_lin, im_lin_corr);
+    scaleBrightness(im_lin_corr, param.im_brightness_scale);
+    rr->directMap(im_lin_corr, im);
+  }
 }
 
 /***************************************************************************************/
@@ -151,7 +179,11 @@ bool TSFVisualSLAM::track(const pcl::PointCloud<pcl::PointXYZRGB> &cloud, const 
   }
 
   // should be save ;-)
-  convertImage(cloud, data.image);
+  if (remove_vignetting) {
+    removeVignetting(cloud, data.image);
+  } else
+    convertImage(cloud, data.image);
+
   cv::cvtColor(data.image, data.gray, CV_BGR2GRAY);
 
   if (!dbg.empty())
@@ -159,9 +191,11 @@ bool TSFVisualSLAM::track(const pcl::PointCloud<pcl::PointXYZRGB> &cloud, const 
 
   // the tracker does not copy data, we need to lock the shared memory
   data.lock();
-
   data.have_pose = (data.cloud.points.size() == 0 ? true : false);
   data.cloud = cloud;
+  if (remove_vignetting) {
+    setImage(data.image, data.cloud);
+  }
   data.timestamp = timestamp;
   tsfPoseTracker.track(conf_ransac_iter, conf_tracked_points);
   pose = data.pose;
@@ -171,7 +205,7 @@ bool TSFVisualSLAM::track(const pcl::PointCloud<pcl::PointXYZRGB> &cloud, const 
 
   // if filtering is activated add frames to the batch filter
   if (param.tsf_filtering) {
-    tsFilter.addCloud(cloud, pose, timestamp, have_pose);
+    tsFilter.addCloud(data.cloud, pose, timestamp, have_pose);
   }
 
   // if mapping is activated collect select keyframes for mapping
@@ -264,6 +298,22 @@ void TSFVisualSLAM::setCameraParameter(const cv::Mat &_intrinsic, double _upscal
   tsf_width = tsf_height = 0;
 
   reset();
+}
+
+/**
+ * @brief TSFVisualSLAM::setCRFfile
+ * @param file
+ */
+void TSFVisualSLAM::setVignettingCalibrationFiles(const std::string &vgn_file, const std::string &crf_file) {
+  if (vgn_file.size() > 0 && crf_file.size() > 0) {
+    remove_vignetting = true;
+    vr.reset(new radical::VignettingResponse(vgn_file));
+    rr.reset(new radical::RadiometricResponse(crf_file));
+  } else {
+    remove_vignetting = false;
+    vr = boost::shared_ptr<radical::VignettingResponse>();
+    rr = boost::shared_ptr<radical::RadiometricResponse>();
+  }
 }
 
 /**

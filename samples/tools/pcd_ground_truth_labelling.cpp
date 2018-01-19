@@ -20,13 +20,13 @@
 namespace po = boost::program_options;
 
 //-g /media/Data/datasets/TUW/annotations -o /tmp/bla -s /media/Data/datasets/TUW/test_set_static/ -m
-///media/Data/datasets/TUW/models -t 0.01 -v
+/// media/Data/datasets/TUW/models -t 0.01 -v
 //-g /media/Data/datasets/willow/annotations -o /tmp/bla -s /media/Data/datasets/willow_dataset_new/willow_large_dataset
 //-m /media/Data/datasets/willow_dataset/models -t 0.01 -v
 
 namespace v4r {
 
-template<typename PointT>
+template <typename PointT>
 class PcdGtAnnotator {
  public:
   class View {
@@ -92,7 +92,7 @@ class PcdGtAnnotator {
   static void printUsage(int argc, char **argv);
 };
 
-template<typename PointT>
+template <typename PointT>
 void PcdGtAnnotator<PointT>::annotate(const bf::path &scenes_dir, const std::string &scene_id) {
   const bf::path scene_full_path = scenes_dir / scene_id;
 
@@ -188,8 +188,8 @@ void PcdGtAnnotator<PointT>::annotate(const bf::path &scenes_dir, const std::str
             int u = static_cast<int>(f_ * mp.x / mp.z + cx);
             int v = static_cast<int>(f_ * mp.y / mp.z + cy);
 
-            if (u < 0 || u >= (int) reconstructed_scene_->width || v < 0 ||
-                v >= (int) reconstructed_scene_->height)  // model point outside field of view
+            if (u < 0 || u >= (int)reconstructed_scene_->width || v < 0 ||
+                v >= (int)reconstructed_scene_->height)  // model point outside field of view
               continue;
 
             int px_id = v * reconstructed_scene_->width + u;
@@ -238,7 +238,7 @@ void PcdGtAnnotator<PointT>::annotate(const bf::path &scenes_dir, const std::str
   }
 }
 
-template<typename PointT>
+template <typename PointT>
 void PcdGtAnnotator<PointT>::visualize() {
   if (!vis_)
     vis_.reset(new pcl::visualization::PCLVisualizer("ground truth model", true));
@@ -285,7 +285,7 @@ void PcdGtAnnotator<PointT>::visualize() {
   vis_->spin();
 }
 
-template<typename PointT>
+template <typename PointT>
 void PcdGtAnnotator<PointT>::clear() {
   visible_model_points_.clear();
   model_id_.clear();
@@ -295,9 +295,8 @@ void PcdGtAnnotator<PointT>::clear() {
   pixel_annotated_obj_in_first_view_.clear();
 }
 
-template<typename PointT>
+template <typename PointT>
 void PcdGtAnnotator<PointT>::save_to_disk(const bf::path &path_bf) {
-
   if (!bf::exists(path_bf))
     bf::create_directories(path_bf);
 
@@ -354,15 +353,15 @@ int main(int argc, char **argv) {
 
   po::options_description desc(
       "Pixel-wise annotation of point clouds using recognition results represented as ground-truth object "
-          "pose\n======================================\n **Allowed options");
+      "pose\n======================================\n **Allowed options");
   desc.add_options()("help,h", "produce help message")("scenes_dir,s", po::value<bf::path>(&scene_dir)->required(),
                                                        "directory containing the scene .pcd files")(
       "models_dir,m", po::value<bf::path>(&annotator.models_dir_)->required(),
       "directory containing the model .pcd files")("gt_dir,g", po::value<bf::path>(&annotator.gt_dir_)->required(),
                                                    "directory containing recognition results")(
-      "output_dir,o", po::value<bf::path>(&annotator.out_dir_)->default_value(annotator.out_dir_),
-      "output directory")("threshold,t", po::value<float>(&annotator.threshold_)->default_value(annotator.threshold_),
-                          "Threshold in m for a point to be counted as inlier")(
+      "output_dir,o", po::value<bf::path>(&annotator.out_dir_)->default_value(annotator.out_dir_), "output directory")(
+      "threshold,t", po::value<float>(&annotator.threshold_)->default_value(annotator.threshold_),
+      "Threshold in m for a point to be counted as inlier")(
       "focal_length,f", po::value<float>(&annotator.f_)->default_value(annotator.f_),
       "Threshold in m for a point to be counted as inlier")("visualize,v", po::bool_switch(&visualize),
                                                             "turn visualization on")(

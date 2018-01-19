@@ -26,8 +26,6 @@
 */
 
 #include <v4r/ml/forest.h>
-#include <iostream>
-#include <vector>
 
 using namespace v4r::RandomForest;
 

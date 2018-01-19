@@ -66,8 +66,6 @@
 
 #include <fstream>
 
-#include <glog/logging.h>
-
 namespace po = boost::program_options;
 
 namespace v4r {

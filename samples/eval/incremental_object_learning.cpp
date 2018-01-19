@@ -15,7 +15,7 @@ namespace po = boost::program_options;
 
 //--do_erosion 1 --radius 0.005 --dot_product 0.99 --normal_method 0 -z 2 --transfer_latest_only 0
 //--do_sift_based_camera_pose_estimation 0 -s /media/Data/datasets/TUW_new/test_set_icra16 -m
-///media/Data/datasets/TUW/TUW_gt_models_first -o /home/thomas/Desktop/out_TUW/
+/// media/Data/datasets/TUW/TUW_gt_models_first -o /home/thomas/Desktop/out_TUW/
 
 double getTimeDiff(timeval a, timeval b);
 

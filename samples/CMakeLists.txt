@@ -1,66 +1,6 @@
-if(HAVE_PCL)
-  v4r_include_directories(${PCL_INCLUDE_DIRS})
-  list(APPEND DEP_LIBS ${PCL_LIBRARIES})
-endif()
-
-if(HAVE_OPENCV)
-  v4r_include_directories(${OpenCV_INCLUDE_DIRS})
-  list(APPEND DEP_LIBS ${OpenCV_LIBS})
-endif()
-
-if(HAVE_EDT)
-  v4r_include_directories(${EDT_INCLUDE_DIRS})
-  list(APPEND DEP_LIBS ${EDT_LIBRARIES})
-endif()
-
-if(HAVE_CERES)
-  v4r_include_directories(${CERES_INCLUDE_DIRS})
-  list(APPEND DEP_LIBS ${CERES_LIBRARIES})
-endif()
-
-if(HAVE_LIBSVM)
-  v4r_include_directories(${LIBSVM_INCLUDE_DIRS})
-  list(APPEND DEP_LIBS ${LIBSVM_LIBRARIES})
-endif()
-
-if(HAVE_OPENGL)
-  v4r_include_directories(${OPENGL_INCLUDE_DIRS})
-  list(APPEND DEP_LIBS ${OPENGL_LIBRARIES})
-endif()
-
 if(HAVE_GLFW3)
   v4r_include_directories(${GLFW3_INCLUDE_DIRS})
   list(APPEND DEP_LIBS ${GLFW3_LIBRARIES})
-endif()
-
-if(HAVE_GLEW)
-  v4r_include_directories(${GLEW_INCLUDE_DIRS})
-  list(APPEND DEP_LIBS ${GLEW_LIBRARIES})
-endif()
-
-if(HAVE_ASSIMP)
-  v4r_include_directories(${ASSIMP_INCLUDE_DIRS})
-  list(APPEND DEP_LIBS ${ASSIMP_LIBRARIES})
-endif()
-
-if(HAVE_GLOG)
-  v4r_include_directories(${GLOG_INCLUDE_DIRS})
-  list(APPEND DEP_LIBS ${GLOG_LIBRARIES})
-endif()
-
-if(HAVE_BOOST)
-  v4r_include_directories(${BOOST_INCLUDE_DIRS})
-  list(APPEND DEP_LIBS ${BOOST_LIBRARIES})
-endif()
-
-if(HAVE_SIFTGPU)
- v4r_include_directories(${SIFTGPU_INCLUDE_DIRS})
- list(APPEND DEP_LIBS ${SIFTGPU_LIBRARIES})
-endif()
-
-if(TRUE)#HAVE_PCL_1_8)
-  v4r_include_directories(${PCL_1_8_INCLUDE_DIRS})
-  list(APPEND DEP_LIBS ${PCL_1_8_LIBRARY})
 endif()
 
 if(CMAKE_COMPILER_IS_GNUCXX AND NOT ENABLE_NOISY_WARNINGS)
@@ -123,7 +63,6 @@ if(NOT CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_LIST_DIR)
 add_subdirectory(examples)
 add_subdirectory(eval)
 add_subdirectory(tools)
-#add_subdirectory(icra16)
 
 #
 # END OF BUILD CASE 1: Build samples with library sources
@@ -138,8 +77,6 @@ project(samples C CXX)
 option(BUILD_EXAMPLES "Build samples" ON)
 option(BUILD_EVALUATION_TOOLS "Build evaluation tools" ON)
 option(BUILD_UTILITY_TOOLS "Build utility tools" ON)
-#option(BUILD_ICRA16_TOOLS "Build evaluations for RA-L Paper 2016, Faeulhammer" OFF)
-
 
 find_package(V4R REQUIRED)
 
@@ -147,6 +84,5 @@ find_package(V4R REQUIRED)
 add_subdirectory(examples)
 add_subdirectory(eval)
 add_subdirectory(tools)
-#add_subdirectory(icra16)
 
 endif()

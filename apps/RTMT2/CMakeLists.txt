@@ -13,51 +13,19 @@ if(WIN32)
   link_directories(${CMAKE_CURRENT_BINARY_DIR})
 endif()
 
-if(HAVE_PCL)
-  v4r_include_directories(${PCL_INCLUDE_DIRS})
-  list(APPEND DEP_LIBS ${PCL_LIBRARIES})
-endif()
-
-if(HAVE_SIFTGPU)
-  v4r_include_directories(${SIFTGPU_INCLUDE_DIRS})
-  list(APPEND DEP_LIBS ${SIFTGPU_LIBRARIES})
-endif()
-
-if(HAVE_OPENCV)
-  v4r_include_directories(${OPENCV_INCLUDE_DIRS})
-  list(APPEND DEP_LIBS ${OPENCV_LIBRARIES})
-endif()
-
-if(HAVE_EDT)
-  v4r_include_directories(${EDT_INCLUDE_DIRS})
-  list(APPEND DEP_LIBS ${EDT_LIBRARIES})
-endif()
-
-if(HAVE_GLM)
-  v4r_include_directories(${GLM_INCLUDE_DIRS})
-else()
+if(NOT HAVE_GLM)
   message(***RTMT2 requires GLM*****)
   return()
 endif()
 
-if(HAVE_OPENGL)
-  v4r_include_directories(${OPENGL_INCLUDE_DIRS})
-  list(APPEND DEP_LIBS ${OPENGL_LIBRARIES})
+if(NOT HAVE_QT)
+  message(***RTMT2 requires Qt*****)
+  return()
 endif()
 
-if(HAVE_CERES)
-  v4r_include_directories(${CERES_INCLUDE_DIRS})
-  list(APPEND DEP_LIBS ${CERES_LIBRARIES})
-endif()
-
-if(HAVE_BOOST)
-  v4r_include_directories(${BOOST_INCLUDE_DIRS})
-  list(APPEND DEP_LIBS ${BOOST_LIBRARIES})
-endif()
-
-if(HAVE_QT)
-  v4r_include_directories(${QT_INCLUDE_DIRS})
-  list(APPEND DEP_LIBS ${QT_LIBRARIES})
+if(NOT HAVE_OPENGL)
+  message(***RTMT2 requires OpenGL*****)
+  return()
 endif()
 
 set(SOURCES
@@ -98,7 +66,7 @@ add_definitions(-Dlinux -D__x86_64__)
 
 include_directories(${CMAKE_CURRENT_BINARY_DIR} ${OPENNI2_INCLUDE_DIR})
 add_executable(RTMT2 ${SOURCES} ${HEADERS_MOC} ${FORMS_MOC})
-target_link_libraries(RTMT2 ${RTMT2_DEPS} ${DEP_LIBS} ${QT_LIBRARIES})
+target_link_libraries(RTMT2 ${RTMT2_DEPS} glm qt opengl ${DEP_LIBS})
 
 INSTALL(TARGETS RTMT2
   RUNTIME DESTINATION bin

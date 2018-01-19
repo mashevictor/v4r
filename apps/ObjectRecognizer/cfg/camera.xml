@@ -6,7 +6,7 @@
 	<height_>480</height_>
 	<fx_>525</fx_>
 	<fy_>525</fy_>
-	<cx_>3.195000000e+02</cx_>
-	<cy_>2.395000000e+02</cy_>
-	<horizontal_fov_deg_>5.800000000e+01</horizontal_fov_deg_>
+	<cx_>319.5</cx_>
+	<cy_>239.5</cy_>
+	<horizontal_fov_deg_>58.0</horizontal_fov_deg_>
 </CameraParameter>

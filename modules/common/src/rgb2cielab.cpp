@@ -2,7 +2,6 @@
 #include <math.h>
 #include <v4r/common/color_transforms.h>
 #include <v4r/common/rgb2cielab.h>
-#include <algorithm>
 
 namespace v4r {
 

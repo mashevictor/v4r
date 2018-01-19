@@ -85,7 +85,9 @@ std::vector<typename KeypointExtractor<PointT>::Ptr> initKeypointExtractors(int 
     keypoint_extractor.push_back(boost::dynamic_pointer_cast<KeypointExtractor<PointT>>(ke));
   }
   if (keypoint_extractor.empty()) {
-    std::cerr << "Keypoint extractor method " << method << " is not implemented! " << std::endl;
+    std::stringstream txt;
+    txt << "Keypoint extractor method " << method << " is not implemented!";
+    throw std::runtime_error(txt.str());
   }
 
   return keypoint_extractor;

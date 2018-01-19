@@ -1,5 +1,5 @@
+#include <glog/logging.h>
 #include <v4r/common/graph_geometric_consistency.h>
-#include <v4r/features/types.h>
 #include <v4r/recognition/local_recognition_pipeline.h>
 
 #include <pcl/common/time.h>
@@ -7,8 +7,21 @@
 
 namespace v4r {
 
+void LocalRecognitionPipelineParameter::load(const bf::path &filename) {
+  CHECK(v4r::io::existsFile(filename)) << "Given config file " << filename.string()
+                                       << " does not exist! Current working directory is "
+                                       << boost::filesystem::current_path().string() + ".";
+
+  VLOG(1) << "Loading parameters from file " << filename.string();
+  std::ifstream ifs(filename.string());
+  boost::archive::xml_iarchive ia(ifs);
+  ia >> boost::serialization::make_nvp("LocalRecognitionPipelineParameter", *this);
+  ifs.close();
+}
+
 template <typename PointT>
-void LocalRecognitionPipeline<PointT>::initialize(const bf::path &trained_dir, bool force_retrain) {
+void LocalRecognitionPipeline<PointT>::doInit(const bf::path &trained_dir, bool force_retrain,
+                                              const std::vector<std::string> &object_instances_to_load) {
   CHECK(!local_feature_matchers_.empty()) << "No local recognizers provided!";
 
   model_keypoints_.clear();  // need to merge model keypoints from all local recognizers ( like SIFT + SHOT + ...)
@@ -19,7 +32,7 @@ void LocalRecognitionPipeline<PointT>::initialize(const bf::path &trained_dir, b
     r.setNormalEstimator(normal_estimator_);
     r.setModelDatabase(m_db_);
     r.setVisualizationParameter(vis_param_);
-    r.initialize(trained_dir, force_retrain);
+    r.initialize(trained_dir, force_retrain, object_instances_to_load);
 
     const std::map<std::string, typename LocalObjectModel::ConstPtr> lomdb_tmp = r.getModelKeypoints();
 
@@ -56,9 +69,7 @@ void LocalRecognitionPipeline<PointT>::correspondenceGrouping() {
     const std::string &model_id = it->first;
     const LocalObjectHypothesis<PointT> &loh = it->second;
 
-    std::stringstream desc;
-    desc << "Correspondence grouping for " << model_id << " ( " << loh.model_scene_corresp_->size() << ")";
-    typename RecognitionPipeline<PointT>::StopWatch t(desc.str());
+    pcl::StopWatch t;
 
     pcl::PointCloud<pcl::PointXYZ>::Ptr model_keypoints = model_keypoints_[model_id]->keypoints_;
     pcl::PointCloud<pcl::Normal>::Ptr model_kp_normals = model_keypoints_[model_id]->kp_normals_;
@@ -93,17 +104,25 @@ void LocalRecognitionPipeline<PointT>::correspondenceGrouping() {
     cg_algorithm_->setModelSceneCorrespondences(loh.model_scene_corresp_);
     cg_algorithm_->cluster(corresp_clusters);
 
-    std::vector<Eigen::Matrix4f, Eigen::aligned_allocator<Eigen::Matrix4f>> new_transforms(corresp_clusters.size());
+    // sort correspondences by their cluster size
+    std::sort(corresp_clusters.begin(), corresp_clusters.end(),
+              [](const pcl::Correspondences &a, const pcl::Correspondences &b) { return a.size() > b.size(); });
+
+    size_t num_clusters = corresp_clusters.size();
+    if (param_.max_num_hypotheses_per_object_ > 0) {
+      num_clusters = std::min(corresp_clusters.size(), param_.max_num_hypotheses_per_object_);
+    }
+
+    std::vector<Eigen::Matrix4f, Eigen::aligned_allocator<Eigen::Matrix4f>> new_transforms(num_clusters);
     typename pcl::registration::TransformationEstimationSVD<pcl::PointXYZ, pcl::PointXYZ> t_est;
 
-    for (size_t cluster_id = 0; cluster_id < corresp_clusters.size(); cluster_id++)
+    for (size_t cluster_id = 0; cluster_id < num_clusters; cluster_id++)
       t_est.estimateRigidTransformation(*model_keypoints, *scene_cloud_xyz, corresp_clusters[cluster_id],
                                         new_transforms[cluster_id]);
 
     if (param_.merge_close_hypotheses_) {
-      std::vector<Eigen::Matrix4f, Eigen::aligned_allocator<Eigen::Matrix4f>> merged_transforms(
-          corresp_clusters.size());
-      std::vector<bool> cluster_has_been_taken(corresp_clusters.size(), false);
+      std::vector<Eigen::Matrix4f, Eigen::aligned_allocator<Eigen::Matrix4f>> merged_transforms(num_clusters);
+      std::vector<bool> cluster_has_been_taken(num_clusters, false);
       const double angle_thresh_rad = param_.merge_close_hypotheses_angle_ * M_PI / 180.f;
 
       size_t kept = 0;
@@ -147,7 +166,7 @@ void LocalRecognitionPipeline<PointT>::correspondenceGrouping() {
           new_oh->model_id_ = model_id;
           new_oh->class_id_ = "";
           new_oh->transform_ = merged_transforms[jj];
-          new_oh->confidence_ = corresp_clusters.size();
+          new_oh->confidence_ = corresp_clusters[jj].size();
           new_oh->corr_ = corresp_clusters[jj];
 
           ObjectHypothesesGroup new_ohg;
@@ -155,7 +174,7 @@ void LocalRecognitionPipeline<PointT>::correspondenceGrouping() {
           new_ohg.ohs_.push_back(new_oh);
           obj_hypotheses_.push_back(new_ohg);
         }
-        LOG(INFO) << "Merged " << corresp_clusters.size() << " clusters into " << kept
+        LOG(INFO) << "Merged " << num_clusters << " clusters into " << kept
                   << " clusters. Total correspondences: " << loh.model_scene_corresp_->size() << " " << loh.model_id_;
       }
     } else {
@@ -166,7 +185,7 @@ void LocalRecognitionPipeline<PointT>::correspondenceGrouping() {
           new_oh->model_id_ = model_id;
           new_oh->class_id_ = "";
           new_oh->transform_ = new_transforms[jj];
-          new_oh->confidence_ = corresp_clusters.size();
+          new_oh->confidence_ = corresp_clusters[jj].size();
           new_oh->corr_ = corresp_clusters[jj];
 
           ObjectHypothesesGroup new_ohg;
@@ -176,6 +195,10 @@ void LocalRecognitionPipeline<PointT>::correspondenceGrouping() {
         }
       }
     }
+
+    float time = t.getTime();
+    VLOG(1) << "Correspondence grouping for " << model_id << " ( " << loh.model_scene_corresp_->size() << ") took "
+            << time << " ms.";
   }
 }
 

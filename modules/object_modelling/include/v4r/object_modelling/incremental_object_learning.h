@@ -159,7 +159,7 @@ class V4R_EXPORTS IOL {
   std::vector<Eigen::Matrix4f, Eigen::aligned_allocator<Eigen::Matrix4f>>
       cameras_used_;  ///< camera pose belonging to the keyframes containing the object with sufficient number of points
   std::vector<std::vector<size_t>> object_indices_clouds_used_;  ///< indices of the object in all keyframes containing
-                                                                 ///the object with sufficient number of points
+                                                                 /// the object with sufficient number of points
 
   pcl::PointCloud<pcl::PointXYZRGBNormal>::Ptr cloud_normals_oriented_;
 

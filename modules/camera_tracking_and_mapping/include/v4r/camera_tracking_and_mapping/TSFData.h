@@ -112,6 +112,7 @@ class V4R_EXPORTS TSFData {
   static void convert(const v4r::DataMatrix2D<v4r::Surfel> &sf_cloud, pcl::PointCloud<pcl::PointXYZRGB> &cloud,
                       const double &thr_weight = -1000000, const double &thr_delta_angle = 180.);
   static void convert(const v4r::DataMatrix2D<v4r::Surfel> &sf_cloud, cv::Mat &image);
+  static bool setImage(const cv::Mat &image, v4r::DataMatrix2D<v4r::Surfel> &sf_cloud);
 };
 
 /*************************** INLINE METHODES **************************/

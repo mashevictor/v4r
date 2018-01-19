@@ -64,8 +64,8 @@ class V4R_EXPORTS GlobalEstimator {
 
   std::vector<Eigen::Matrix4f, Eigen::aligned_allocator<Eigen::Matrix4f>> transforms_;  ///< transforms (e.g. from
                                                                                         /// OUR-CVFH) aligning the input
-  /// cloud with the descriptors's
-  /// local referance frame
+                                                                                        /// cloud with the descriptors's
+                                                                                        /// local referance frame
 
  public:
   GlobalEstimator(const std::string &descr_name = "", size_t descr_type = 0, size_t feature_dimensions = 0)

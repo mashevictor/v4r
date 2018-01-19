@@ -1,15 +1,13 @@
+#include <glog/logging.h>
 #include <v4r/apps/CloudSegmenter.h>
 #include <v4r/common/miscellaneous.h>
 #include <v4r/segmentation/plane_utils.h>
 #include <v4r/segmentation/segmentation_utils.h>
-#include <v4r/segmentation/types.h>
 
 #include <pcl/common/time.h>
 #include <pcl/impl/instantiate.hpp>
 
-#include <glog/logging.h>
 #include <boost/format.hpp>
-#include <boost/program_options.hpp>
 
 namespace po = boost::program_options;
 
@@ -23,13 +21,15 @@ void CloudSegmenter<PointT>::initialize(std::vector<std::string> &command_line_a
   int normal_computation_method = v4r::NormalEstimatorType::PCL_INTEGRAL_NORMAL;
 
   po::options_description desc("Point Cloud Segmentation\n======================================\n**Allowed options");
-  desc.add_options()("help,h", "produce help message")(
-      "segmentation_method", po::value<int>(&segmentation_method)->default_value(segmentation_method),
-      "segmentation method")(
-      "plane_extraction_method", po::value<int>(&plane_extraction_method)->default_value(plane_extraction_method),
-      "plane extraction method")("normal_computation_method,n",
-                                 po::value<int>(&normal_computation_method)->default_value(normal_computation_method),
-                                 "normal computation method (if needed by segmentation approach)");
+  desc.add_options()("help,h", "produce help message");
+  desc.add_options()("segmentation_method", po::value<int>(&segmentation_method)->default_value(segmentation_method),
+                     "segmentation method");
+  desc.add_options()("plane_extraction_method",
+                     po::value<int>(&plane_extraction_method)->default_value(plane_extraction_method),
+                     "plane extraction method");
+  desc.add_options()("normal_computation_method,n",
+                     po::value<int>(&normal_computation_method)->default_value(normal_computation_method),
+                     "normal computation method (if needed by segmentation approach)");
   po::variables_map vm;
   po::parsed_options parsed = po::command_line_parser(command_line_arguments).options(desc).allow_unregistered().run();
   command_line_arguments = po::collect_unrecognized(parsed.options, po::include_positional);

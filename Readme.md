@@ -7,11 +7,12 @@ V4R is stronlgy based on RGB-D data and uses [OpenCV](http://opencv.org/)  and [
 
 | Name | Version | Licence |
 | ------------- |:-------------:| -----:|
-| [OpenCV](http://opencv.org/)  | 2.4+  or 3.x| 3-clause BSD |
+| [OpenCV](http://opencv.org/)  | 2.4+  or 3.x | 3-clause BSD |
 | [Eigen](http://eigen.tuxfamily.org/index.php?title=Main_Page)  | 3+ | MPL2 |
 | [Boost](http://www.boost.org/)  | 1.48+ | Boost Software License |
 | [PCL](http://pointclouds.org/)  | 1.7.x or 1.8 | BSD |
-| [glog](https://code.google.com/archive/p/google-glog/)  |  | New BSD	 |
+| [glog](https://code.google.com/archive/p/google-glog/)  |  | New BSD |
+| [CMake](https://cmake.org)  | 3.5.1+ | 3-clause BSD |
 
 
 This is a list of **optional** components:

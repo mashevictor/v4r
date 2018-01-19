@@ -119,15 +119,7 @@ class V4R_EXPORTS MultiviewRecognizer : public Recognizer<PointT> {
   boost::shared_ptr<SiftGPU> sift_;
 #endif
 
-  bool computeAbsolutePose(CamConnect &e, bool is_first_edge = false);
-
-  /** \brief removes vertices from graph if max_vertices_in_graph has been reached */
-  void pruneGraph();
-
   void correspondenceGrouping();
-
-  bool calcSiftFeatures(const typename pcl::PointCloud<PointT>::Ptr &cloud_src, std::vector<int> &sift_keypoint_indices,
-                        std::vector<std::vector<float>> &sift_signatures);
 
   typename NguyenNoiseModel<PointT>::Parameter nm_param_;
   typename NMBasedCloudIntegration<PointT>::Parameter nmInt_param_;

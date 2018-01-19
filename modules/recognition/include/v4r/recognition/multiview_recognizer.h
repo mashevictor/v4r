@@ -116,18 +116,22 @@ class V4R_EXPORTS MultiviewRecognizerParameter {
        */
   std::vector<std::string> init(const std::vector<std::string> &command_line_arguments) {
     po::options_description desc("Local Recognition Pipeline Parameters\n=====================");
-    desc.add_options()("help,h", "produce help message")(
-        "mv_rec_merge_close_hypotheses",
-        po::value<bool>(&merge_close_hypotheses_)->default_value(merge_close_hypotheses_),
-        "")("mv_rec_transfer_keypoint_correspondences",
-            po::value<bool>(&transfer_keypoint_correspondences_)->default_value(transfer_keypoint_correspondences_),
-            "")("mv_rec_merge_close_hypotheses_dist",
-                po::value<float>(&merge_close_hypotheses_dist_)->default_value(merge_close_hypotheses_dist_),
-                "")("mv_rec_merge_close_hypotheses_angle",
-                    po::value<float>(&merge_close_hypotheses_angle_)->default_value(merge_close_hypotheses_angle_),
-                    "")("mv_rec_min_dist_", po::value<float>(&min_dist_)->default_value(min_dist_), "")(
-        "mv_rec_max_dotp_", po::value<float>(&max_dotp_)->default_value(max_dotp_), "")(
-        "mv_visualize", po::value<bool>(&visualize_)->default_value(visualize_), "visualize keypoint correspondences");
+    desc.add_options()("help,h", "produce help message");
+    desc.add_options()("mv_rec_merge_close_hypotheses",
+                       po::value<bool>(&merge_close_hypotheses_)->default_value(merge_close_hypotheses_), "");
+    desc.add_options()(
+        "mv_rec_transfer_keypoint_correspondences",
+        po::value<bool>(&transfer_keypoint_correspondences_)->default_value(transfer_keypoint_correspondences_), "");
+    desc.add_options()("mv_rec_merge_close_hypotheses_dist",
+                       po::value<float>(&merge_close_hypotheses_dist_)->default_value(merge_close_hypotheses_dist_),
+                       "");
+    desc.add_options()("mv_rec_merge_close_hypotheses_angle",
+                       po::value<float>(&merge_close_hypotheses_angle_)->default_value(merge_close_hypotheses_angle_),
+                       "");
+    desc.add_options()("mv_rec_min_dist_", po::value<float>(&min_dist_)->default_value(min_dist_), "");
+    desc.add_options()("mv_rec_max_dotp_", po::value<float>(&max_dotp_)->default_value(max_dotp_), "");
+    desc.add_options()("mv_visualize", po::value<bool>(&visualize_)->default_value(visualize_),
+                       "visualize keypoint correspondences");
     po::variables_map vm;
     po::parsed_options parsed =
         po::command_line_parser(command_line_arguments).options(desc).allow_unregistered().run();
@@ -198,10 +202,10 @@ class V4R_EXPORTS MultiviewRecognizer : public RecognitionPipeline<PointT> {
 
   void visualize();
 
+  void doInit(const bf::path &trained_dir, bool retrain, const std::vector<std::string> &object_instances_to_load);
+
  public:
   MultiviewRecognizer(const MultiviewRecognizerParameter &p = MultiviewRecognizerParameter()) : param_(p) {}
-
-  void initialize(const bf::path &trained_dir = "", bool retrain = false);
 
   /**
   * @brief recognize

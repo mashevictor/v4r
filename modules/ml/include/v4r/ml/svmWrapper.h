@@ -80,10 +80,10 @@ class V4R_EXPORTS SVMParameter {
                //                    double coef0 = 1,	/* for poly/sigmoid */
 
                /* these are for training only */
-               double cache_size = 100,  /* in MB */
-               double eps = 0.001,       /* stopping criteria */
-               double C = 10,            /* for C_SVC, EPSILON_SVR and NU_SVR */
-               int nr_weight = 0,        /* for C_SVC */
+               double cache_size = 100,     /* in MB */
+               double eps = 0.001,          /* stopping criteria */
+               double C = 10,               /* for C_SVC, EPSILON_SVR and NU_SVR */
+               int nr_weight = 0,           /* for C_SVC */
                int *weight_label = nullptr, /* for C_SVC */
                double *weight = nullptr,    /* for C_SVC */
                //                    double nu = 0.5,	/* for NU_SVC, ONE_CLASS, and NU_SVR */

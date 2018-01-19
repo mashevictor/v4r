@@ -7,12 +7,6 @@ endif()
 
 v4r_include_modules(${V4R_SAVE_POSE_INTO_PCD_DEPS})
 
-if(HAVE_PCL)
-  v4r_include_directories(${PCL_INCLUDE_DIRS})
-  list(APPEND V4R_SAVE_POSE_INTO_PCD_DEPS ${PCL_LIBRARIES} ${BOOST_LIBRARIES})
-endif()
-
-
 project(save_transformation_matrix_into_pcd_header)
 
 set(the_target v4r_save_transformation_matrix_into_pcd_header)

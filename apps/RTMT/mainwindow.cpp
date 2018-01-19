@@ -466,7 +466,7 @@ void MainWindow::on_SavePointClouds_clicked() {
   QString model_name = QInputDialog::getText(this, tr("Store point clouds for recognition"), tr("Model name:"),
                                              QLineEdit::Normal, text, &ok_save);
 
-  if (ok_save && model_name.isNull() == false) {
+  if (ok_save && !model_name.isNull()) {
     if (boost::filesystem::exists(m_params->get_rgbd_path() + "/" + model_name.toStdString() + "/views/")) {
       int ret = QMessageBox::warning(this, tr("Store point clouds for recognition"),
                                      tr("The directory exists!\n"
@@ -502,7 +502,7 @@ void MainWindow::on_SaveTrackerModel_clicked() {
   QString object_name =
       QInputDialog::getText(this, tr("Store tracking model"), tr("Object name:"), QLineEdit::Normal, text, &ok);
 
-  if (ok && object_name.isNull() == false) {
+  if (ok && !object_name.isNull()) {
     if (boost::filesystem::exists(m_params->get_rgbd_path() + "/" + object_name.toStdString() + "/tracking_model.ao")) {
       int ret = QMessageBox::warning(this, tr("Store tracking model"), tr("The object file exists!\n"
                                                                           "Do you want to overwrite the file?"),

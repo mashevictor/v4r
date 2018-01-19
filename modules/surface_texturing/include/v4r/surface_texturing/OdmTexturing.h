@@ -7,13 +7,15 @@
 // PCL
 #include <pcl/point_types.h>
 #include <pcl/search/kdtree.h>
-#include <pcl/surface/texture_mapping.h>
+//#include <pcl/surface/texture_mapping.h>
 
 // OpenCV
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
 
 // Modified PCL functions
+#include <v4r/surface_texturing/TextureMappingTypes.h>
+#include <v4r/surface_texturing/TextureMesh.h>
 #include <v4r/surface_texturing/modifiedPclFunctions.h>
 
 // Logging
@@ -82,8 +84,8 @@ struct Node {
     width_ = 1.0;
     height_ = 1.0;
     used_ = false;
-    rgt_ = nullptr;
-    lft_ = nullptr;
+    rgt_ = NULL;
+    lft_ = NULL;
   }
 
   Node(const Node &n) {
@@ -229,9 +231,9 @@ class V4R_EXPORTS OdmTexturing {
   double padding_;           /**< A padding used to handle edge cases. */
   int nrTextures_;           /**< The number of textures created. */
 
-  pcl::TextureMesh::Ptr mesh_;                 /**< PCL Texture Mesh */
+  TextureMesh::Ptr mesh_;                      /**< PCL Texture Mesh */
   std::vector<Patch> patches_;                 /**< The vector containing all patches */
-  pcl::texture_mapping::CameraVector cameras_; /**< The vector containing all cameras. */
+  v4r::texture_mapping::CameraVector cameras_; /**< The vector containing all cameras. */
   std::vector<int> tTIA_;                      /**< The vector containing the optimal cameras for all faces. */
 };
 

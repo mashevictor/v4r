@@ -117,7 +117,6 @@ class V4R_EXPORTS TrainingView {
 template <typename PointT>
 class V4R_EXPORTS Model {
  private:
-
   friend class boost::serialization::access;
 
   template <class Archive>

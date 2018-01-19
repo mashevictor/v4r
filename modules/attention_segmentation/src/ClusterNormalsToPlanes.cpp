@@ -828,7 +828,7 @@ void ClusterNormalsToPlanes::clusterNormals() {
         // plane has more than minimum required number of points
         if (((int)plane->indices.size()) >= param.minPoints) {
           //@ep: this assignment is very stragnge, what if we have finished clustered one curvature, but there is still
-          //something left?
+          // something left?
           morePlanes = true;
           surfaces.push_back(plane);
           plane->coeffs.resize(3);

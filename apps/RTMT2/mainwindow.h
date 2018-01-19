@@ -49,6 +49,7 @@
 #define _GRAB_PCD_QT_MAINWINDOW_H_
 
 #ifndef Q_MOC_RUN
+#include <QCloseEvent>
 #include <QInputDialog>
 #include <QMainWindow>
 #include "ObjectSegmentation.h"
@@ -109,6 +110,7 @@ class MainWindow : public QMainWindow {
 
  public slots:
   void printStatus(const std::string &_txt);
+  void vignetting_calibration_file_changed();
 
  private:
   //  void make_extension(std::string& filename, std::string ext);
@@ -120,7 +122,7 @@ class MainWindow : public QMainWindow {
   Sensor *m_sensor;
   ObjectSegmentation *m_segmentation;
 
-  bool have_multi_session;
+  bool is_model_stored;
 
   size_t m_num_saves_disp;
   size_t m_num_saves_pcd;
@@ -131,6 +133,8 @@ class MainWindow : public QMainWindow {
   void deactivateAllButtons();
 
   void setStartVis();
+
+  void closeEvent(QCloseEvent *event);
 };
 
 #endif  // MAINWINDOW_H

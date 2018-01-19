@@ -93,6 +93,8 @@ class Params : public QDialog {
   void apply_cam_params();
   std::string get_rgbd_path();
   std::string get_object_name();
+  std::string getVGNfile();
+  std::string getCRFfile();
   void set_object_name(const QString &txt);
   bool createPointCloud();
   bool createViews();
@@ -110,16 +112,22 @@ class Params : public QDialog {
   bool useMultiviewICP();
   bool useNoiseModel();
 
+  void saveSettings();
+  void loadSettings();
+
  signals:
 
   void cam_params_changed(const RGBDCameraParameter &cam);
   void rgbd_path_changed();
   void set_roi_params(const double &_bbox_scale_xy, const double &_bbox_scale_height, const double &_seg_offs);
+  void vignetting_calibration_file_changed();
 
  private slots:
 
   void on_okButton_clicked();
   void on_pushFindRGBDPath_pressed();
+  void on_pushFindVGNfile_pressed();
+  void on_pushFindCRFfile_pressed();
 
   void on_applyButton_clicked();
 
@@ -127,6 +135,8 @@ class Params : public QDialog {
   Ui::Params *ui;
 
   RGBDCameraParameter cam_params;
+
+  QString settings_file;
 };
 
 #endif  // PARAMS_H

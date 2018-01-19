@@ -1,11 +1,11 @@
-v4r_clear_vars(GLOG_INCLUDE_DIRS GLOG_LIBRARIES GLOG_VERSION __pkg_config_checked_GLOG)
-
 include(FindPkgConfig)
 if(PKG_CONFIG_FOUND)
   pkg_search_module(GLOG QUIET libglog)
   if(GLOG_FOUND)
-    set(GLOG_LIBRARIES "${GLOG_LIBDIR}/libglog.so")
-    set(GLOG_INCLUDE_DIRS "${GLOG_INCLUDEDIR}")
+    v4r_add_imported_library(glog
+      IMPORTED_LOCATION "${GLOG_LIBDIR}/libglog.so"
+      INTERFACE_INCLUDE_DIRECTORIES ${GLOG_INCLUDEDIR}
+    )
     set(HAVE_GLOG TRUE)
   else()
     set(HAVE_GLOG FALSE)

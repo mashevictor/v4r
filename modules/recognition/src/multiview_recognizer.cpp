@@ -4,14 +4,10 @@
 #include <v4r/recognition/local_recognition_pipeline.h>
 #include <v4r/recognition/multi_pipeline_recognizer.h>
 #include <v4r/recognition/multiview_recognizer.h>
-#include <algorithm>
 
 #include <omp.h>
 #include <pcl/common/time.h>
-#include <pcl/recognition/cg/correspondence_grouping.h>
 #include <pcl/registration/transformation_estimation_svd.h>
-#include <pcl/visualization/pcl_visualizer.h>
-#include <pcl/visualization/point_cloud_color_handlers.h>
 
 namespace v4r {
 
@@ -621,8 +617,9 @@ void MultiviewRecognizer<PointT>::correspondenceGrouping() {
 }
 
 template <typename PointT>
-void MultiviewRecognizer<PointT>::initialize(const bf::path &trained_dir, bool retrain) {
-  recognition_pipeline_->initialize(trained_dir, retrain);
+void MultiviewRecognizer<PointT>::doInit(const bf::path &trained_dir, bool retrain,
+                                         const std::vector<std::string> &object_instances_to_load) {
+  recognition_pipeline_->initialize(trained_dir, retrain, object_instances_to_load);
 
   if (param_.transfer_keypoint_correspondences_)  // if correspondence grouping is done here, don't do it in
                                                   // multi-pipeline

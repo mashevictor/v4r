@@ -45,17 +45,12 @@
  *
  */
 
-#ifndef V4R_COMMON_MISCELLANEOUS_H_
-#define V4R_COMMON_MISCELLANEOUS_H_
+#pragma once
 
 #include <omp.h>
 #include <pcl/common/common.h>
-#include <pcl/kdtree/flann.h>
-#include <pcl/octree/octree.h>
-#include <pcl/octree/octree_pointcloud_pointvector.h>
 #include <v4r/core/macros.h>
 #include <boost/dynamic_bitset.hpp>
-#include <pcl/octree/impl/octree_iterator.hpp>
 
 namespace v4r {
 
@@ -115,43 +110,6 @@ inline void V4R_EXPORTS Mat4f2RotTrans(const Eigen::Matrix4f &tf, Eigen::Quatern
   trans = tf.block<4, 1>(0, 3);
 }
 
-V4R_EXPORTS
-void voxelGridWithOctree(pcl::PointCloud<pcl::PointXYZRGB>::Ptr &cloud, pcl::PointCloud<pcl::PointXYZRGB> &voxel_grided,
-                         float resolution);
-
-/**
- * @brief returns point indices from a point cloud which are closest to search points
- * @param full_input_cloud
- * @param search_points
- * @param indices
- * @param resolution (optional)
- */
-template <typename PointInT>
-V4R_EXPORTS void getIndicesFromCloud(const typename pcl::PointCloud<PointInT>::ConstPtr &full_input_cloud,
-                                     const typename pcl::PointCloud<PointInT>::ConstPtr &search_points,
-                                     std::vector<int> &indices, float resolution = 0.005f);
-
-/**
- * @brief returns point indices from a point cloud which are closest to search points
- * @param full_input_cloud
- * @param search_points
- * @param indices
- * @param resolution (optional)
- */
-template <typename PointT, typename Type>
-V4R_EXPORTS void getIndicesFromCloud(const typename pcl::PointCloud<PointT>::ConstPtr &full_input_cloud,
-                                     const typename pcl::PointCloud<PointT> &search_pts,
-                                     typename std::vector<Type> &indices, float resolution = 0.005f);
-
-DEPRECATED(template <typename DistType>
-           V4R_EXPORTS void convertToFLANN(const std::vector<std::vector<float>> &data,
-                                           boost::shared_ptr<typename flann::Index<DistType>> &flann_index));
-
-DEPRECATED(template <typename DistType>
-           V4R_EXPORTS void nearestKSearch(typename boost::shared_ptr<flann::Index<DistType>> &index,
-                                           std::vector<float> descr, int k, flann::Matrix<int> &indices,
-                                           flann::Matrix<float> &distances));
-
 V4R_EXPORTS inline std::vector<size_t> convertVecInt2VecSizet(const std::vector<int> &input) {
   std::vector<size_t> v_size_t;
   v_size_t.resize(input.size());
@@ -176,36 +134,12 @@ V4R_EXPORTS inline std::vector<int> convertVecSizet2VecInt(const std::vector<siz
   return v_int;
 }
 
-V4R_EXPORTS inline pcl::PointIndices convertVecSizet2PCLIndices(const std::vector<size_t> &input) {
-  pcl::PointIndices pind;
-  pind.indices.resize(input.size());
-  for (size_t i = 0; i < input.size(); i++) {
-    if (input[i] > static_cast<size_t>(std::numeric_limits<int>::max()))
-      std::cerr << "Casting an unsigned type size_t with a value larger than limits of integer!" << std::endl;
-
-    pind.indices[i] = static_cast<int>(input[i]);
-  }
-  return pind;
-}
-
-V4R_EXPORTS inline std::vector<size_t> convertPCLIndices2VecSizet(const pcl::PointIndices &input) {
-  std::vector<size_t> v_size_t;
-  v_size_t.resize(input.indices.size());
-  for (size_t i = 0; i < input.indices.size(); i++) {
-    if (input.indices[i] < 0)
-      std::cerr << "Casting a negative integer to unsigned type size_t!" << std::endl;
-
-    v_size_t[i] = static_cast<size_t>(input.indices[i]);
-  }
-  return v_size_t;
-}
-
 V4R_EXPORTS inline boost::dynamic_bitset<> createMaskFromIndices(const std::vector<size_t> &indices,
                                                                  size_t image_size) {
   boost::dynamic_bitset<> mask(image_size, 0);
 
-  for (size_t obj_pt_id = 0; obj_pt_id < indices.size(); obj_pt_id++)
-    mask.set(indices[obj_pt_id]);
+  for (unsigned long idx : indices)
+    mask.set(idx);
 
   return mask;
 }
@@ -219,8 +153,8 @@ V4R_EXPORTS inline boost::dynamic_bitset<> createMaskFromIndices(const std::vect
 V4R_EXPORTS inline boost::dynamic_bitset<> createMaskFromIndices(const std::vector<int> &indices, size_t image_size) {
   boost::dynamic_bitset<> mask(image_size, 0);
 
-  for (size_t obj_pt_id = 0; obj_pt_id < indices.size(); obj_pt_id++)
-    mask.set(indices[obj_pt_id]);
+  for (int idx : indices)
+    mask.set(idx);
 
   return mask;
 }
@@ -266,8 +200,8 @@ template <typename T>
 inline V4R_EXPORTS typename std::vector<T> filterVector(const std::vector<T> &in, const std::vector<int> &indices) {
   std::vector<T> out;
   out.reserve(indices.size());
-  for (size_t i = 0; i < indices.size(); i++)
-    out.push_back(in[indices[i]]);
+  for (int idx : indices)
+    out.push_back(in[idx]);
   return out;
 }
 
@@ -378,9 +312,4 @@ inline Eigen::VectorXf V4R_EXPORTS runningAverage(const Eigen::VectorXf &old_ave
  */
 Eigen::Matrix3f V4R_EXPORTS computeRotationMatrixToAlignVectors(const Eigen::Vector3f &src,
                                                                 const Eigen::Vector3f &target);
-
-template <typename PointT>
-V4R_EXPORTS float computeMeshResolution(const typename pcl::PointCloud<PointT>::ConstPtr &input);
 }
-
-#endif

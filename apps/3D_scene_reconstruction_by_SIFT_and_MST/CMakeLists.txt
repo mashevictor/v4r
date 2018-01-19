@@ -16,28 +16,6 @@ if(WIN32)
   link_directories(${CMAKE_CURRENT_BINARY_DIR})
 endif()
 
-if(HAVE_PCL)
-  v4r_include_directories(${PCL_INCLUDE_DIRS})
-  list(APPEND DEP_LIBS ${PCL_LIBRARIES})
-  v4r_include_directories(${PCL_1_8_INCLUDE_DIRS})
-  list(APPEND DEP_LIBS ${PCL_1_8_LIBRARIES})
-endif()
-
-if(HAVE_OPENCV)
-  v4r_include_directories(${OpenCV_INCLUDE_DIRS})
-  list(APPEND DEP_LIBS ${OpenCV_LIBS})
-endif()
-
-if(HAVE_SIFTGPU)
-  v4r_include_directories(${SIFTGPU_INCLUDE_DIRS})
-  list(APPEND DEP_LIBS ${SIFTGPU_LIBRARIES})
-endif()
-
-if(HAVE_OPENGL)
-  v4r_include_directories(${OPENGL_INCLUDE_DIRS})
-  list(APPEND DEP_LIBS ${OPENGL_LIBRARIES})
-endif()
-
 add_executable(3dReconstructionBySiftAndMST main.cpp)
 target_link_libraries(3dReconstructionBySiftAndMST ${3D_SCENE_RECONSTRUCTION_BY_SIFT_AND_MST_DEPS} ${DEP_LIBS})
 

@@ -12,6 +12,12 @@
 
 namespace v4r {
 
+enum class ObjRecoVisLayoutStyle {
+  FULL,         // show all (input, processed, generated and verified hypotheses)
+  SIMPLE,       // show only input and verified objects
+  INTERMEDIATE  // show input, processed, and verified objects
+};
+
 /**
  * @brief Visualization framework for object recognition
  * @author Thomas Faeulhammer
@@ -36,9 +42,14 @@ class V4R_EXPORTS ObjectRecognitionVisualizer {
   typename Source<PointT>::ConstPtr m_db_;                                      ///< model data base
   std::map<std::string, typename LocalObjectModel::ConstPtr> model_keypoints_;  ///< pointer to local model database
                                                                                 ///(optional: required if visualization
-                                                                                ///of feature matching is desired)
+                                                                                /// of feature matching is desired)
 
   PCLVisualizationParams::ConstPtr vis_param_;  ///< visualization parameters
+  ObjRecoVisLayoutStyle layout_;                ///< defines the layout for the output
+  ///< "0": 3 rows with top: verified hyp; middle: generated and (refined) gener.; bottom: input and processed cloud.
+  ///< "1": 2 rows with top: verified hyp; bottom: input cloud
+  ///< "2": 2 rows with top: verified hyp; bottom: input and processed cloud
+
   void keyboardEventOccurred(const pcl::visualization::KeyboardEvent &event) const;
   void pointPickingEventOccured(const pcl::visualization::PointPickingEvent &event) const;
   void flipOpacity(const std::string &cloud_name, double max_opacity = 1.) const;
@@ -81,10 +92,18 @@ class V4R_EXPORTS ObjectRecognitionVisualizer {
   mutable std::vector<Line> corrs_;
   mutable std::vector<Line> corrs2_;
 
- public:
-  ObjectRecognitionVisualizer(const PCLVisualizationParams::ConstPtr &vis_param) : vis_param_(vis_param) {}
+  /**
+   * @brief setupLayout sets up the layout of the visualization
+   */
+  void setupLayout() const;
+  void cleanUp() const;
 
-  ObjectRecognitionVisualizer() {
+ public:
+  ObjectRecognitionVisualizer(const PCLVisualizationParams::ConstPtr &vis_param,
+                              ObjRecoVisLayoutStyle layout = ObjRecoVisLayoutStyle::FULL)
+  : vis_param_(vis_param), layout_(layout) {}
+
+  ObjectRecognitionVisualizer(ObjRecoVisLayoutStyle layout = ObjRecoVisLayoutStyle::FULL) : layout_(layout) {
     PCLVisualizationParams::Ptr vis_param(new PCLVisualizationParams());
     vis_param_ = vis_param;
   }

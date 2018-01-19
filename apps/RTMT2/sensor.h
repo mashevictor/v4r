@@ -116,6 +116,10 @@ class Sensor : public QThread {
   void setTSFParameter(int nb_tracked_frames_ba, int batch_size_clouds_tsf, const double &cam_dist_map,
                        const double &delta_angle_map);
 
+  void setVignettingCalibrationFiles(const std::string &vgn_file, const std::string &crf_file) {
+    tsf.setVignettingCalibrationFiles(vgn_file, crf_file);
+  }
+
   // void createModel();
   inline const std::vector<v4r::TSFFrame::Ptr> &getMap() const {
     return tsf.getMap();

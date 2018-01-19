@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<!DOCTYPE boost_serialization>
+<boost_serialization signature="serialization::archive" version="12">
+<LocalRecognitionPipelineParameter class_id="0" tracking_level="0" version="0">
+	<merge_close_hypotheses_>1</merge_close_hypotheses_>
+	<merge_close_hypotheses_dist_>0.02</merge_close_hypotheses_dist_>
+	<merge_close_hypotheses_angle_>10.0</merge_close_hypotheses_angle_>
+	<min_dist_>0.005</min_dist_>
+	<max_dotp_>0.95</max_dotp_>
+	<max_num_hypotheses_per_object_>10</max_num_hypotheses_per_object_>
+</LocalRecognitionPipelineParameter>

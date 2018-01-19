@@ -345,7 +345,7 @@ void SVMPredictorSingle::checkSmallPatches(unsigned int max_size) {
       for (unsigned int j = 0; j < relations.size(); j++) {
         if (relations.at(j).id_0 == (int)i || relations.at(j).id_1 == (int)i) {
           //@ep: this works only because we assume that there are always two classes and that we are using model with
-          //probabilitites
+          // probabilitites
           // the probability that those patches are connected
           //@ep: this is wrong, we basically always disconnect the first connection, whenever it is big or small
           //@ep: and then we keep doing it, because probability can't be smaller than 0

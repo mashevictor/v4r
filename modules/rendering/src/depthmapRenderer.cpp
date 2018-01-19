@@ -2,13 +2,9 @@
 
 /// TODO: remove every trace of glm
 #define GLM_FORCE_RADIANS
-#include <GL/gl.h>
 #include <glm/gtc/matrix_transform.hpp>
 
-#include <GL/gl.h>
 #include <GL/glx.h>
-#include <X11/X.h>
-#include <X11/Xlib.h>
 
 typedef GLXContext (*glXCreateContextAttribsARBProc)(Display *, GLXFBConfig, GLXContext, Bool, const int *);
 typedef Bool (*glXMakeContextCurrentARBProc)(Display *, GLXDrawable, GLXDrawable, GLXContext);
@@ -422,7 +418,8 @@ DepthmapRenderer::DepthmapRenderer(int resx, int resy) {
   // glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depthrenderbuffer);
 
   glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, zBuffer);
-  GLuint buffers[] = {GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2, GL_COLOR_ATTACHMENT3};  // last one is for debug
+  GLuint buffers[] = {GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2,
+                      GL_COLOR_ATTACHMENT3};  // last one is for debug
   glDrawBuffers(4, buffers);
   glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, depthTex, 0);
   glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, indexTex, 0);
@@ -558,13 +555,12 @@ void DepthmapRenderer::setModel(DepthmapRendererModel *_model) {
   glEnableVertexAttribArray(texPosAttribute);
   glVertexAttribPointer(texPosAttribute, 2, GL_FLOAT, GL_FALSE,
                         sizeof(glm::vec4) + sizeof(glm::vec2) + sizeof(glm::vec3),  // the size of our vertex
-                        (void *)sizeof(glm::vec4));             // offset
+                        (void *)sizeof(glm::vec4));                                 // offset
 
   glEnableVertexAttribArray(normalAttribute);
   glVertexAttribPointer(normalAttribute, 3, GL_FLOAT, GL_FALSE,
                         sizeof(glm::vec4) + sizeof(glm::vec2) + sizeof(glm::vec3),  // the size of our vertex
                         (void *)(sizeof(glm::vec4) + sizeof(glm::vec2)));
-
 
   if ((err = glGetError()) != GL_NO_ERROR)
     std::cerr << "A terrible OpenGL error occured while uploading the model (" << err << ")" << std::endl;
@@ -656,8 +652,7 @@ cv::Mat DepthmapRenderer::renderDepthmap(float &visible, cv::Mat &color, cv::Mat
   proj = proj2 * proj1;
   Matrix4f _proj = proj.inverse();
   // set the uniforms
-  glUniformMatrix4fv(poseUniform, 1, GL_FALSE,
-                     (float *)&pose);
+  glUniformMatrix4fv(poseUniform, 1, GL_FALSE, (float *)&pose);
   glUniformMatrix4fv(projectionUniform, 1, GL_FALSE, (float *)&proj);
   glUniformMatrix4fv(_projectionUniform, 1, GL_FALSE, (float *)&_proj);
   // glUniform4f(projectionUniform,fxycxy[0]/(float)res[0],fxycxy[1]/(float)res[1],fxycxy[2]/(float)res[0],fxycxy[3]/(float)res[1]);
@@ -755,10 +750,10 @@ cv::Mat DepthmapRenderer::renderDepthmap(float &visible, cv::Mat &color, cv::Mat
   // imshow("colorMat",colorMat);
   color = colorMat;
 
-  //GET THE NORMAL TEXTURE
-  cv::Mat normalMat(res[1],res[0],CV_32FC4);
+  // GET THE NORMAL TEXTURE
+  cv::Mat normalMat(res[1], res[0], CV_32FC4);
   glBindTexture(GL_TEXTURE_2D, normalTex);
-  glGetTexImage(GL_TEXTURE_2D,0,GL_RGBA, GL_FLOAT, normalMat.data);
+  glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA, GL_FLOAT, normalMat.data);
   normal = normalMat;
 
   // get pixel count for every triangle
@@ -809,7 +804,7 @@ pcl::PointCloud<pcl::PointXYZ> DepthmapRenderer::renderPointcloud(float &visible
 
   cv::Mat color;
   cv::Mat normal;
-  cv::Mat depth = renderDepthmap(visibleSurfaceArea, color,normal);
+  cv::Mat depth = renderDepthmap(visibleSurfaceArea, color, normal);
   for (size_t k = 0; k < cloud.height; k++) {
     for (size_t j = 0; j < cloud.width; j++) {
       float d = depth.at<float>(k, j);
@@ -844,7 +839,7 @@ pcl::PointCloud<pcl::PointXYZRGB> DepthmapRenderer::renderPointcloudColor(float 
 
   cv::Mat color;
   cv::Mat normal;
-  cv::Mat depth = renderDepthmap(visibleSurfaceArea, color,normal);
+  cv::Mat depth = renderDepthmap(visibleSurfaceArea, color, normal);
   std::vector<cv::Mat> color_channels(3);
   cv::split(color, color_channels);
   cv::Mat b, g, r;
@@ -875,55 +870,54 @@ pcl::PointCloud<pcl::PointXYZRGB> DepthmapRenderer::renderPointcloudColor(float 
   return cloud;
 }
 
-pcl::PointCloud<pcl::PointXYZRGBNormal> DepthmapRenderer::renderPointcloudColorNormal(float &visibleSurfaceArea) const
-{
-    const float bad_point = std::numeric_limits<float>::quiet_NaN();
-    pcl::PointCloud<pcl::PointXYZRGBNormal> cloud;
-    cloud.width = res[0];
-    cloud.height = res[1];
-    cloud.is_dense = false;
-    cloud.points.resize(cloud.width * cloud.height);
+pcl::PointCloud<pcl::PointXYZRGBNormal> DepthmapRenderer::renderPointcloudColorNormal(float &visibleSurfaceArea) const {
+  const float bad_point = std::numeric_limits<float>::quiet_NaN();
+  pcl::PointCloud<pcl::PointXYZRGBNormal> cloud;
+  cloud.width = res[0];
+  cloud.height = res[1];
+  cloud.is_dense = false;
+  cloud.points.resize(cloud.width * cloud.height);
 
-    cloud.sensor_orientation_ = Eigen::Quaternionf(Eigen::Matrix3f(pose.block(0, 0, 3, 3)).transpose());
-    const Eigen::Vector3f trans =
-        Eigen::Matrix3f(pose.block(0, 0, 3, 3)).transpose() * Eigen::Vector3f(pose(0, 3), pose(1, 3), pose(2, 3));
-    cloud.sensor_origin_ = Eigen::Vector4f(-trans(0), -trans(1), -trans(2), 1.0f);
+  cloud.sensor_orientation_ = Eigen::Quaternionf(Eigen::Matrix3f(pose.block(0, 0, 3, 3)).transpose());
+  const Eigen::Vector3f trans =
+      Eigen::Matrix3f(pose.block(0, 0, 3, 3)).transpose() * Eigen::Vector3f(pose(0, 3), pose(1, 3), pose(2, 3));
+  cloud.sensor_origin_ = Eigen::Vector4f(-trans(0), -trans(1), -trans(2), 1.0f);
 
-    cv::Mat color;
-    cv::Mat normal;
-    cv::Mat depth = renderDepthmap(visibleSurfaceArea, color, normal);
+  cv::Mat color;
+  cv::Mat normal;
+  cv::Mat depth = renderDepthmap(visibleSurfaceArea, color, normal);
 
-    std::vector<cv::Mat> color_channels(3);
-    cv::split(color, color_channels);
-    cv::Mat b, g, r;
-    b = color_channels[0];
-    g = color_channels[1];
-    r = color_channels[2];
+  std::vector<cv::Mat> color_channels(3);
+  cv::split(color, color_channels);
+  cv::Mat b, g, r;
+  b = color_channels[0];
+  g = color_channels[1];
+  r = color_channels[2];
 
-    for (size_t k = 0; k < cloud.height; k++) {
-      for (size_t j = 0; j < cloud.width; j++) {
-        float d = depth.at<float>(k, j);
-        if (d == 0) {
-          cloud.at(j, k).x = bad_point;
-          cloud.at(j, k).y = bad_point;
-          cloud.at(j, k).z = bad_point;
-        } else {
-          pcl::PointXYZRGBNormal p;
-          p.x = ((float)j - fxycxy[2]) / fxycxy[0] * d;
-          p.y = ((float)k - fxycxy[3]) / fxycxy[1] * d;
-          p.z = d;
-          p.r = r.at<unsigned char>(k, j);
-          p.g = g.at<unsigned char>(k, j);
-          p.b = b.at<unsigned char>(k, j);
+  for (size_t k = 0; k < cloud.height; k++) {
+    for (size_t j = 0; j < cloud.width; j++) {
+      float d = depth.at<float>(k, j);
+      if (d == 0) {
+        cloud.at(j, k).x = bad_point;
+        cloud.at(j, k).y = bad_point;
+        cloud.at(j, k).z = bad_point;
+      } else {
+        pcl::PointXYZRGBNormal p;
+        p.x = ((float)j - fxycxy[2]) / fxycxy[0] * d;
+        p.y = ((float)k - fxycxy[3]) / fxycxy[1] * d;
+        p.z = d;
+        p.r = r.at<unsigned char>(k, j);
+        p.g = g.at<unsigned char>(k, j);
+        p.b = b.at<unsigned char>(k, j);
 
-          p.normal_x = normal.at<cv::Vec4f>(k,j)[0];
-          p.normal_y = normal.at<cv::Vec4f>(k,j)[1];
-          p.normal_z = normal.at<cv::Vec4f>(k,j)[2];
-          cloud.at(j, k) = p;
-        }
+        p.normal_x = normal.at<cv::Vec4f>(k, j)[0];
+        p.normal_y = normal.at<cv::Vec4f>(k, j)[1];
+        p.normal_z = normal.at<cv::Vec4f>(k, j)[2];
+        cloud.at(j, k) = p;
       }
     }
+  }
 
-    return cloud;
+  return cloud;
 }
 }

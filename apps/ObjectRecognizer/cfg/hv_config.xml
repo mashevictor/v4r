@@ -8,7 +8,7 @@
 	<do_smoothing_>1</do_smoothing_>
 	<do_erosion_>1</do_erosion_>
 	<erosion_radius_>4</erosion_radius_>
-	<icp_iterations_>30</icp_iterations_>
+	<icp_iterations_>15</icp_iterations_>
 	<icp_max_correspondence_>0.02</icp_max_correspondence_>
 	<inlier_threshold_xyz_>0.01</inlier_threshold_xyz_>
 	<inlier_threshold_normals_dotp_>0.99</inlier_threshold_normals_dotp_>

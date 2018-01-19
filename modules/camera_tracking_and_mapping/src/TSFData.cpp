@@ -195,4 +195,22 @@ void TSFData::convert(const v4r::DataMatrix2D<v4r::Surfel> &sf_cloud, cv::Mat &i
     }
   }
 }
+
+bool TSFData::setImage(const cv::Mat &image, v4r::DataMatrix2D<v4r::Surfel> &sf_cloud) {
+  if (image.rows != sf_cloud.rows || image.cols != sf_cloud.cols)
+    return false;
+
+  for (int v = 0; v < sf_cloud.rows; v++) {
+    for (int u = 0; u < sf_cloud.cols; u++) {
+      const cv::Vec3b &cv_pt = image.at<cv::Vec3b>(v, u);
+      v4r::Surfel &s = sf_cloud(v, u);
+
+      s.r = cv_pt[2];
+      s.g = cv_pt[1];
+      s.b = cv_pt[0];
+    }
+  }
+
+  return true;
+}
 }

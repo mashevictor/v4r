@@ -6,12 +6,13 @@
 namespace v4r {
 
 template <typename PointT>
-void MultiRecognitionPipeline<PointT>::initialize(const bf::path &trained_dir, bool force_retrain) {
+void MultiRecognitionPipeline<PointT>::doInit(const bf::path &trained_dir, bool force_retrain,
+                                              const std::vector<std::string> &object_instances_to_load) {
   for (auto &r : recognition_pipelines_) {
     r->setModelDatabase(m_db_);
     r->setNormalEstimator(normal_estimator_);
     r->setVisualizationParameter(vis_param_);
-    r->initialize(trained_dir, force_retrain);
+    r->initialize(trained_dir, force_retrain, object_instances_to_load);
   }
 }
 

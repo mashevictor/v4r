@@ -60,12 +60,12 @@ void v4r::Registration::MultiSessionModelling<PointT>::computeCost(EdgeBetweenPa
   float fsv = 0.f;
   int non_valid = 0;
   int total = 0;
-  for (size_t ii = session_ranges_[edge.i_].first; ii <= session_ranges_[edge.i_].second; ii++) {
+  for (int ii = session_ranges_[edge.i_].first; ii <= session_ranges_[edge.i_].second; ii++) {
     typename pcl::PointCloud<PointT>::ConstPtr cloud = clouds_[ii];
     std::vector<int>& indices = getIndices(ii);
     Eigen::Matrix4f pose = edge.transformation_.inverse() * getPose(ii);
 
-    for (size_t jj = session_ranges_[edge.j_].first; jj <= session_ranges_[edge.j_].second; jj++) {
+    for (int jj = session_ranges_[edge.j_].first; jj <= session_ranges_[edge.j_].second; jj++) {
       Eigen::Matrix4f pose_to_jj = poses_[jj].inverse() * pose;
       float fsv_loc = computeFSV(cloud, normals_[ii], indices, pose_to_jj, clouds_[jj]);
       if (fsv_loc < 0) {

@@ -47,15 +47,15 @@
 
 #pragma once
 
-#include <math.h>
 #include <opencv/cv.h>
-#include <stdlib.h>
 #include <v4r/core/macros.h>
 #include <v4r/io/filesystem.h>
 #include <boost/archive/xml_iarchive.hpp>
 #include <boost/archive/xml_oarchive.hpp>
 #include <boost/serialization/serialization.hpp>
 #include <boost/shared_ptr.hpp>
+#include <cmath>
+#include <cstdlib>
 #include <fstream>
 
 namespace v4r {

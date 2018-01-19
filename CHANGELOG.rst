@@ -429,6 +429,328 @@ Changelog for package v4r
   Arrange them in lexicographical order
 * Contributors: Georg, Johann Prankl, Markus 'Bajo' Bajones, Markus Bajones, Sergey Alexandrov, Simon Schreiberhuber, Thomas Faeulhammer, Thomas Fäulhammer, Unknown, V4R Release Manager
 
+2.0.5 (2018-01-19)
+------------------
+  Make sure the same OpenCV version is used to build both radical and V4R
+  Clang format
+* Make sure the same OpenCV version is used to build both radical and V4R
+* clang-format
+* allow to set a subset of object models to load
+  avoid overwrite of existing rendered files
+* avoid overwrite of existing rendered files
+* Update v4r_style_guide.md
+* Update v4r_style_guide.md
+  remove pcl serialization from header files
+  remove glog includes from header files
+* remove glog includes from header files
+  this solves potential conflicts with multiple LOG definitions
+  fix some warnings
+  remove dead code
+* fix some warnings
+* remove dead code
+* remove pcl serialization from header files
+  avoids potential mutiple definitions when linking to external libraries
+  remove unused files
+  improve readability for boost program options
+  optimize includes
+  fix seg fault
+* remove unused files
+* improve readability for boost program options
+* optimize includes
+* fix seg fault
+  make HV single templated
+  add bound for generated hypotheses per object
+* Update ObjectRecognizer.cpp
+  # Conflicts:
+  #   modules/recognition/include/v4r/recognition/local_recognition_pipeline.h
+  # Conflicts:
+  #   modules/recognition/src/hypotheses_verification.cpp
+  allow to change visualization layout by parameter
+  Use bf path and glog more extensively
+* Update local_pipeline.xml
+* Update hv_config.xml
+* Update hv_config.xml
+* fix typo
+  remove outlier variable
+  add xml parameters for local recognition pipeline
+  update xml to fix warnings output and improve readability
+* update xml to fix warnings output and improve readability
+* make HV single templated
+* add bound for generated hypotheses per object
+* use bf_path and glog more extensively
+* remove outlier variable
+* add xml parameters for local recognition pipeline
+  fix bug when color is ignored in HV
+  fix confidence bug
+* fix bug when color is ignored in HV
+* fix confidence bug
+* Use enum class
+* use enums
+* allow to change visualization layout by parameter
+  remove dead code
+  Code simplification
+* Update organized_edge_detection.h
+  Turn third-party dependencies into proper CMake targets
+  Closes #40
+* remove unused files
+* :lipstick:
+* simplify stuff
+* fix conflicts
+  Fix some warnings
+* fix some warnings
+* Switch to NEW behavior on CMP0025 policy
+* Improve the code responsible for extracting imported library location
+  Move to a separate function in V4RUtils.cmake.
+* Add protection from multiple inclusion of V4R config
+* Use built-in CMAKE_CXX_STANDARD instead of directly manipulating flags
+  Also set CMAKE_CXX_STANDARD in exported V4R config
+* Upgrade CMake debugging facilities
+  * Add ability to print target properties
+  * Clear debug flags after each CMake run
+  * Move debugging functions to a separate file
+* Generate a config file for third-party dependencies
+* Remove convoluted external linker dependency handling code
+  Not necessary anymore since all third-party dependencies are proper imported targets.
+* Update SiftGPU finder script to create an imported library
+* Do not define unnecessary variables in Radical finder script
+* Update Qt finder script to create an imported library
+* Update PCL_1_8 finder to not define unnecessary variables
+* Update PCL finder script to create an imported library
+* Update OpenNURBS finder script to create an imported library
+* Do not define unnecessary variables in OpenMP finder script
+* Fix dependencies of visualize_hypothesis tool
+* Update OpenGL finder script to create an imported library
+* Update OpenCV finder script to create an imported library
+* Update GLM finder script to create an imported library
+* Update Eigen finder script to create an imported library
+* Update METSlib finder script to create an imported library
+* Update LibSVM finder script to create an imported library
+* Update Gtest finder script to not define unnecessary variables
+* Update Glog finder script to create an imported library
+* Update GLEW finder script to create an imported library
+* Update EDT finder script to create an imported library
+* Update Ceres finder script to not define unnecessary variables
+* Caffe finder script already creates imported target, don't define unnecessary variables
+* Update boost finder script to create an imported library
+* Update Assimp finder script to create an imported library
+* Remove BINDINGS module class support (inherited from OpenCV)
+* Remove "wrapper" modules (inherited from OpenCV and not used)
+* Temporary fixup on v4r_get_all_libs
+* Setup include directories on V4R module targets
+* Fix resolving of external dependencies (priority for targets)
+* Always make link libraries public to ensure dependency propagation
+* Update v4r_dependency_status function to handle target-only dependencies
+* Add v4r_add_imported_library utility function
+* Fix condition in v4r_install_dependencies macro
+* Abolish V4RMinDepVersions.cmake and embed version information into finder scripts
+  Force cmake 3.10 (hackish) and fix parallel debian package build
+* Update .gitlab-ci.yml
+* fix parallel build, force newer cmake version
+  make change detection optional in Object Reco
+* fix typo
+* Update ObjectClassification.md
+  fix some warnings
+* fix some warnings
+  Fix compatibility with OpenCV 3.3.1
+* Fix compatibility with OpenCV 3.3.1
+  Avoid argument type ambiguity in cv::goodFeaturesToTrack() calls.
+  Lift minimum CMake required version to 3.5.1
+* Add CMake to the list of required dependencies in README
+* Raise minimum required CMake version to 3.5.1
+* Install CMake 3.10.0 on Trusty in setup.sh
+  On Xenial default apt-get package is used. This makes sure that on both
+  supported systems we have at least CMake 3.5.1.
+  EuclideanClusterComparator does not actually use normals
+* EuclideanClusterComparator does not actually use normals
+  Associated template parameters and functions have been deprecated in
+  current PCL master. This conditional compilation is to avoid warnings
+  and prepare for future complete removal of these functions.
+  Master
+* make change detection optional in Object Reco
+* changed order of qt/ pcl includes
+* changed params: dist thr. for colour opti. (to avoid zero correspondences)
+* bug fix 14.04: removed pcl::TextureMesh
+* support radical for RTMT2
+  add pcl texturing structure to odm (compatibility to old pcl)
+  Fix installation of headers
+  Closes #39
+* Fix installation of headers
+  Was introduced by c8511da6
+* 2.0.4
+* update changelog and version.h before releasing V4R
+  Use Ninja on CI server
+* 2.0.3
+* update changelog and version.h before releasing V4R
+* Automatically set 30 second download timeout for all external projects
+* Use CMAKE_GENERATOR when configuring external projects
+* Use Ninja generator in CMake
+* Strip trailing spaces in GitLab CI config
+  Cmake updates
+* Remove unused submodules in `_CHILDREN` variables
+* Backport various updates for utils from OpenCV master
+* Remove unused functions/macros
+* Remove Windows-only branch in CMake scripts
+  Fix install rules for third-party dependencies
+  Fix error ‘boost::Q_FOREACH’ has not been declared
+* Do not clear variables after debug cache print
+* Fix install rules for third-party dependencies
+  Install only if enabled and built.
+* Fix error ‘boost::Q_FOREACH’ has not been declared
+  Solution from: https://stackoverflow.com/a/17610731/1525865
+  use our own server, as people reported issues with the keyservers
+  use nullptr instead of NULL
+* use nullptr instead of NULL
+  Add radical
+* Add radical 3rd-party dependency
+* Improve dependency status printing
+  Detect targets and print their location
+* use our own server, as people reported issues with the keyservers
+  Rendering of Normals
+  Fix warnings
+* Fixed one stupid blank space.
+* fix some more warnings
+* fix warnings
+* Reduced the amount of violation of our Coding Style Guideline.
+  Master
+* add glog dependency to io
+* use more bf paths
+* conditionally render based on v4r_rendering available
+* add view rendering to object recognizer
+* allow prefix names of model database input to be changed
+* use bf::path instead of std::string for filepaths
+  Ceres 1.13 clean
+  Remove unneeded CMakeLists.txt files
+  Closes #36
+* Merge remote-tracking branch 'origin/master'
+* Added a normal rendering, in case no normal is provided by the mesh it has a fallback to a per triangle estimation of normals.
+* Updating Readme with Ceres 1.13
+* Delete 3rdpartie's cmakelists
+* Moving 2 Ceres 1.13
+  Update cmake/3rdparty/BuildCeres.cmake
+* add glog dependency to io
+* Remove unneeded CMakeLists.txt files
+* Merge remote-tracking branch 'v4r_origin/master'
+* use more bf paths
+* remove unused stuff
+* conditionally render based on v4r_rendering available
+* add view rendering to object recognizer
+* allow prefix names of model database input to be changed
+* use bf::path instead of std::string for filepaths
+  Fix warnings
+* remove comments
+* fix some warnings
+* fix typos
+  use bf::path instead of std::string for filepaths
+* use bf::path instead of std::string for filepaths
+  Format style
+* fix errors
+  remove redundant if
+* update style guide documentation
+  fix warnings
+* fix remaining style in modules, apps and samples
+* reformat core
+* reformat change_detection, recognition, segmentation and ml
+* reformat features
+* reformat keypoints
+* reformat 'io'
+* add clang-format file
+* remove redundant if
+* remove unused normal estimation with pre-processing
+* fix another bunch of warnings
+* fix warnings
+  Textured rendering
+  Disable Gtest by default and add a download timeout
+  Set universal imported location for source built dependencies
+* Disable Gtest by default and add a download timeout
+  At the moment V4R has no tests, so Gtest is not needed.
+* Set universal imported location for source built dependencies
+  Remove support for using git-apply for patching
+* small fixes in depth map renderer
+* Loading and NOT SCALING the model is default option now. Added option to only render NORTH HEMISPHERE views.
+* Loading and NOT SCALING the model is default option now. Added option to only render NORTH HEMISPHERE views.
+* Remove support for using git-apply for patching
+  Revamp third-party dependency system
+* Disable -Wshadow which floods the logs
+* Remove unused CMake functions/macros
+* Better SYSTEM/PRIVATE include handling
+* Disable annoying debug print in CMake
+* New framework for managing 3rd-party dependencies
+* fix yet another typo in CONTRIBUTING.md
+* fix typo in CONTRIBUTING.md
+* Update CONTRIBUTING.md
+* 2.0.2
+* update changelog and version.h before releasing V4R
+  add ODM and indicate existing libraries inside V4R
+* add brief description on Readme and some styling
+* update readme
+* fix typo
+* add ODM and indicate existing libraries inside V4R
+  revert readme overwrite
+* revert readme overwrite
+  Remove all mentions of Qt4 and always use Qt5
+* Remove all mentions of Qt4 and always use Qt5
+  update author list
+  update contribution page
+  Update readme
+  Remove explicit VTK dependency
+* remove VTK and OpenNI
+* fix style
+* Remove explicit VTK dependency
+* update license URL
+* split issue tracker URL
+* fix URL
+* fix URLs
+  Remove all references to OpenCL
+* update contribution page
+  Textured rendering
+* update author list
+* update Readme
+  fix license
+* Remove all references to OpenCL
+  Was inherited from OpenCV build system, but not used in V4R.
+* fix license
+* update deps
+* fix conflicts
+  Strands to v4r in readme
+* update dependencies description
+* As we build ceres within v4r this is not needed anymore
+* Update readme to get rid of Strands links
+  OpenNURBS does not need to depend on PCL
+* OpenNURBS does not need to depend on PCL
+  The only usage of PCL in the code is PCL_EXPORTS macro, which anyway evaluates to nothing on Unix platform.
+  Build deb packages on all repos when tagged
+  Do not process some RTMT headers with Qt MOC
+  # Conflicts:
+  #   .gitlab-ci.yml
+  cleanup gitlab_CI and build fixes
+* Build deb packages on all repos when tagged
+* Merge remote-tracking branch 'v4r_origin/master'
+* Added rendering of textured meshes.
+* Do not process some RTMT headers with Qt MOC
+  This is to avoid classical Qt MOC/Boost error:
+  usr/include/boost/type_traits/detail/has_binary_operator.hp:50: Parse error at "BOOST_JOIN"
+  apps/RTMT2/CMakeFiles/RTMT2.dir/build.make:87: recipe for target 'apps/RTMT2/moc_OctreeVoxelCentroidContainerXYZRGB.cxx' failed
+* Remove "-dev" string from version
+* Remove duplicate job entry
+* Merge remote-tracking branch 'upstream/master'
+  Merge back the released state from v4r
+* 2.0.1
+* update changelog before releasing V4R
+* Merge remote-tracking branch 'upstream/master'
+  update version in package.xml
+* update version in package.xml
+* Merge remote-tracking branch 'upstream/master'
+  Master
+* bug fix: removed cam.center_x ... it's not available in pcl-stable
+* bug work-fix: removed OdmTexturing::loadMesh (not available in pcl)
+* New RTMT2 version including a modified version of OpenDroneMap texture mapping
+* test odm texturing
+* do not compile multiview recognizer
+* fixed: we did not compile on xenial
+* Add missing headers an source files.
+  Arrange them in lexicographical order
+* Contributors: Georg, Johann Prankl, Markus 'Bajo' Bajones, Markus Bajones, Sergey Alexandrov, Simon Schreiberhuber, Thomas Faeulhammer, Thomas Fäulhammer, Unknown, V4R Release Manager
+
 1.4.9 (2017-07-28)
 ------------------
 * merge master into release

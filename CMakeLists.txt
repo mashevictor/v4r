@@ -6,11 +6,7 @@
 #
 # ----------------------------------------------------------------------------
 
-
-
-include(cmake/V4RMinDepVersions.cmake)
-
-cmake_minimum_required(VERSION "${MIN_VER_CMAKE}" FATAL_ERROR)
+cmake_minimum_required(VERSION 3.5.1 FATAL_ERROR)
 
 # it _must_ go before project(V4R) in order to work
 set(CMAKE_INSTALL_PREFIX "/usr/local" CACHE PATH "Installation Directory")
@@ -28,12 +24,13 @@ if(POLICY CMP0022)
 endif()
 
 if(POLICY CMP0026)
-  # silence cmake 3.0+ warnings about reading LOCATION attribute
-  cmake_policy(SET CMP0026 OLD)
+  # Disallow use of the LOCATION property for build targets.
+  cmake_policy(SET CMP0026 NEW)
 endif()
 
 project(V4R CXX C)
 
+include(cmake/V4RDebug.cmake)
 include(cmake/V4RUtils.cmake)
 
 v4r_clear_vars(V4RModules_TARGETS)
@@ -65,8 +62,8 @@ else()
   list(APPEND CMAKE_LIBRARY_PATH /usr/lib)
 endif()
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
-
+set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 include(cmake/V4RThirdParty.cmake)
 
@@ -473,8 +470,19 @@ endif()
 #--------------------------------------------------------------------------------------------------#
 #                                              Debug                                               #
 #--------------------------------------------------------------------------------------------------#
-# Print all cache variables matching a certain string
-# To enable, pass to cmake something like: -DPRINT_CACHE=STRING_TO_MATCH
-# To disable, pass: -DPRINT_CACHE=""
-
+#
+# * Debug message printing in V4R scripts:
+#
+#     -DPRINT_DEBUG=ON
+#
+# * Print all cache variables matching a certain string:
+#
+#     -DPRINT_CACHE=<STRING_TO_MATCH>
+#
+# * Print all properties of a target:
+#
+#     -DPRINT_TARGET=<TARGET_NAME>
+#
 v4r_print_cache_variables("${PRINT_CACHE}")
+v4r_print_target_properties("${PRINT_TARGET}")
+v4r_clear_vars(PRINT_CACHE PRINT_TARGET PRINT_DEBUG)

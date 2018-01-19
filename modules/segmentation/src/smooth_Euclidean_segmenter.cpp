@@ -1,5 +1,4 @@
 #include <pcl/common/angles.h>
-#include <pcl/impl/instantiate.hpp>
 
 #include <v4r/common/miscellaneous.h>
 #include <v4r/segmentation/smooth_Euclidean_segmenter.h>

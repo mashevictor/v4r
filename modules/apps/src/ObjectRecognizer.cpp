@@ -56,40 +56,31 @@
 #include <pcl/registration/icp.h>
 #include <boost/format.hpp>
 #include <boost/program_options.hpp>
-#include <pcl/impl/instantiate.hpp>
 
 #include <pcl/segmentation/euclidean_cluster_comparator.h>
 #include <pcl/segmentation/organized_connected_component_segmentation.h>
 #include <pcl/segmentation/organized_multi_plane_segmentation.h>
+
 #include <v4r/apps/ObjectRecognizer.h>
 #include <v4r/apps/ViewRenderer.h>
+
+#ifdef HAVE_V4R_CHANGE_DETECTION
 #include <v4r/change_detection/change_detection.h>
 #include <v4r/change_detection/miscellaneous.h>
-#include <v4r/common/camera.h>
-#include <v4r/common/graph_geometric_consistency.h>
+#endif
+
 #include <v4r/common/miscellaneous.h>
 #include <v4r/common/noise_models.h>
-#include <v4r/common/normals.h>
-#include <v4r/common/pcl_visualization_utils.h>
-#include <v4r/features/esf_estimator.h>
-#include <v4r/features/global_concatenated.h>
-#include <v4r/features/global_simple_shape_estimator.h>
 #include <v4r/features/rops_local_estimator.h>
 #include <v4r/features/shot_local_estimator.h>
 #include <v4r/features/sift_local_estimator.h>
-#include <v4r/io/filesystem.h>
 #include <v4r/keypoints/all_headers.h>
 #include <v4r/ml/all_headers.h>
 #include <v4r/recognition/global_recognition_pipeline.h>
-#include <v4r/recognition/hypotheses_verification.h>
 #include <v4r/recognition/multiview_recognizer.h>
 #include <v4r/registration/noise_model_based_cloud_integration.h>
-#include <v4r/segmentation/all_headers.h>
 #include <v4r/segmentation/plane_utils.h>
 #include <v4r/segmentation/segmentation_utils.h>
-
-#include <sys/resource.h>
-#include <sys/time.h>
 
 namespace po = boost::program_options;
 
@@ -97,7 +88,7 @@ namespace v4r {
 
 namespace apps {
 
-template<typename PointT>
+template <typename PointT>
 void ObjectRecognizer<PointT>::initialize(std::vector<std::string> &command_line_arguments,
                                           const bf::path &config_folder) {
   bool visualize_hv_go_cues = false;
@@ -107,14 +98,17 @@ void ObjectRecognizer<PointT>::initialize(std::vector<std::string> &command_line
   bool visualize_global_results = false;
   bool retrain = false;
   bool render_training_views_from_mesh_model = false;
+  int visualization_layout_int = static_cast<int>(ObjRecoVisLayoutStyle::FULL);
 
   const bf::path multipipeline_config_xml_basenemae = "multipipeline_config.xml";
   const bf::path sift_config_xml_basename = "sift_config.xml";
   const bf::path shot_config_xml_basename = "shot_config.xml";
+  const bf::path local_pipeline_xml_basename = "local_pipeline.xml";
   const bf::path depth_image_mask_xml_basename = "xtion_depth_mask.png";
   const bf::path camera_config_xml_basename = "camera.xml";
   const bf::path global_config_xml_basename = "global_config.xml";
   const bf::path hv_config_xml_basename = "hv_config.xml";
+  std::vector<std::string> object_models = {};
 
   bf::path multipipeline_config_fn = config_folder / multipipeline_config_xml_basenemae;
   param_.load(multipipeline_config_fn.string());
@@ -122,25 +116,35 @@ void ObjectRecognizer<PointT>::initialize(std::vector<std::string> &command_line
   param_.output();
 
   po::options_description desc("Object Instance Recognizer\n======================================\n**Allowed options");
-  desc.add_options()("help,h", "produce help message")("model_dir,m", po::value<bf::path>(&models_dir_)->required(),
-                                                       "Models directory")("visualize,v", po::bool_switch(&visualize_),
-                                                                           "visualize recognition results")(
-      "skip_verification", po::bool_switch(&skip_verification_),
-      "if true, skips verification (only hypotheses generation)")(
-      "hv_vis_cues", po::bool_switch(&visualize_hv_go_cues),
-      "If set, visualizes cues computed at the hypothesis verification stage such as inlier, outlier points. Mainly "
-          "used for debugging.")("hv_vis_model_cues", po::bool_switch(&visualize_hv_model_cues),
-                                 "If set, visualizes the model cues. Useful for debugging")(
-      "hv_vis_pairwise_cues", po::bool_switch(&visualize_hv_pairwise_cues),
-      "If set, visualizes the pairwise cues. Useful for debugging")(
-      "rec_visualize_keypoints", po::bool_switch(&visualize_keypoints), "If set, visualizes detected keypoints.")(
-      "rec_visualize_global_pipeline", po::bool_switch(&visualize_global_results),
-      "If set, visualizes segments and results from global pipeline.")(
-      "retrain", po::bool_switch(&retrain), "If set, retrains the object models no matter if they already exists.")(
-      "recognizer_remove_planes", po::value<bool>(&param_.remove_planes_)->default_value(param_.remove_planes_),
-      "if enabled, removes the dominant plane in the input cloud (given there are at least N inliers)")(
-      "render_views", po::bool_switch(&render_training_views_from_mesh_model),
-          "if enabled, renders training views from a (textured) mesh model");
+  desc.add_options()("help,h", "produce help message");
+  desc.add_options()("model_dir,m", po::value<bf::path>(&models_dir_)->required(), "Directory with object models.");
+  desc.add_options()("models", po::value<std::vector<std::string>>(&object_models)->multitoken(),
+                     "Names of object models to load from the models directory. If empty or not set, all object models "
+                     "will be loaded from the object models directory.");
+  desc.add_options()("visualize,v", po::bool_switch(&visualize_), "visualize recognition results");
+  desc.add_options()("skip_verification", po::bool_switch(&skip_verification_),
+                     "if true, skips verification (only hypotheses generation)");
+  desc.add_options()("hv_vis_cues", po::bool_switch(&visualize_hv_go_cues),
+                     "If set, visualizes cues computed at the"
+                     "hypothesis verification stage such as inlier, outlier points. Mainly used for debugging.");
+  desc.add_options()("hv_vis_model_cues", po::bool_switch(&visualize_hv_model_cues),
+                     "If set, visualizes the model cues. Useful for debugging");
+  desc.add_options()("hv_vis_pairwise_cues", po::bool_switch(&visualize_hv_pairwise_cues),
+                     "If set, visualizes the pairwise cues. Useful for debugging");
+  desc.add_options()("rec_visualize_keypoints", po::bool_switch(&visualize_keypoints),
+                     "If set, visualizes detected keypoints.");
+  desc.add_options()("rec_visualize_global_pipeline", po::bool_switch(&visualize_global_results),
+                     "If set, visualizes segments and results from global pipeline.");
+  desc.add_options()("retrain", po::bool_switch(&retrain),
+                     "If set, retrains the object models no matter if they already exists.");
+  desc.add_options()("recognizer_remove_planes",
+                     po::value<bool>(&param_.remove_planes_)->default_value(param_.remove_planes_),
+                     "if enabled, removes the dominant plane in the input cloud (given there are at least N inliers)");
+  desc.add_options()("render_views", po::bool_switch(&render_training_views_from_mesh_model),
+                     "if enabled, renders training views from a (textured) mesh model");
+  desc.add_options()("vis_layout", po::value<int>(&visualization_layout_int)->default_value(visualization_layout_int),
+                     "defines the layout of the visualization (0... full, 1... only show input and verified,"
+                     " 2... show input, processed, and verified)");
   po::variables_map vm;
   po::parsed_options parsed = po::command_line_parser(command_line_arguments).options(desc).allow_unregistered().run();
   std::vector<std::string> to_pass_further = po::collect_unrecognized(parsed.options, po::include_positional);
@@ -177,29 +181,35 @@ void ObjectRecognizer<PointT>::initialize(std::vector<std::string> &command_line
   vis_param->fontsize_ = 12;
   vis_param->coordinate_axis_scale_ = 0.2f;
 
+  auto visualization_layout = static_cast<ObjRecoVisLayoutStyle>(visualization_layout_int);
+
   // ==== RENDER VIEWS FROM OBJECT MODELS (IF ENABLED) =====
   if (render_training_views_from_mesh_model) {
     v4r::apps::ViewRendererParameter rendering_params;
     to_pass_further = rendering_params.init(to_pass_further);
     v4r::apps::ViewRenderer renderer(camera_, rendering_params);
     const std::vector<std::string> model_folders = v4r::io::getFoldersInDirectory(models_dir_);
-    for (const bf::path &m : model_folders)
-      renderer.render(models_dir_ / m / "tex_mesh.obj", models_dir_ / m / "rendered_views");
+    for (const std::string &m : model_folders) {
+      if (std::find(object_models.begin(), object_models.end(), m) != object_models.end()) {
+        renderer.render(models_dir_ / bf::path(m) / "tex_mesh.obj", models_dir_ / bf::path(m) / "rendered_views");
+      }
+    }
   }
 
   // ==== FILL OBJECT MODEL DATABASE ==== ( assumes each object is in a seperate folder named after the object and
   // contains and "views" folder with the training views of the object)
   SourceParameter source_param;
-  if(render_training_views_from_mesh_model)
+  if (render_training_views_from_mesh_model)
     source_param.view_folder_name_ = "rendered_views";
   model_database_.reset(new Source<PointT>(source_param));
-  model_database_->init(models_dir_);
+  model_database_->init(models_dir_, object_models);
 
   normal_estimator_ = v4r::initNormalEstimator<PointT>(param_.normal_computation_method_, to_pass_further);
 
   // ====== SETUP MULTI PIPELINE RECOGNIZER ======
   typename v4r::MultiRecognitionPipeline<PointT>::Ptr multipipeline(new v4r::MultiRecognitionPipeline<PointT>);
   LocalRecognitionPipelineParameter local_rec_pipeline_param;
+  local_rec_pipeline_param.load(config_folder / local_pipeline_xml_basename);
   to_pass_further = local_rec_pipeline_param.init(to_pass_further);
   local_recognition_pipeline_.reset(new LocalRecognitionPipeline<PointT>(local_rec_pipeline_param));
   {
@@ -228,8 +238,7 @@ void ObjectRecognizer<PointT>::initialize(std::vector<std::string> &command_line
 
       if (param_.do_sift_) {
         LocalRecognizerParameter sift_param;
-        bf::path sift_config_xml = config_folder / sift_config_xml_basename;
-        sift_param.load(sift_config_xml.string());
+        sift_param.load(config_folder / sift_config_xml_basename);
 
         if (param_.sift_knn_)
           sift_param.knn_ = param_.sift_knn_;
@@ -242,8 +251,7 @@ void ObjectRecognizer<PointT>::initialize(std::vector<std::string> &command_line
       }
       if (param_.do_shot_) {
         LocalRecognizerParameter shot_pipeline_param;
-        bf::path shot_config_xml = config_folder / shot_config_xml_basename;
-        shot_pipeline_param.load(shot_config_xml.string());
+        shot_pipeline_param.load(config_folder / shot_config_xml_basename);
 
         if (param_.shot_knn_)
           shot_pipeline_param.knn_ = param_.shot_knn_;
@@ -351,14 +359,14 @@ void ObjectRecognizer<PointT>::initialize(std::vector<std::string> &command_line
   } else
     mrec_ = multipipeline;
 
-  mrec_->initialize(models_dir_, retrain);
+  mrec_->initialize(models_dir_, retrain, object_models);
 
   if (!skip_verification_) {
     // ====== SETUP HYPOTHESES VERIFICATION =====
     HV_Parameter paramHV;
-    bf::path hv_config_path = config_folder / hv_config_xml_basename;
-    paramHV.load(hv_config_path.string());
-    hv_.reset(new HypothesisVerification<PointT, PointT>(camera_, paramHV));
+    paramHV.load(config_folder / hv_config_xml_basename);
+    paramHV.init(to_pass_further);
+    hv_.reset(new HypothesisVerification<PointT>(camera_, paramHV));
 
     if (visualize_hv_go_cues)
       hv_->visualizeCues(vis_param);
@@ -384,12 +392,13 @@ void ObjectRecognizer<PointT>::initialize(std::vector<std::string> &command_line
   }
 
   if (visualize_) {
-    rec_vis_.reset(new v4r::ObjectRecognitionVisualizer<PointT>);
+    rec_vis_.reset(new v4r::ObjectRecognitionVisualizer<PointT>(visualization_layout));
     rec_vis_->setModelDatabase(model_database_);
   }
 }
 
-template<typename PointT>
+#ifdef HAVE_V4R_CHANGE_DETECTION
+template <typename PointT>
 void ObjectRecognizer<PointT>::detectChanges(View &v) {
   v.removed_points_.reset(new pcl::PointCloud<PointT>);
 
@@ -414,8 +423,9 @@ void ObjectRecognizer<PointT>::detectChanges(View &v) {
     //        *changing_scene += *(detector.getAdded());
   }
 }
+#endif
 
-template<typename PointT>
+template <typename PointT>
 std::vector<ObjectHypothesesGroup> ObjectRecognizer<PointT>::recognize(
     const typename pcl::PointCloud<PointT>::ConstPtr &cloud) {
   // reset view point - otherwise this messes up PCL's visualization (this does not affect recognition results)
@@ -428,6 +438,7 @@ std::vector<ObjectHypothesesGroup> ObjectRecognizer<PointT>::recognize(
 
   std::vector<ObjectHypothesesGroup> generated_object_hypotheses;
 
+  pcl::StopWatch t_total;
   elapsed_time_.clear();
 
   pcl::PointCloud<pcl::Normal>::Ptr normals;
@@ -437,7 +448,7 @@ std::vector<ObjectHypothesesGroup> ObjectRecognizer<PointT>::recognize(
     normal_estimator_->setInputCloud(processed_cloud);
     normals = normal_estimator_->compute();
     mrec_->setSceneNormals(normals);
-    float time = t.getTime();
+    double time = t.getTime();
     VLOG(1) << time_desc << " took " << time << " ms.";
     elapsed_time_.push_back(std::pair<std::string, float>(time_desc, time));
   }
@@ -453,7 +464,7 @@ std::vector<ObjectHypothesesGroup> ObjectRecognizer<PointT>::recognize(
     support_plane = cloud_segmenter_->getSelectedPlane();
     mrec_->setTablePlane(support_plane);
 
-    float time = t.getTime();
+    double time = t.getTime();
     VLOG(1) << time_desc << " took " << time << " ms.";
     elapsed_time_.push_back(std::pair<std::string, float>(time_desc, time));
   }
@@ -472,7 +483,7 @@ std::vector<ObjectHypothesesGroup> ObjectRecognizer<PointT>::recognize(
     mrec_->recognize();
     generated_object_hypotheses = mrec_->getObjectHypothesis();
 
-    float time = t.getTime();
+    double time = t.getTime();
     VLOG(1) << time_desc << " took " << time << " ms.";
     elapsed_time_.push_back(std::pair<std::string, float>(time_desc, time));
     std::vector<std::pair<std::string, float>> elapsed_times_rec = mrec_->getElapsedTimes();
@@ -504,7 +515,7 @@ std::vector<ObjectHypothesesGroup> ObjectRecognizer<PointT>::recognize(
         icp.setInputSource(model_cloud_aligned);
         icp.setInputTarget(processed_cloud);
         icp.setTransformationEpsilon(1e-6);
-        icp.setMaximumIterations(param_.icp_iterations_);
+        icp.setMaximumIterations(static_cast<int>(param_.icp_iterations_));
         icp.setMaxCorrespondenceDistance(0.02);
         icp.setSearchMethodTarget(kdtree_scene, true);
         pcl::PointCloud<PointT> aligned_visible_model;
@@ -544,14 +555,15 @@ std::vector<ObjectHypothesesGroup> ObjectRecognizer<PointT>::recognize(
         nm.setInputNormals(normals);
         nm.compute();
         v.pt_properties_ = nm.getPointProperties();
-        float time = t.getTime();
+        double time = t.getTime();
         VLOG(1) << time_desc << " took " << time << " ms.";
         elapsed_time_.push_back(std::pair<std::string, float>(time_desc, time));
       }
 
-      int num_views = std::min<int>(param_.max_views_, views_.size() + 1);
+      size_t num_views = std::min<size_t>(param_.max_views_, views_.size() + 1);
       LOG(INFO) << "Running multi-view recognition over " << num_views;
 
+#ifdef HAVE_V4R_CHANGE_DETECTION
       if (param_.use_change_detection_ && !views_.empty()) {
         pcl::StopWatch t;
         const std::string time_desc("Change detection");
@@ -560,7 +572,7 @@ std::vector<ObjectHypothesesGroup> ObjectRecognizer<PointT>::recognize(
         typename pcl::PointCloud<PointT>::Ptr removed_points_cumulative(
             new pcl::PointCloud<PointT>(*v.removed_points_));
 
-        for (int v_id = (int) views_.size() - 1; v_id >= std::max<int>(0, (int) views_.size() - num_views); v_id--) {
+        for (int v_id = (int)views_.size() - 1; v_id >= std::max<int>(0, (int)views_.size() - num_views); v_id--) {
           View &vv = views_[v_id];
 
           typename pcl::PointCloud<PointT>::Ptr view_aligned(new pcl::PointCloud<PointT>);
@@ -606,6 +618,11 @@ std::vector<ObjectHypothesesGroup> ObjectRecognizer<PointT>::recognize(
         VLOG(1) << time_desc << " took " << time << " ms.";
         elapsed_time_.push_back(std::pair<std::string, float>(time_desc, time));
       }
+#else
+      if (param_.use_change_detection_ && !views_.empty())
+        LOG(ERROR) << "Change detection enabled by parameter settings but change detection module is not available. "
+                      "Did you compile it? ";
+#endif
 
       views_.push_back(v);
 
@@ -642,7 +659,7 @@ std::vector<ObjectHypothesesGroup> ObjectRecognizer<PointT>::recognize(
         nmIntegration.compute(registered_scene_cloud_);  // is in global reference frame
         nmIntegration.getOutputNormals(normals);
 
-        float time = t.getTime();
+        double time = t.getTime();
         VLOG(1) << time_desc << " took " << time << " ms.";
         elapsed_time_.push_back(std::pair<std::string, float>(time_desc, time));
       }
@@ -695,7 +712,7 @@ std::vector<ObjectHypothesesGroup> ObjectRecognizer<PointT>::recognize(
     pcl::StopWatch t;
     const std::string time_desc("Verification of object hypotheses");
     hv_->verify();
-    float time = t.getTime();
+    double time = t.getTime();
     VLOG(1) << time_desc << " took " << time << " ms.";
     elapsed_time_.push_back(std::pair<std::string, float>(time_desc, time));
 
@@ -713,7 +730,7 @@ std::vector<ObjectHypothesesGroup> ObjectRecognizer<PointT>::recognize(
 
         const Eigen::Matrix4f tf = oh->pose_refinement_ * oh->transform_;
         const Eigen::Vector3f translation = tf.block<3, 1>(0, 3);
-        float dist2supportPlane = fabs(v4r::dist2plane(translation, support_plane));
+        double dist2supportPlane = fabs(v4r::dist2plane(translation, support_plane));
         const Eigen::Vector3f z_orientation = tf.block<3, 3>(0, 0) * Eigen::Vector3f::UnitZ();
         float dotp = z_orientation.dot(support_plane.head(3)) / (support_plane.head(3).norm() * z_orientation.norm());
         VLOG(1) << "dotp for model " << oh->model_id_ << ": " << dotp;
@@ -723,7 +740,7 @@ std::vector<ObjectHypothesesGroup> ObjectRecognizer<PointT>::recognize(
           VLOG(1) << "Rejected " << oh->model_id_ << " because it is not standing upgright (dot-product = " << dotp
                   << ")!";
         }
-        if (dist2supportPlane > 0.03f) {
+        if (dist2supportPlane > 0.03) {
           oh->is_verified_ = false;
           VLOG(1) << "Rejected " << oh->model_id_
                   << " because object origin is too far away from support plane = " << dist2supportPlane << ")!";
@@ -732,17 +749,32 @@ std::vector<ObjectHypothesesGroup> ObjectRecognizer<PointT>::recognize(
     }
   }
 
+  double time_total = t_total.getTime();
+
+  std::stringstream info;
+  size_t num_detected = 0;
   for (size_t ohg_id = 0; ohg_id < generated_object_hypotheses.size(); ohg_id++) {
     for (const typename ObjectHypothesis::Ptr &oh : generated_object_hypotheses[ohg_id].ohs_) {
       if (oh->is_verified_) {
+        num_detected++;
         const std::string &model_id = oh->model_id_;
         const Eigen::Matrix4f &tf = oh->transform_;
         float confidence = oh->confidence_;
-        LOG(INFO) << "********************" << model_id << " (confidence: " << confidence << ") " << std::endl
-                  << tf << std::endl
-                  << std::endl;
+        info << "" << model_id << " (confidence: " << std::fixed << std::setprecision(2) << confidence
+             << ") with pose:" << std::endl
+             << std::setprecision(5) << tf << std::endl
+             << std::endl;
       }
     }
+  }
+
+  if (num_detected) {
+    std::stringstream rec_info;
+    rec_info << "Detected " << num_detected << " object(s) in " << time_total << "ms" << std::endl << info.str();
+    LOG(INFO) << rec_info.str();
+
+    if (!FLAGS_logtostderr)
+      std::cout << rec_info.str();
   }
 
   if (visualize_) {
@@ -770,7 +802,7 @@ std::vector<ObjectHypothesesGroup> ObjectRecognizer<PointT>::recognize(
   return generated_object_hypotheses;
 }
 
-template<typename PointT>
+template <typename PointT>
 void ObjectRecognizer<PointT>::resetMultiView() {
   if (param_.use_multiview_) {
     views_.clear();
@@ -784,7 +816,6 @@ void ObjectRecognizer<PointT>::resetMultiView() {
   }
 }
 
-template
-class V4R_EXPORTS ObjectRecognizer<pcl::PointXYZRGB>;
+template class V4R_EXPORTS ObjectRecognizer<pcl::PointXYZRGB>;
 }
 }

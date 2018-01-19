@@ -47,6 +47,7 @@
 
 #include <pcl/features/normal_3d.h>
 #include <pcl/filters/voxel_grid.h>
+#include <v4r/common/normal_estimator_pcl.h>
 #include <v4r/common/normals.h>
 #include <v4r/segmentation/ClusterNormalsToPlanesPCL.h>
 
@@ -361,7 +362,16 @@ void ClusterNormalsToPlanesPCL<PointT>::compute(const typename pcl::PointCloud<P
     vg.filter(*cloud_filtered);
     pm.cloud_ = cloud_filtered;
     pcl::PointCloud<pcl::Normal>::Ptr normals_ds(new pcl::PointCloud<pcl::Normal>);
-    computeNormals<PointT>(pm.cloud_, normals_ds, 2);
+
+    typename v4r::NormalEstimator<PointT>::Ptr normal_estimator_;
+
+    NormalEstimatorPCLParameter param;
+    param.radius_ = 0.02;
+    param.use_omp_ = true;
+    NormalEstimatorPCL<PointT> ne(param);
+    ne.setInputCloud(pm.cloud_);
+    normals_ds = ne.compute();
+
     doClustering(pm.cloud_, *normals_ds, planes);
   } else {
     pm.cloud_ = _cloud;

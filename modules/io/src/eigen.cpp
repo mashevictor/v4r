@@ -1,9 +1,7 @@
 #include <v4r/io/eigen.h>
-#include <iostream>
-#include <vector>
 
-#include <boost/algorithm/string.hpp>
 #include <glog/logging.h>
+#include <boost/algorithm/string.hpp>
 
 namespace v4r {
 namespace io {
@@ -28,8 +26,8 @@ bool writeMatrixToFile(const boost::filesystem::path &path, const Eigen::Matrix4
 }
 
 Eigen::Matrix4f readMatrixFromFile(const boost::filesystem::path &path, int padding) {
-  CHECK (boost::filesystem::exists(path) || boost::filesystem::is_regular_file(path))
-    << "Given file path " << path.string() << " to read matrix does not exist!" ;
+  CHECK(boost::filesystem::exists(path) || boost::filesystem::is_regular_file(path))
+      << "Given file path " << path.string() << " to read matrix does not exist!";
 
   std::ifstream in(path.string().c_str());
 
@@ -46,6 +44,5 @@ Eigen::Matrix4f readMatrixFromFile(const boost::filesystem::path &path, int padd
   in.close();
   return matrix;
 }
-
 }
 }

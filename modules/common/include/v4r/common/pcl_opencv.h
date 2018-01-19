@@ -193,7 +193,7 @@ class V4R_EXPORTS PCLOpenCVConverter {
   }
 
   template <typename MatType = uchar>
-  cv::Mat fillMatrix(std::vector<MatType> (PCLOpenCVConverter<PointT>::*pf)(int v, int u));
+  cv::Mat fillMatrix(std::vector<MatType> (PCLOpenCVConverter<PointT>::*pf)(int, int));
 };
 
 /**

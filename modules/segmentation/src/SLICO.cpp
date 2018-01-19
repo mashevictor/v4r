@@ -5,10 +5,7 @@
 // Email: firstname.lastname@epfl.ch
 //////////////////////////////////////////////////////////////////////
 #include <v4r/segmentation/SLICO.h>
-#include <cfloat>
-#include <cmath>
 #include <fstream>
-#include <iostream>
 
 namespace v4r {
 

@@ -66,6 +66,7 @@
 #include "CreateTrackingModel.h"
 #include "params.h"
 #include "sensor.h"
+#include "v4r/camera_tracking_and_mapping/OptimizeBundleColours.hh"
 #endif
 
 class ObjectSegmentation : public QThread {
@@ -127,6 +128,9 @@ class ObjectSegmentation : public QThread {
   void filterLargestCluster(bool enable) {
     filter_largest_cluster = enable;
   }
+  void setCRFfile(const std::string &file) {
+    path_to_crf_file = file;
+  }
 
  public slots:
   void set_roi_params(const double &_bbox_scale_xy, const double &_bbox_scale_height, const double &_seg_offs);
@@ -172,7 +176,6 @@ class ObjectSegmentation : public QThread {
   pcl::PointCloud<pcl::PointXYZRGBNormal>::Ptr ncloud_filt;
   pcl::PointCloud<pcl::Normal>::Ptr big_normals;
   pcl::PolygonMesh mesh;
-  pcl::TextureMesh tex_mesh;
 
   cv::Mat_<cv::Vec3b> image;
   pcl::PointCloud<pcl::PointXYZRGB>::Ptr tmp_cloud0, tmp_cloud1, tmp_cloud2;
@@ -184,6 +187,7 @@ class ObjectSegmentation : public QThread {
   double seg_offs;
 
   std::string folder, model_name;
+  std::string path_to_crf_file;
 
   RGBDCameraParameter cam_params;
   v4r::TSFOptimizeBundle ba;
@@ -202,6 +206,7 @@ class ObjectSegmentation : public QThread {
   void getSegmentedViews();
   void optimizePosesMultiviewICP();
   void createObjectCloudFilteredNguyen();
+  void correctColourScale();
 
   inline bool isnan(const Eigen::Vector3f &pt);
 };

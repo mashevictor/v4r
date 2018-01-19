@@ -51,7 +51,6 @@
 #include <v4r/core/macros.h>
 #include <v4r/segmentation/segmenter.h>
 
-#include <glog/logging.h>
 #include <boost/program_options.hpp>
 
 namespace po = boost::program_options;

@@ -6,10 +6,7 @@
 
 #include <v4r/segmentation/SlicRGBD.h>
 
-#include <cfloat>
-#include <cmath>
 #include <fstream>
-#include <iostream>
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
 #ifdef _OPENMP

@@ -1,0 +1,99 @@
+# ===================================================================================
+#  The V4R CMake dependencies file
+#
+#             ** File generated automatically, do not modify **
+#
+
+# Utility functions
+
+# remove all matching elements from the list
+macro(v4r_list_filterout lst regex)
+  foreach(item ${${lst}})
+    if(item MATCHES "${regex}")
+      list(REMOVE_ITEM ${lst} "${item}")
+    endif()
+  endforeach()
+endmacro()
+
+# Add a global imported library
+# Type is automatically determined from IMPORTED_LOCATION
+# TODO: keep in sync with the original function in V4RUtils
+macro(v4r_add_imported_library _name)
+  # Extract (supported) target properties
+  set(options)
+  set(one_value_args IMPORTED_LOCATION)
+  set(multi_value_args INTERFACE_LINK_LIBRARIES INTERFACE_INCLUDE_DIRECTORIES)
+  cmake_parse_arguments(ARG "${options}" "${one_value_args}" "${multi_value_args}" ${ARGN})
+
+  # Determine library type (shared/static/interface)
+  if(ARG_IMPORTED_LOCATION)
+    if(ARG_IMPORTED_LOCATION MATCHES ".so$")
+      set(_type "SHARED")
+    elseif(ARG_IMPORTED_LOCATION MATCHES ".a$")
+      set(_type "STATIC")
+    else()
+      message(WARNING "Unable to detect the type of imported library ${ARG_IMPORTED_LOCATION}, assuming SHARED")
+      set(_type "SHARED")
+    endif()
+  else()
+    set(_type "INTERFACE")
+  endif()
+
+  # Create library and set properties
+  add_library(${_name} ${_type} IMPORTED GLOBAL)
+  foreach(_m ${one_value_args} ${multi_value_args})
+    if(ARG_${_m})
+      set_property(TARGET ${_name} PROPERTY ${_m} ${ARG_${_m}})
+    endif()
+  endforeach()
+endmacro()
+
+# clears all passed variables
+macro(v4r_clear_vars)
+  foreach(_var ${ARGN})
+    unset(${_var})
+    unset(${_var} CACHE)
+  endforeach()
+endmacro()
+
+# read set of version defines from the header file
+macro(v4r_parse_header FILENAME FILE_VAR)
+  set(vars_regex "")
+  set(__parnet_scope OFF)
+  set(__add_cache OFF)
+  foreach(name ${ARGN})
+    if(name STREQUAL "PARENT_SCOPE")
+      set(__parnet_scope ON)
+    elseif(name STREQUAL "CACHE")
+      set(__add_cache ON)
+    elseif(vars_regex)
+      set(vars_regex "${vars_regex}|${name}")
+    else()
+      set(vars_regex "${name}")
+    endif()
+  endforeach()
+  if(EXISTS "${FILENAME}")
+    file(STRINGS "${FILENAME}" ${FILE_VAR} REGEX "#define[ \t]+(${vars_regex})[ \t]+[0-9]+" )
+  else()
+    unset(${FILE_VAR})
+  endif()
+  foreach(name ${ARGN})
+    if(NOT name STREQUAL "PARENT_SCOPE" AND NOT name STREQUAL "CACHE")
+      if(${FILE_VAR})
+        if(${FILE_VAR} MATCHES ".+[ \t]${name}[ \t]+([0-9]+).*")
+          string(REGEX REPLACE ".+[ \t]${name}[ \t]+([0-9]+).*" "\\1" ${name} "${${FILE_VAR}}")
+        else()
+          set(${name} "")
+        endif()
+        if(__add_cache)
+          set(${name} ${${name}} CACHE INTERNAL "${name} parsed from ${FILENAME}" FORCE)
+        elseif(__parnet_scope)
+          set(${name} "${${name}}" PARENT_SCOPE)
+        endif()
+      else()
+        unset(${name} CACHE)
+      endif()
+    endif()
+  endforeach()
+endmacro()
+

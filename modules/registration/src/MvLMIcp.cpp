@@ -2,10 +2,8 @@
 #include <pcl/common/transforms.h>
 #include <v4r/common/miscellaneous.h>
 #include <v4r/registration/MvLMIcp.h>
-#include <boost/scoped_ptr.hpp>
 #include "ceres/ceres.h"
 #include "ceres/conditioned_cost_function.h"
-#include "ceres/cost_function.h"
 
 //#define USE_QUATERNIONS_AUTO_DIFF
 

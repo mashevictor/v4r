@@ -1,20 +1,13 @@
+#include <glog/logging.h>
 #include <pcl/octree/octree_impl.h>
-#include <pcl/octree/octree_pointcloud_occupancy.h>
 #include <pcl/recognition/cg/geometric_consistency.h>
 #include <pcl/registration/correspondence_estimation.h>
-#include <pcl/registration/correspondence_rejection_sample_consensus.h>
 #include <pcl/registration/correspondence_rejection_sample_consensus.h>
 #include <pcl/registration/transformation_estimation_svd.h>
 #include <pcl/visualization/pcl_visualizer.h>
 #include <v4r/common/graph_geometric_consistency.h>
 #include <v4r/common/miscellaneous.h>
-#include <v4r/common/miscellaneous.h>
 #include <v4r/registration/FeatureBasedRegistration.h>
-#include <v4r_config.h>
-#include <pcl/octree/impl/octree_base.hpp>
-#include <pcl/recognition/impl/cg/geometric_consistency.hpp>
-#include <pcl/registration/impl/correspondence_estimation.hpp>
-#include <pcl/search/impl/kdtree.hpp>
 
 #include <v4r/features/sift_local_estimator.h>
 
@@ -350,8 +343,25 @@ FeatureBasedRegistration<PointT>::estimateViewTransformationBySIFT(
   flann::Matrix<int> indices = flann::Matrix<int>(new int[K], 1, K);
   flann::Matrix<float> distances = flann::Matrix<float>(new float[K], 1, K);
 
+  if (dst_sift_signatures.empty()) {
+    LOG(WARNING) << "No SIFT keypoints for matching" << std::endl;
+    return transformations;
+  }
+
+  // Build Flann Index for kNN search
   boost::shared_ptr<flann::Index<DistT>> flann_index;
-  convertToFLANN(dst_sift_signatures, flann_index);
+
+  size_t rows = dst_sift_signatures.size();
+  size_t cols = dst_sift_signatures[0].size();  // number of histogram bins
+
+  flann::Matrix<float> flann_data(new float[rows * cols], rows, cols);
+
+  for (size_t i = 0; i < rows; ++i) {
+    for (size_t j = 0; j < cols; ++j)
+      flann_data.ptr()[i * cols + j] = dst_sift_signatures[i][j];
+  }
+  flann_index.reset(new flann::Index<DistT>(flann_data, flann::KDTreeIndexParams(4)));
+  flann_index->buildIndex();
 
   boost::shared_ptr<pcl::PointCloud<PointT>> pSiftKeypointsSrc(new pcl::PointCloud<PointT>);
   boost::shared_ptr<pcl::PointCloud<PointT>> pSiftKeypointsDst(new pcl::PointCloud<PointT>);
@@ -362,7 +372,12 @@ FeatureBasedRegistration<PointT>::estimateViewTransformationBySIFT(
   temp_correspondences->resize(pSiftKeypointsSrc->size());
 
   for (size_t keypointId = 0; keypointId < pSiftKeypointsSrc->points.size(); keypointId++) {
-    nearestKSearch(flann_index, src_sift_signatures[keypointId], K, indices, distances);
+    // do kNN search
+    const std::vector<float> &descr = src_sift_signatures[keypointId];
+    flann::Matrix<float> p = flann::Matrix<float>(new float[descr.size()], 1, descr.size());
+    memcpy(&p.ptr()[0], &descr[0], p.cols * p.rows * sizeof(float));
+    flann_index->knnSearch(p, indices, distances, K, flann::SearchParams(128));
+    delete[] p.ptr();
 
     pcl::Correspondence corr;
     corr.distance = distances[0][0];

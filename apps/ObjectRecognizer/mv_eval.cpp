@@ -6,11 +6,6 @@
 #include <v4r/apps/ObjectRecognizer.h>
 
 #include <pcl/io/pcd_io.h>
-#include <pcl/point_types.h>
-#include <v4r/io/filesystem.h>
-
-#include <stdlib.h> /* srand, rand */
-#include <time.h>   /* time */
 
 namespace po = boost::program_options;
 

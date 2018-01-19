@@ -41,7 +41,7 @@ namespace v4r {
 
 using namespace std;
 
-int saveOBJFile(const std::string &file_name, const pcl::TextureMesh &tex_mesh, unsigned precision) {
+int saveOBJFile(const std::string &file_name, const TextureMesh &tex_mesh, unsigned precision) {
   if (tex_mesh.cloud.data.empty()) {
     PCL_ERROR("[pcl::io::saveOBJFile] Input point cloud has no data!\n");
     return (-1);
@@ -247,32 +247,31 @@ int saveOBJFile(const std::string &file_name, const pcl::TextureMesh &tex_mesh, 
   return (0);
 }
 
-bool getPixelCoordinates(const pcl::PointXYZ &pt, const pcl::TextureMapping<pcl::PointXYZ>::Camera &cam,
+bool getPixelCoordinates(const pcl::PointXYZ &pt, const v4r::texture_mapping::Camera &cam,
                          pcl::PointXY &UV_coordinates) {
-  // TODO: removed cam.center_w ... => it's not available in pcl stable...
   if (pt.z > 0) {
     // compute image center and dimension
     double sizeX = cam.width;
     double sizeY = cam.height;
     double cx, cy;
-    //        if (cam.center_w > 0)
-    //            cx = cam.center_w;
-    //        else
-    cx = sizeX / 2.0;
-    //        if (cam.center_h > 0)
-    //            cy = cam.center_h;
-    //        else
-    cy = sizeY / 2.0;
+    if (cam.center_w > 0)
+      cx = cam.center_w;
+    else
+      cx = sizeX / 2.0;
+    if (cam.center_h > 0)
+      cy = cam.center_h;
+    else
+      cy = sizeY / 2.0;
 
     double focal_x, focal_y;
-    //        if (cam.focal_length_w > 0)
-    //            focal_x = cam.focal_length_w;
-    //        else
-    focal_x = cam.focal_length;
-    //        if (cam.focal_length_h > 0)
-    //            focal_y = cam.focal_length_h;
-    //        else
-    focal_y = cam.focal_length;
+    if (cam.focal_length_w > 0)
+      focal_x = cam.focal_length_w;
+    else
+      focal_x = cam.focal_length;
+    if (cam.focal_length_h > 0)
+      focal_y = cam.focal_length_h;
+    else
+      focal_y = cam.focal_length;
 
     // project point on camera's image plane
     UV_coordinates.x = static_cast<float>((focal_x * (pt.x / pt.z) + cx));  // horizontal
@@ -291,9 +290,8 @@ bool getPixelCoordinates(const pcl::PointXYZ &pt, const pcl::TextureMapping<pcl:
   return (false);  // point was not visible by the camera
 }
 
-bool isFaceProjected(const pcl::TextureMapping<pcl::PointXYZ>::Camera &camera, const pcl::PointXYZ &p1,
-                     const pcl::PointXYZ &p2, const pcl::PointXYZ &p3, pcl::PointXY &proj1, pcl::PointXY &proj2,
-                     pcl::PointXY &proj3) {
+bool isFaceProjected(const v4r::texture_mapping::Camera &camera, const pcl::PointXYZ &p1, const pcl::PointXYZ &p2,
+                     const pcl::PointXYZ &p3, pcl::PointXY &proj1, pcl::PointXY &proj2, pcl::PointXY &proj3) {
   return (getPixelCoordinates(p1, camera, proj1) && getPixelCoordinates(p2, camera, proj2) &&
           getPixelCoordinates(p3, camera, proj3));
 }

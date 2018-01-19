@@ -1,10 +1,11 @@
+#include <glog/logging.h>
 #include <v4r/recognition/ghv_opt.h>
 
 namespace v4r {
 
-// template<typename ModelT, typename SceneT>
+// template<typename PointT>
 // bool
-// GHVmove_activate<ModelT, SceneT>::operator== (const mets::mana_move& m) const
+// GHVmove_activate<PointT>::operator== (const mets::mana_move& m) const
 //{
 //    try
 //    {
@@ -18,9 +19,9 @@ namespace v4r {
 //    }
 //}
 
-// template<typename ModelT, typename SceneT>
+// template<typename PointT>
 // bool
-// GHVmove_deactivate<ModelT, SceneT>::operator== (const mets::mana_move& m) const
+// GHVmove_deactivate<PointT>::operator== (const mets::mana_move& m) const
 //{
 //    try
 //    {
@@ -34,13 +35,41 @@ namespace v4r {
 //    }
 //}
 
+template <typename PointT>
+void GHVreplace_hyp_move<PointT>::apply(mets::feasible_solution& s) const {
+  GHVSAModel<PointT>& model = dynamic_cast<GHVSAModel<PointT>&>(s);
+  CHECK(model.solution_[active_id_] && !model.solution_[inactive_id_]);
+  model.solution_.flip(active_id_);
+  model.solution_.flip(inactive_id_);
+  model.apply();
+}
+
+template <typename PointT>
+mets::gol_type GHVreplace_hyp_move<PointT>::apply_and_evaluate(mets::feasible_solution& cs) {
+  GHVSAModel<PointT>& model = dynamic_cast<GHVSAModel<PointT>&>(cs);
+  CHECK(model.solution_[active_id_] && !model.solution_[inactive_id_]);
+  model.solution_.flip(active_id_);
+  model.solution_.flip(inactive_id_);
+  return model.apply_and_evaluate();
+}
+
+template <typename PointT>
+mets::gol_type GHVreplace_hyp_move<PointT>::evaluate(const mets::feasible_solution& cs) const {
+  GHVSAModel<PointT> model;
+  model.copy_from(cs);
+  CHECK(model.solution_[active_id_] && !model.solution_[inactive_id_]);
+  model.solution_.flip(active_id_);
+  model.solution_.flip(inactive_id_);
+  return model.evaluate();
+}
+
 ///////////////////////////////////////////////////////////////
 ///////////// move manager ////////////////////////////////////
 ///////////////////////////////////////////////////////////////
 
-template <typename ModelT, typename SceneT>
-void GHVmove_manager<ModelT, SceneT>::refresh(mets::feasible_solution& s) {
-  GHVSAModel<ModelT, SceneT>& model = dynamic_cast<GHVSAModel<ModelT, SceneT>&>(s);
+template <typename PointT>
+void GHVmove_manager<PointT>::refresh(mets::feasible_solution& s) {
+  GHVSAModel<PointT>& model = dynamic_cast<GHVSAModel<PointT>&>(s);
   boost::dynamic_bitset<> crt_solution = model.opt_->getSolution();
 
   size_t inactive_hypotheses = crt_solution.size() - crt_solution.count();
@@ -55,9 +84,9 @@ void GHVmove_manager<ModelT, SceneT>::refresh(mets::feasible_solution& s) {
   size_t kept = 0;
   for (size_t i = 0; i < crt_solution.size(); i++) {
     if (!crt_solution[i])
-      moves_m_[kept++].reset(new GHVmove<ModelT, SceneT>(i));
+      moves_m_[kept++].reset(new GHVmove<PointT>(i));
     //        else
-    //            moves_m_[kept++].reset( new GHVmove_deactivate<ModelT, SceneT> (i, crt_solution.size()) );
+    //            moves_m_[kept++].reset( new GHVmove_deactivate<PointT> (i, crt_solution.size()) );
   }
 
   if (use_replace_moves_) {
@@ -71,7 +100,7 @@ void GHVmove_manager<ModelT, SceneT>::refresh(mets::feasible_solution& s) {
       for (size_t j = 0; j < crt_solution.size(); j++)  // i active, j inactive
       {
         if (crt_solution[i] && !crt_solution[j] && intersection_cost_(i, j) > std::numeric_limits<float>::epsilon())
-          moves_m_[kept++].reset(new GHVreplace_hyp_move<ModelT, SceneT>(i, j, crt_solution.size()));
+          moves_m_[kept++].reset(new GHVreplace_hyp_move<PointT>(i, j, crt_solution.size()));
       }
     }
   }
@@ -80,5 +109,5 @@ void GHVmove_manager<ModelT, SceneT>::refresh(mets::feasible_solution& s) {
   //    std::random_shuffle (moves_m_.begin (), moves_m_.end ()); ///TODO: Is this relevant?
 }
 
-template class V4R_EXPORTS GHVmove_manager<pcl::PointXYZRGB, pcl::PointXYZRGB>;
+template class V4R_EXPORTS GHVmove_manager<pcl::PointXYZRGB>;
 }

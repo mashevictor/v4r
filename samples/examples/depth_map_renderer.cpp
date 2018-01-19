@@ -36,41 +36,44 @@ int main(int argc, const char *argv[]) {
   bool autoscale = false;
   bool createNormals = false;
   size_t subdivisions = 0, width = 640, height = 480;
-  float radius = 3.0, fx = 535.4, fy = 539.2, cx = 320.1, cy = 247.6;
+  float radius = 3.f, fx = 535.4f, fy = 539.2f, cx = 320.1f, cy = 247.6f;
 
   google::InitGoogleLogging(argv[0]);
 
   po::options_description desc(
       "Depth-map and point cloud Rendering from mesh file\n======================================\n**Allowed options");
-  desc.add_options()("help,h", "produce help message")("input,i", po::value<bf::path>(&input)->required(),
-                                                       "input model (.ply)")(
-      "output,o", po::value<bf::path>(&out_dir)->default_value("/tmp/rendered_pointclouds/"),
-      "output directory to store the point cloud (.pcd) file")(
-      "subdivisions,s", po::value<size_t>(&subdivisions)->default_value(subdivisions),
-      "defines the number of subdivsions used for rendering")(
-      "autoscale", po::bool_switch(&autoscale),
-      "scales the model into the unit sphere and translates it to the origin")(
-      "northHemisphere,n", po::bool_switch(&upperHemisphere),
-      "only renders the objects from views of the upper hemisphere")(
-      "radius,r", po::value<float>(&radius)->default_value(radius, boost::str(boost::format("%.2e") % radius)),
-      "defines the radius used for rendering")("width", po::value<size_t>(&width)->default_value(width),
-                                               "defines the image width")(
-      "normals", po::bool_switch(&createNormals),
-      "Creates a pointcloud that also contains the normals")(
-      "width", po::value<size_t>(&width)->default_value(width),"defines the image width")(
-      "height", po::value<size_t>(&height)->default_value(height), "defines the image height")(
-      "fx", po::value<float>(&fx)->default_value(fx, boost::str(boost::format("%.2e") % fx)),
-      "defines the focal length in x direction used for rendering")(
-      "fy", po::value<float>(&fy)->default_value(fy, boost::str(boost::format("%.2e") % fy)),
-      "defines the focal length in y direction used for rendering")(
-      "cx", po::value<float>(&cx)->default_value(cx, boost::str(boost::format("%.2e") % cx)),
-      "defines the central point of projection in x direction used for rendering")(
-      "cy", po::value<float>(&cy)->default_value(cy, boost::str(boost::format("%.2e") % cy)),
-      "defines the central point of projection in y direction used for rendering")(
-      "visualize,v", po::bool_switch(&visualize), "visualize the rendered depth and color map");
+  desc.add_options()("help,h", "produce help message");
+  desc.add_options()("input,i", po::value<bf::path>(&input)->required(), "input mesh file");
+  desc.add_options()("output,o", po::value<bf::path>(&out_dir)->default_value("/tmp/rendered_pointclouds/"),
+                     "output directory to store the point cloud (.pcd) file");
+  desc.add_options()("subdivisions,s", po::value<size_t>(&subdivisions)->default_value(subdivisions),
+                     "defines the number of subdivsions used for rendering");
+  desc.add_options()("autoscale", po::bool_switch(&autoscale),
+                     "scales the model into the unit sphere and translates it to the origin");
+  desc.add_options()("northHemisphere,n", po::bool_switch(&upperHemisphere),
+                     "only renders the objects from views of the upper hemisphere");
+  desc.add_options()("radius,r",
+                     po::value<float>(&radius)->default_value(radius, boost::str(boost::format("%.2e") % radius)),
+                     "defines the radius used for rendering");
+  desc.add_options()("width", po::value<size_t>(&width)->default_value(width), "defines the image width");
+  desc.add_options()("normals", po::bool_switch(&createNormals), "Creates a pointcloud that also contains the normals");
+  desc.add_options()("width", po::value<size_t>(&width)->default_value(width), "defines the image width")(
+      "height", po::value<size_t>(&height)->default_value(height), "defines the image height");
+  desc.add_options()("fx", po::value<float>(&fx)->default_value(fx, boost::str(boost::format("%.2e") % fx)),
+                     "defines the focal length in x direction used for rendering");
+  desc.add_options()("fy", po::value<float>(&fy)->default_value(fy, boost::str(boost::format("%.2e") % fy)),
+                     "defines the focal length in y direction used for rendering");
+  desc.add_options()("cx", po::value<float>(&cx)->default_value(cx, boost::str(boost::format("%.2e") % cx)),
+                     "defines the central point of projection in x direction used for rendering");
+  desc.add_options()("cy", po::value<float>(&cy)->default_value(cy, boost::str(boost::format("%.2e") % cy)),
+                     "defines the central point of projection in y direction used for rendering");
+  desc.add_options()("visualize,v", po::bool_switch(&visualize), "visualize the rendered depth and color map");
+
+  po::positional_options_description p;
+  p.add("input", 1);
 
   po::variables_map vm;
-  po::store(po::parse_command_line(argc, argv, desc), vm);
+  po::store(po::command_line_parser(argc, argv).options(desc).positional(p).run(), vm);
   if (vm.count("help")) {
     std::cout << desc << std::endl;
     return false;
@@ -132,13 +135,12 @@ int main(int argc, const char *argv[]) {
 
     bf::path output_fn = out_dir / ss.str();
     if (model.hasColor() || model.hasTexture()) {
-      if(createNormals){
-          const pcl::PointCloud<pcl::PointXYZRGBNormal> cloud = renderer.renderPointcloudColorNormal(visible);
-          pcl::io::savePCDFileBinary(output_fn.string(), cloud);
-      }else{
+      if (createNormals) {
+        const pcl::PointCloud<pcl::PointXYZRGBNormal> cloud = renderer.renderPointcloudColorNormal(visible);
+        pcl::io::savePCDFileBinary(output_fn.string(), cloud);
+      } else {
         const pcl::PointCloud<pcl::PointXYZRGB> cloud = renderer.renderPointcloudColor(visible);
         pcl::io::savePCDFileBinary(output_fn.string(), cloud);
-
       }
 
       if (visualize)
@@ -153,7 +155,7 @@ int main(int argc, const char *argv[]) {
     if (visualize) {
       LOG(INFO) << visible << "% visible.";
       cv::imshow("depthmap", depthmap * 0.25);
-      cv::imshow("normal",normal*0.5+0.5);
+      cv::imshow("normal", normal * 0.5 + 0.5);
       cv::waitKey();
     }
   }

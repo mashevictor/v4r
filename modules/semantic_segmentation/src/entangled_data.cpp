@@ -354,8 +354,8 @@ bool EntangledForestData::LoadPairwiseFeaturesBinary(
     }
 
     std::vector<std::vector<std::pair<double, int>>> currentImageFeatures;  //(mNrOfClusters[clusteridx],
-                                                                            //std::vector<std::pair<double, int>
-                                                                            //>(mNrOfClusters[clusteridx]-1));
+                                                                            // std::vector<std::pair<double, int>
+    //>(mNrOfClusters[clusteridx]-1));
 
     std::ifstream ifs(filename.c_str(), std::ios::binary);
     boost::archive::binary_iarchive ia(ifs);

@@ -426,7 +426,7 @@ namespace pcl_1_8
 }
 
 #ifdef PCL_NO_PRECOMPILE
-#include <pcl/features/impl/organized_edge_detection.hpp>
+#include <pcl_1_8/features/impl/organized_edge_detection.hpp>
 #endif
 
 #endif //#ifndef PCL_FEATURES_ORGANIZED_EDGE_DETECTION_H_

@@ -48,8 +48,6 @@
 
 #include <opencv/cv.h>
 #include <v4r/features/global_estimator.h>
-
-#include <glog/logging.h>
 #include <boost/program_options.hpp>
 
 namespace po = boost::program_options;

@@ -51,7 +51,11 @@
 #include <v4r/io/filesystem.h>
 #include <v4r/recognition/local_feature_matching.h>
 #include <v4r/recognition/recognition_pipeline.h>
+#include <boost/archive/xml_iarchive.hpp>
+#include <boost/archive/xml_oarchive.hpp>
+#include <boost/format.hpp>
 #include <boost/program_options.hpp>
+#include <boost/serialization/serialization.hpp>
 
 #include <omp.h>
 #include <pcl/recognition/cg/correspondence_grouping.h>
@@ -67,31 +71,24 @@ class V4R_EXPORTS LocalRecognitionPipelineParameter {
   float merge_close_hypotheses_dist_;   ///< defines the maximum distance of the centroids in meter for clusters to be
                                         /// merged together
   float merge_close_hypotheses_angle_;  ///< defines the maximum angle in degrees for clusters to be merged together
-
-  float min_dist_;  ///< minimum distance two points need to be apart to be counted as redundant
+  float min_dist_;                      ///< minimum distance two points need to be apart to be counted as redundant
   float max_dotp_;  ///< maximum dot-product between the surface normals of two oriented points to be counted redundant
+  size_t max_num_hypotheses_per_object_;  ///< maximum number of hypotheses that are generated for a certain object. If
+  /// more hypotheses are found, the ones with the fewest number of keypoint correspondences will be discarded.
+  /// No limit for 0
 
   LocalRecognitionPipelineParameter()
   : merge_close_hypotheses_(true), merge_close_hypotheses_dist_(0.02f), merge_close_hypotheses_angle_(10.f),
-    min_dist_(0.005f), max_dotp_(0.95f) {}
+    min_dist_(0.005f), max_dotp_(0.95f), max_num_hypotheses_per_object_(0) {}
 
-  void save(const std::string &filename) const {
-    std::ofstream ofs(filename);
+  void save(const bf::path &filename) const {
+    std::ofstream ofs(filename.string());
     boost::archive::xml_oarchive oa(ofs);
-    oa << BOOST_SERIALIZATION_NVP(*this);
+    oa << boost::serialization::make_nvp("LocalRecognitionPipelineParameter", *this);
     ofs.close();
   }
 
-  void load(const std::string &filename) {
-    if (!v4r::io::existsFile(filename))
-      throw std::runtime_error("Given config file " + filename + " does not exist! Current working directory is " +
-                               boost::filesystem::current_path().string() + ".");
-
-    std::ifstream ifs(filename);
-    boost::archive::xml_iarchive ia(ifs);
-    ia >> BOOST_SERIALIZATION_NVP(*this);
-    ifs.close();
-  }
+  void load(const bf::path &filename);
 
   /**
        * @brief init parameters
@@ -110,15 +107,31 @@ class V4R_EXPORTS LocalRecognitionPipelineParameter {
        */
   std::vector<std::string> init(const std::vector<std::string> &command_line_arguments) {
     po::options_description desc("Local Recognition Pipeline Parameters\n=====================");
-    desc.add_options()("help,h", "produce help message")(
+    desc.add_options()("help,h", "produce help message");
+    desc.add_options()(
         "local_rec_merge_close_hypotheses",
         po::value<bool>(&merge_close_hypotheses_)->default_value(merge_close_hypotheses_),
-        "")("local_rec_merge_close_hypotheses_dist",
-            po::value<float>(&merge_close_hypotheses_dist_)->default_value(merge_close_hypotheses_dist_),
-            "")("local_rec_merge_close_hypotheses_angle",
-                po::value<float>(&merge_close_hypotheses_angle_)->default_value(merge_close_hypotheses_angle_),
-                "")("local_rec_min_dist_", po::value<float>(&min_dist_)->default_value(min_dist_), "")(
-        "local_rec_max_dotp_", po::value<float>(&max_dotp_)->default_value(max_dotp_), "");
+        "if true, close correspondence clusters "
+        "(object hypotheses) of the same object model are merged together and this big cluster is refined");
+    desc.add_options()("local_rec_merge_close_hypotheses_dist",
+                       po::value<float>(&merge_close_hypotheses_dist_)->default_value(merge_close_hypotheses_dist_),
+                       "defines the maximum distance of the centroids "
+                       "in meter for clusters to be merged together (if enabled)");
+    desc.add_options()("local_rec_merge_close_hypotheses_angle",
+                       po::value<float>(&merge_close_hypotheses_angle_)->default_value(merge_close_hypotheses_angle_),
+                       "defines the maximum angle in degrees for "
+                       "clusters to be merged together (if enabled)");
+    desc.add_options()("local_rec_min_dist_", po::value<float>(&min_dist_)->default_value(min_dist_),
+                       "minimum distance two points need to be apart to be counted as redundant");
+    desc.add_options()(
+        "local_rec_max_dotp_", po::value<float>(&max_dotp_)->default_value(max_dotp_),
+        "maximum dot-product between the surface normals of two oriented points to be counted redundant");
+    desc.add_options()(
+        "local_rec_max_num_hypotheses_per_object_",
+        po::value<size_t>(&max_num_hypotheses_per_object_)->default_value(max_num_hypotheses_per_object_),
+        "maximum number of hypotheses that are generated for a certain "
+        "object. If more hypotheses are found, the ones with the fewest number of "
+        "keypoint correspondences will be discarded. No limit for 0");
     po::variables_map vm;
     po::parsed_options parsed =
         po::command_line_parser(command_line_arguments).options(desc).allow_unregistered().run();
@@ -136,13 +149,14 @@ class V4R_EXPORTS LocalRecognitionPipelineParameter {
     return to_pass_further;
   }
 
- private:
   friend class boost::serialization::access;
+
   template <class Archive>
   V4R_EXPORTS void serialize(Archive &ar, const unsigned int version) {
     (void)version;
     ar &BOOST_SERIALIZATION_NVP(merge_close_hypotheses_) & BOOST_SERIALIZATION_NVP(merge_close_hypotheses_dist_) &
-        BOOST_SERIALIZATION_NVP(merge_close_hypotheses_angle_);
+        BOOST_SERIALIZATION_NVP(merge_close_hypotheses_angle_) & BOOST_SERIALIZATION_NVP(min_dist_) &
+        BOOST_SERIALIZATION_NVP(max_dotp_) & BOOST_SERIALIZATION_NVP(max_num_hypotheses_per_object_);
   }
 };
 
@@ -190,6 +204,9 @@ class V4R_EXPORTS LocalRecognitionPipeline : public RecognitionPipeline<PointT> 
   bool generate_hypotheses_;  ///< if true, cluster correspondences with respect to geometeric consistency and estimates
                               /// pose by SVD
 
+  void doInit(const bf::path &trained_dir, bool force_retrain,
+              const std::vector<std::string> &object_instances_to_load);
+
  public:
   LocalRecognitionPipeline(const LocalRecognitionPipelineParameter &p = LocalRecognitionPipelineParameter())
   : param_(p), generate_hypotheses_(true) {}
@@ -201,8 +218,6 @@ class V4R_EXPORTS LocalRecognitionPipeline : public RecognitionPipeline<PointT> 
   void setCGAlgorithm(const boost::shared_ptr<pcl::CorrespondenceGrouping<pcl::PointXYZ, pcl::PointXYZ>> &alg) {
     cg_algorithm_ = alg;
   }
-
-  void initialize(const bf::path &trained_dir, bool force_retrain = false);
 
   /**
    * @brief addRecognizer

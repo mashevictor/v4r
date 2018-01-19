@@ -71,6 +71,7 @@ macro(v4r_add_dependency _Name)
   set(V4R_3P_${_NAME}_NAME "${_Name}" CACHE INTERNAL "Pretty name of ${_Name} dependency")
   set(V4R_3P_${_NAME}_BINARY_DIR "${V4R_3P_BINARY_DIR}/${_name}" CACHE INTERNAL "Binary directory for ${_Name} dependency")
   set(V4R_3P_${_NAME}_INSTALL_DIR "${V4R_3P_${_NAME}_BINARY_DIR}/install" CACHE INTERNAL "Install directory for ${_Name} dependency")
+  set(V4R_3P_${_NAME}_FIND_SCRIPT "${_find_script}" CACHE INTERNAL "Find script for ${_Name} dependency")
 
   # Update lists
   v4r_append(V4R_3P_ALL ${_NAME})
@@ -97,8 +98,44 @@ endmacro()
 # Create CMake rules to install third-party dependencies
 macro(v4r_install_dependencies)
   foreach(_NAME ${V4R_3P_ALL})
-    if(WITH_${_NAME} AND BUILD_${_NAME})
+    if(HAVE_${_NAME} AND BUILD_${_NAME})
       install(DIRECTORY ${V4R_3P_${_NAME}_INSTALL_DIR}/ DESTINATION ${V4R_3P_INSTALL_PATH})
+    endif()
+  endforeach()
+endmacro()
+
+
+macro(v4r_generate_dependencies_config_template)
+  cmake_parse_arguments(ARG "INSTALL" "" "" ${ARGN})
+  set(_src_file "${CMAKE_SOURCE_DIR}/cmake/templates/V4RDependencies.cmake.in")
+  set(_tgt_file "${CMAKE_BINARY_DIR}/V4RDependencies.cmake.in")
+  set(_install_dir_var "V4R_3P_INSTALL_PATH_CONFIGCMAKE")
+  configure_file(${_src_file} ${_tgt_file} @ONLY)
+  foreach(_NAME ${V4R_3P_ALL})
+    if(HAVE_${_NAME})
+      file(READ "${V4R_3P_${_NAME}_FIND_SCRIPT}" _find_script)
+      set(_Name ${V4R_3P_${_NAME}_NAME})
+      if(NOT ARG_INSTALL)
+        set(_install_dir_var "V4R_3P_${_NAME}_INSTALL_DIR")
+      endif()
+      file(APPEND ${_tgt_file}
+        "#------------------------------------------------------------------------------#\n"
+        "# ${_Name}\n"
+        "#------------------------------------------------------------------------------#\n"
+        "\n"
+      )
+      if(BUILD_${_NAME})
+        file(APPEND ${_tgt_file}
+          "set(V4R_3P_${_NAME}_INSTALL_DIR \"@${_install_dir_var}@\")\n"
+          "set(BUILD_${_NAME} YES)\n"
+        )
+      endif()
+      if(${_Name}_DIR)
+        file(APPEND ${_tgt_file}
+          "set(${_Name}_DIR \"@${_Name}_DIR@\")\n"
+        )
+      endif()
+      file(APPEND ${_tgt_file} "\n${_find_script}\n")
     endif()
   endforeach()
 endmacro()

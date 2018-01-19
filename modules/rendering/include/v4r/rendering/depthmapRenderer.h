@@ -62,12 +62,12 @@
 
 namespace v4r {
 const size_t maxMeshSize = 1000000;  // this will lead to a big ssbo^^ (16mb)
-/**
- * @brief The Renderer class
- * renders a depth map from a model (every model you can load via assimp)
- * Altough technically not part of the same problem this class can give points
- * along a sphere. (Good for generating views to an object)
- */
+                                     /**
+                                      * @brief The Renderer class
+                                      * renders a depth map from a model (every model you can load via assimp)
+                                      * Altough technically not part of the same problem this class can give points
+                                      * along a sphere. (Good for generating views to an object)
+                                      */
 class V4R_EXPORTS DepthmapRenderer {
  private:
   static bool glfwRunning;
@@ -212,7 +212,6 @@ class V4R_EXPORTS DepthmapRenderer {
    * @return
    */
   pcl::PointCloud<pcl::PointXYZRGB> renderPointcloudColor(float &visibleSurfaceArea) const;
-
 
   pcl::PointCloud<pcl::PointXYZRGBNormal> renderPointcloudColorNormal(float &visibleSurfaceArea) const;
 };

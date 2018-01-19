@@ -152,9 +152,7 @@ class MultiSession : public QThread {
  * @return
  */
 inline bool MultiSession::isnan(const Eigen::Vector3f &pt) {
-  if (std::isnan(pt[0]) || std::isnan(pt[1]) || std::isnan(pt[2]))
-    return true;
-  return false;
+  return std::isnan(pt[0]) || std::isnan(pt[1]) || std::isnan(pt[2]);
 }
 
 #endif

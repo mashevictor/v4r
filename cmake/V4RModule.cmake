@@ -8,7 +8,7 @@
 # V4R_MODULE_${the_module}_LOCATION
 # V4R_MODULE_${the_module}_BINARY_DIR
 # V4R_MODULE_${the_module}_DESCRIPTION
-# V4R_MODULE_${the_module}_CLASS - PUBLIC|INTERNAL|BINDINGS
+# V4R_MODULE_${the_module}_CLASS - PUBLIC|INTERNAL
 # V4R_MODULE_${the_module}_HEADERS
 # V4R_MODULE_${the_module}_SOURCES
 # V4R_MODULE_${the_module}_DEPS - final flattened set of module dependencies
@@ -18,7 +18,6 @@
 # V4R_MODULE_${the_module}_PRIVATE_REQ_DEPS
 # V4R_MODULE_${the_module}_PRIVATE_OPT_DEPS
 # V4R_MODULE_${the_module}_CUDA_OBJECTS - compiled CUDA objects list
-# V4R_MODULE_${the_module}_WRAPPERS - list of wrappers supporting this module
 # HAVE_${the_module} - for fast check of module availability
 
 # To control the setup of the module you could also set:
@@ -55,7 +54,6 @@ foreach(mod ${V4R_MODULES_BUILD} ${V4R_MODULES_DISABLED_USER} ${V4R_MODULES_DISA
   unset(V4R_MODULE_${mod}_PRIVATE_REQ_DEPS CACHE)
   unset(V4R_MODULE_${mod}_PRIVATE_OPT_DEPS CACHE)
   unset(V4R_MODULE_${mod}_LINK_DEPS CACHE)
-  unset(V4R_MODULE_${mod}_WRAPPERS CACHE)
 endforeach()
 
 # clean modules info which needs to be recalculated
@@ -67,11 +65,11 @@ set(V4R_MODULES_DISABLED_FORCE "" CACHE INTERNAL "List of V4R modules which can 
 
 # adds dependencies to V4R module
 # Usage:
-#   add_dependencies(v4r_<name> [REQUIRED] [<list of dependencies>] [OPTIONAL <list of modules>] [WRAP <list of wrappers>])
+#   add_dependencies(v4r_<name> [REQUIRED] [<list of dependencies>] [OPTIONAL <list of modules>])
 # Notes:
 # * <list of dependencies> - can include full names of modules or full pathes to shared/static libraries or cmake targets
 macro(v4r_add_dependencies full_modname)
-  v4r_debug_message("v4r_add_dependencies(" ${full_modname} ${ARGN} ")")
+  v4r_print_debug_message("v4r_add_dependencies(" ${full_modname} ${ARGN} ")")
   #we don't clean the dependencies here to allow this macro several times for every module
   foreach(d "REQUIRED" ${ARGN})
     if(d STREQUAL "REQUIRED")
@@ -82,8 +80,6 @@ macro(v4r_add_dependencies full_modname)
       set(__depsvar V4R_MODULE_${full_modname}_PRIVATE_REQ_DEPS)
     elseif(d STREQUAL "PRIVATE_OPTIONAL")
       set(__depsvar V4R_MODULE_${full_modname}_PRIVATE_OPT_DEPS)
-    elseif(d STREQUAL "WRAP")
-      set(__depsvar V4R_MODULE_${full_modname}_WRAPPERS)
     else()
       list(APPEND ${__depsvar} "${d}")
     endif()
@@ -94,7 +90,6 @@ macro(v4r_add_dependencies full_modname)
   v4r_list_unique(V4R_MODULE_${full_modname}_OPT_DEPS)
   v4r_list_unique(V4R_MODULE_${full_modname}_PRIVATE_REQ_DEPS)
   v4r_list_unique(V4R_MODULE_${full_modname}_PRIVATE_OPT_DEPS)
-  v4r_list_unique(V4R_MODULE_${full_modname}_WRAPPERS)
 
   set(V4R_MODULE_${full_modname}_REQ_DEPS ${V4R_MODULE_${full_modname}_REQ_DEPS}
     CACHE INTERNAL "Required dependencies of ${full_modname} module")
@@ -104,17 +99,15 @@ macro(v4r_add_dependencies full_modname)
     CACHE INTERNAL "Required private dependencies of ${full_modname} module")
   set(V4R_MODULE_${full_modname}_PRIVATE_OPT_DEPS ${V4R_MODULE_${full_modname}_PRIVATE_OPT_DEPS}
     CACHE INTERNAL "Optional private dependencies of ${full_modname} module")
-  set(V4R_MODULE_${full_modname}_WRAPPERS ${V4R_MODULE_${full_modname}_WRAPPERS}
-    CACHE INTERNAL "List of wrappers supporting module ${full_modname}")
 endmacro()
 
 # declare new V4R module in current folder
 # Usage:
-#   v4r_add_module(<name> [INTERNAL|BINDINGS] [REQUIRED] [<list of dependencies>] [OPTIONAL <list of optional dependencies>] [WRAP <list of wrappers>])
+#   v4r_add_module(<name> [INTERNAL] [REQUIRED] [<list of dependencies>] [OPTIONAL <list of optional dependencies>])
 # Example:
 #   v4r_add_module(yaom INTERNAL v4r_core v4r_highgui v4r_flann OPTIONAL v4r_cudev)
 macro(v4r_add_module _name)
-  v4r_debug_message("v4r_add_module(" ${_name} ${ARGN} ")")
+  v4r_print_debug_message("v4r_add_module(" ${_name} ${ARGN} ")")
   string(TOLOWER "${_name}" name)
   set(the_module v4r_${name})
 
@@ -146,7 +139,7 @@ macro(v4r_add_module _name)
     set(V4R_MODULE_${the_module}_LINK_DEPS "" CACHE INTERNAL "")
 
     # parse list of dependencies
-    if("${ARGV1}" STREQUAL "INTERNAL" OR "${ARGV1}" STREQUAL "BINDINGS")
+    if("${ARGV1}" STREQUAL "INTERNAL")
       set(V4R_MODULE_${the_module}_CLASS "${ARGV1}" CACHE INTERNAL "The category of the module")
       set(__v4r_argn__ ${ARGN})
       list(REMOVE_AT __v4r_argn__ 0)
@@ -165,11 +158,6 @@ macro(v4r_add_module _name)
     else()
       set(V4R_MODULES_DISABLED_USER ${V4R_MODULES_DISABLED_USER} "${the_module}" CACHE INTERNAL "List of V4R modules explicitly disabled by user")
     endif()
-
-    # add reverse wrapper dependencies
-    foreach (wrapper ${V4R_MODULE_${the_module}_WRAPPERS})
-      v4r_add_dependencies(v4r_${wrapper} OPTIONAL ${the_module})
-    endforeach()
 
     # stop processing of current file
     return()
@@ -414,24 +402,10 @@ function(__v4r_resolve_dependencies)
   # reorder dependencies
   foreach(m ${V4R_MODULES_BUILD})
     __v4r_sort_modules_by_deps(V4R_MODULE_${m}_DEPS)
-    set(LINK_DEPS ${V4R_MODULE_${m}_DEPS})
-    set(LINK_DEPS_EXT)
+    v4r_list_unique(V4R_MODULE_${m}_DEPS_EXT)
     v4r_list_sort(V4R_MODULE_${m}_DEPS_EXT)
-
-    foreach(d ${V4R_MODULE_${m}_DEPS_EXT})
-      string(TOUPPER "${d}" upper_d)
-      if(DEFINED ${upper_d}_LIBRARIES)
-        list(APPEND LINK_DEPS_EXT ${${upper_d}_LIBRARIES})
-      else()
-        list(APPEND LINK_DEPS_EXT ${d})
-      endif()
-    endforeach()
-    v4r_list_unique(LINK_DEPS_EXT)
-
     set(V4R_MODULE_${m}_DEPS ${V4R_MODULE_${m}_DEPS} CACHE INTERNAL "Flattened dependencies of ${m} module")
     set(V4R_MODULE_${m}_DEPS_EXT ${V4R_MODULE_${m}_DEPS_EXT} CACHE INTERNAL "Extra dependencies of ${m} module")
-    set(V4R_MODULE_${m}_DEPS_TO_LINK ${LINK_DEPS} CACHE INTERNAL "Flattened dependencies of ${m} module (for linker)")
-    set(V4R_MODULE_${m}_DEPS_EXT_TO_LINK ${LINK_DEPS_EXT} CACHE INTERNAL "Flattened extra dependencies of ${m} module (for linker)")
 
 #    message(STATUS "  module deps of ${m}: ${V4R_MODULE_${m}_DEPS}")
 #    message(STATUS "  module link deps of ${m}: ${V4R_MODULE_${m}_DEPS_TO_LINK}")
@@ -522,7 +496,7 @@ endmacro()
 # Usage:
 # v4r_set_module_sources([HEADERS] <list of files> [SOURCES] <list of files>)
 macro(v4r_set_module_sources)
-  v4r_debug_message("v4r_set_module_sources(" ${ARGN} ")")
+  v4r_print_debug_message("v4r_set_module_sources(" ${ARGN} ")")
 
   set(V4R_MODULE_${the_module}_HEADERS "")
   set(V4R_MODULE_${the_module}_SOURCES "")
@@ -551,7 +525,7 @@ endmacro()
 # Usage:
 # v4r_glob_module_sources([EXCLUDE_CUDA] <extra sources&headers in the same format as used in v4r_set_module_sources>)
 macro(v4r_glob_module_sources)
-  v4r_debug_message("v4r_glob_module_sources(" ${ARGN} ")")
+  v4r_print_debug_message("v4r_glob_module_sources(" ${ARGN} ")")
   set(_argn ${ARGN})
   list(FIND _argn "EXCLUDE_CUDA" exclude_cuda)
   if(NOT exclude_cuda EQUAL -1)
@@ -600,7 +574,7 @@ endmacro()
 #   v4r_create_module(<extra link dependencies>)
 #   v4r_create_module()
 macro(v4r_create_module)
-  v4r_debug_message("v4r_create_module(" ${ARGN} ")")
+  v4r_print_debug_message("v4r_create_module(" ${ARGN} ")")
   set(V4R_MODULE_${the_module}_LINK_DEPS "${V4R_MODULE_${the_module}_LINK_DEPS};${ARGN}" CACHE INTERNAL "")
   _v4r_create_module(${ARGN})
   set(the_module_target ${the_module})
@@ -610,21 +584,8 @@ macro(_v4r_create_module)
   v4r_add_library(${the_module} ${V4R_MODULE_TYPE} ${V4R_MODULE_${the_module}_HEADERS} ${V4R_MODULE_${the_module}_SOURCES}
     "${V4R_CONFIG_FILE_INCLUDE_DIR}/v4r_config.h" "${V4R_CONFIG_FILE_INCLUDE_DIR}/v4r_modules.h")
 
-  v4r_target_link_libraries(${the_module} ${V4R_MODULE_${the_module}_DEPS_TO_LINK})
-  v4r_target_link_libraries(${the_module} LINK_INTERFACE_LIBRARIES ${V4R_MODULE_${the_module}_DEPS_TO_LINK})
-  set(_lil_deps_ext)
-  foreach(d ${V4R_MODULE_${the_module}_DEPS_EXT_TO_LINK})
-    if(TARGET ${d})
-      get_target_property(_target_type ${d} TYPE)
-      if(NOT ("${_target_type}" STREQUAL "STATIC_LIBRARY" OR BUILD_SHARED_LIBS))
-        list(APPEND _lil_deps_ext ${d})
-      endif()
-    else()
-      list(APPEND _lil_deps_ext ${d})
-    endif()
-  endforeach()
-  v4r_target_link_libraries(${the_module} LINK_INTERFACE_LIBRARIES ${_lil_deps_ext})
-  v4r_target_link_libraries(${the_module} ${V4R_MODULE_${the_module}_DEPS_EXT_TO_LINK} ${V4R_LINKER_LIBS} ${ARGN})
+  v4r_target_link_libraries(${the_module} PUBLIC ${V4R_MODULE_${the_module}_DEPS} ${V4R_MODULE_${the_module}_DEPS_EXT})
+  v4r_target_link_libraries(${the_module} PUBLIC ${V4R_LINKER_LIBS} ${ARGN})
   if (HAVE_CUDA)
     v4r_target_link_libraries(${the_module} ${CUDA_LIBRARIES} ${CUDA_npp_LIBRARY})
   endif()
@@ -639,17 +600,18 @@ macro(_v4r_create_module)
     RUNTIME_OUTPUT_DIRECTORY ${EXECUTABLE_OUTPUT_PATH}
     INSTALL_NAME_DIR lib
   )
-
-  # For dynamic link numbering convenions
-  set_target_properties(${the_module} PROPERTIES
-    VERSION ${V4R_LIBVERSION}
-    SOVERSION ${V4R_SOVERSION}
+  target_include_directories(${the_module} PUBLIC
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+    $<INSTALL_INTERFACE:include>
   )
 
-  if((NOT DEFINED V4R_MODULE_TYPE AND BUILD_SHARED_LIBS)
-      OR (DEFINED V4R_MODULE_TYPE AND V4R_MODULE_TYPE STREQUAL SHARED))
-    set_target_properties(${the_module} PROPERTIES COMPILE_DEFINITIONS V4RAPI_EXPORTS)
-    set_target_properties(${the_module} PROPERTIES DEFINE_SYMBOL V4RAPI_EXPORTS)
+  if((NOT DEFINED V4R_MODULE_TYPE AND BUILD_SHARED_LIBS) OR (DEFINED V4R_MODULE_TYPE AND V4R_MODULE_TYPE STREQUAL SHARED))
+    set_target_properties(${the_module} PROPERTIES
+      COMPILE_DEFINITIONS V4RAPI_EXPORTS
+      DEFINE_SYMBOL V4RAPI_EXPORTS
+      VERSION ${V4R_LIBVERSION}
+      SOVERSION ${V4R_SOVERSION}
+    )
   endif()
 
   get_target_property(_target_type ${the_module} TYPE)
@@ -659,20 +621,30 @@ macro(_v4r_create_module)
       RUNTIME DESTINATION ${V4R_BIN_INSTALL_PATH} COMPONENT libs
       LIBRARY DESTINATION ${V4R_LIB_INSTALL_PATH} COMPONENT libs NAMELINK_SKIP
       ARCHIVE DESTINATION ${V4R_LIB_INSTALL_PATH} COMPONENT dev
-      )
+    )
   endif()
   if("${_target_type}" STREQUAL "SHARED_LIBRARY")
     install(TARGETS ${the_module}
       LIBRARY DESTINATION ${V4R_LIB_INSTALL_PATH} COMPONENT dev NAMELINK_ONLY)
+  endif()
+
+  # Only "public" headers need to be installed
+  if(V4R_MODULE_${the_module}_HEADERS AND ";${V4R_MODULES_PUBLIC};" MATCHES ";${the_module};")
+    foreach(header ${V4R_MODULE_${the_module}_HEADERS})
+      string(REGEX REPLACE "^.*v4r/" "v4r/" header2 "${header}")
+      if(NOT header2 MATCHES "private" AND header2 MATCHES "^(v4r/?.*)/[^/]+.h(..)?$")
+        install(FILES ${header} OPTIONAL DESTINATION "${V4R_INCLUDE_INSTALL_PATH}/${CMAKE_MATCH_1}" COMPONENT dev)
+      endif()
+    endforeach()
   endif()
 endmacro()
 
 # short command for adding simple V4R module
 # see v4r_add_module for argument details
 # Usage:
-# v4r_define_module(module_name  [INTERNAL] [EXCLUDE_CUDA] [REQUIRED] [<list of dependencies>] [OPTIONAL <list of optional dependencies>] [WRAP <list of wrappers>])
+# v4r_define_module(module_name  [INTERNAL] [EXCLUDE_CUDA] [REQUIRED] [<list of dependencies>] [OPTIONAL <list of optional dependencies>])
 macro(v4r_define_module module_name)
-  v4r_debug_message("v4r_define_module(" ${module_name} ${ARGN} ")")
+  v4r_print_debug_message("v4r_define_module(" ${module_name} ${ARGN} ")")
   set(_argn ${ARGN})
   set(exclude_cuda "")
   foreach(arg ${_argn})
@@ -735,7 +707,7 @@ endmacro()
 # this is a command for adding V4R performance tests to the module
 # v4r_add_perf_tests(<extra_dependencies>)
 function(v4r_add_perf_tests)
-  v4r_debug_message("v4r_add_perf_tests(" ${ARGN} ")")
+  v4r_print_debug_message("v4r_add_perf_tests(" ${ARGN} ")")
 
   set(perf_path "${CMAKE_CURRENT_LIST_DIR}/perf")
   if(BUILD_PERF_TESTS AND EXISTS "${perf_path}")
@@ -778,7 +750,7 @@ endfunction()
 # this is a command for adding V4R accuracy/regression tests to the module
 # v4r_add_accuracy_tests([FILES <source group name> <list of sources>] [DEPENDS_ON] <list of extra dependencies>)
 function(v4r_add_accuracy_tests)
-  v4r_debug_message("v4r_add_accuracy_tests(" ${ARGN} ")")
+  v4r_print_debug_message("v4r_add_accuracy_tests(" ${ARGN} ")")
 
   set(test_path "${CMAKE_CURRENT_LIST_DIR}/test")
   if(BUILD_TESTS AND EXISTS "${test_path}")
@@ -819,7 +791,7 @@ function(v4r_add_accuracy_tests)
 endfunction()
 
 function(v4r_add_samples)
-  v4r_debug_message("v4r_add_samples(" ${ARGN} ")")
+  v4r_print_debug_message("v4r_add_samples(" ${ARGN} ")")
 
   set(samples_path "${CMAKE_CURRENT_SOURCE_DIR}/samples")
   string(REGEX REPLACE "^v4r_" "" module_id ${the_module})

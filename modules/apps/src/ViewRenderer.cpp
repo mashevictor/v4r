@@ -37,31 +37,18 @@
 **
 ****************************************************************************/
 
-#include <v4r_modules.h>
+#include <glog/logging.h>
 #include <v4r/apps/ViewRenderer.h>
-
-#include <stdio.h>
-#include <boost/filesystem.hpp>
-#include <iostream>
-#include <limits>
-#include <opencv2/opencv.hpp>
-#include <sstream>
-#include <string>
+#include <v4r/common/miscellaneous.h>
+#include <v4r/rendering/depthmapRenderer.h>
+#include <v4r_modules.h>
 
 #ifdef HAVE_V4R_RENDERING
 #include <assimp/postprocess.h>
 #include <assimp/scene.h>
-#include <assimp/Importer.hpp>
 #include <v4r/rendering/depthmapRenderer.h>
+#include <assimp/Importer.hpp>
 #endif
-
-#include <v4r/common/miscellaneous.h>
-#include <v4r/io/filesystem.h>
-#include <pcl/point_types.h>
-
-#include <glog/logging.h>
-#include <boost/format.hpp>
-#include <boost/program_options.hpp>
 
 namespace po = boost::program_options;
 
@@ -71,6 +58,16 @@ namespace apps {
 
 void ViewRenderer::render(const bf::path &input_path, const bf::path &out_path) {
 #ifdef HAVE_V4R_RENDERING
+
+  if (v4r::io::existsFolder(out_path)) {
+    if (param_.overwrite) {
+      LOG(WARNING) << out_path.string() << " already exists. Overwriting files is enabled. ";
+    } else {
+      LOG(WARNING) << "Skipping " << out_path.string() << " because it already exists and overwriting is disabled!";
+      return;
+    }
+  }
+
   v4r::DepthmapRenderer renderer(cam_->getWidth(), cam_->getHeight());
   renderer.setIntrinsics(cam_->getFocalLengthX(), cam_->getFocalLengthY(), cam_->getCx(), cam_->getCy());
 
@@ -122,16 +119,16 @@ void ViewRenderer::render(const bf::path &input_path, const bf::path &out_path) 
 
       pcl::io::savePCDFileBinary(output_fn.string(), cloud);
 
-      //TODO avoid duplication of this block
+      // TODO avoid duplication of this block
       cam_pose = v4r::RotTrans2Mat4f(cloud.sensor_orientation_, cloud.sensor_origin_);
 
       std::string indices_fn = output_fn.string();
       boost::replace_last(indices_fn, "cloud", "object_indices");
       boost::replace_last(indices_fn, ".pcd", ".txt");
       std::ofstream indices_f(indices_fn);
-      for (size_t i = 0; i < cloud.points.size(); i++)
-        if (pcl::isFinite(cloud.points[i]))
-          indices_f << i << std::endl;
+      for (size_t pt_id = 0; pt_id < cloud.points.size(); pt_id++)
+        if (pcl::isFinite(cloud.points[pt_id]))
+          indices_f << pt_id << std::endl;
       indices_f.close();
 
     } else {
@@ -144,9 +141,9 @@ void ViewRenderer::render(const bf::path &input_path, const bf::path &out_path) 
       boost::replace_last(indices_fn, "cloud", "object_indices");
       boost::replace_last(indices_fn, ".pcd", ".txt");
       std::ofstream indices_f(indices_fn);
-      for (size_t i = 0; i < cloud.points.size(); i++)
-        if (pcl::isFinite(cloud.points[i]))
-          indices_f << i << std::endl;
+      for (size_t pt_id = 0; pt_id < cloud.points.size(); pt_id++)
+        if (pcl::isFinite(cloud.points[pt_id]))
+          indices_f << pt_id << std::endl;
       indices_f.close();
     }
 
@@ -163,9 +160,9 @@ void ViewRenderer::render(const bf::path &input_path, const bf::path &out_path) 
   }
 
 #else
-  LOG(ERROR) << "V4R rendering is not available. Did you enable the v4r_rendering module during compilation? Skipping view rendering!";
+  LOG(ERROR) << "V4R rendering is not available. Did you enable the v4r_rendering module during compilation? Skipping "
+                "view rendering!";
 #endif
 }
-
 }
 }

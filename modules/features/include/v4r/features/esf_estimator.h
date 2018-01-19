@@ -50,8 +50,6 @@
 #include <v4r/features/global_estimator.h>
 #include <v4r/features/types.h>
 
-#include <glog/logging.h>
-
 namespace v4r {
 template <typename PointT>
 class V4R_EXPORTS ESFEstimation : public GlobalEstimator<PointT> {

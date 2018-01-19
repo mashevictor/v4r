@@ -252,7 +252,7 @@ void TSFMapping::filterValidKeys3D(std::vector<cv::KeyPoint> &keys, std::vector<
  */
 void TSFMapping::initKeypoints(const cv::Mat_<unsigned char> &im, TSFFrame &frame0)
 {
-  cv::goodFeaturesToTrack(im, frame0.points, param.max_count, 0.01, 10, cv::Mat(), 3, 0, 0.04);
+  cv::goodFeaturesToTrack(im, frame0.points, param.max_count, 0.01, 10, cv::Mat(), 3, false, 0.04);
   getPoints3D(frame0.sf_cloud, frame0.points, frame0.points3d, frame0.normals);
   filterValidPoints3D(frame0.points, frame0.points3d, frame0.normals);
   frame0.projections.resize(frame0.points.size());

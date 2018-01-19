@@ -165,7 +165,7 @@ v4r::meanVal BoundaryRelationsMeanCurvature::compute() {
       //       fprintf(f,"%d,",valuesCurvature.at(i));
     }
     //@ep: BUG I have commented it to be consistent with the old code, because there it is devided by the length of the
-    //2D neighbours, not 3D
+    // 2D neighbours, not 3D
     // totalCurvatureStdDev /= boundaryLength;
 
     //    fprintf(f,"\n");

@@ -1,4 +1,5 @@
 #include <v4r/common/miscellaneous.h>
+#include <v4r/common/pcl_serialization.h>
 #include <v4r/io/eigen.h>
 #include <v4r/io/filesystem.h>
 #include <v4r/recognition/global_recognizer.h>
@@ -6,7 +7,6 @@
 
 #include <boost/archive/binary_iarchive.hpp>
 #include <boost/archive/binary_oarchive.hpp>
-#include <boost/filesystem.hpp>
 
 #include <pcl/common/angles.h>
 #include <pcl/common/time.h>
@@ -15,7 +15,6 @@
 
 #include <glog/logging.h>
 #include <omp.h>
-#include <sstream>
 
 //#define _VISUALIZE_
 
@@ -33,7 +32,8 @@ void GlobalRecognizer<PointT>::validate() const {
 }
 
 template <typename PointT>
-void GlobalRecognizer<PointT>::initialize(const bf::path &trained_dir, bool retrain) {
+void GlobalRecognizer<PointT>::doInit(const bf::path &trained_dir, bool retrain,
+                                      const std::vector<std::string> &object_instances_to_load) {
   validate();
 
   Eigen::MatrixXf all_model_signatures;      ///< all signatures extracted from all objects in the model database
@@ -51,6 +51,13 @@ void GlobalRecognizer<PointT>::initialize(const bf::path &trained_dir, bool retr
       label_name = m->id_;
     else
       label_name = m->class_;
+
+    if (!object_instances_to_load.empty() &&
+        std::find(object_instances_to_load.begin(), object_instances_to_load.end(), label_name) ==
+            object_instances_to_load.end()) {
+      LOG(INFO) << "Skipping object " << m->id_ << " because it is not in the lists of objects to load.";
+      continue;
+    }
 
     bool label_exists = false;
     size_t lbl_id_tmp;

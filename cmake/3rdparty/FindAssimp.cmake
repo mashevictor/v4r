@@ -1,16 +1,20 @@
-v4r_clear_vars(ASSIMP_INCLUDE_PATH ASSIMP_LIBRARIES ASSIMP_VERSION ASSIMP_INCLUDE_DIRS)
-
-find_path(ASSIMP_INCLUDE_DIRS assimp/config.h
+find_path(ASSIMP_INCLUDE_DIR assimp/config.h
           PATHS /usr/local /opt /usr $ENV{ASSIMP_ROOT} ${ASSIMP_DIR}
           DOC "The path to Assimp header files"
           CMAKE_FIND_ROOT_PATH_BOTH)
-find_library(ASSIMP_LIBRARIES
+find_library(ASSIMP_LIBRARY
              NAMES assimp
              PATHS /usr/local /opt /usr $ENV{ASSIMP_ROOT} ${ASSIMP_DIR}
              DOC "The Assimp library")
-if(ASSIMP_INCLUDE_DIRS AND ASSIMP_LIBRARIES)
+
+if(ASSIMP_INCLUDE_DIR AND ASSIMP_LIBRARY)
+  # Create imported target
+  v4r_add_imported_library(assimp
+    IMPORTED_LOCATION ${ASSIMP_LIBRARY}
+    INTERFACE_INCLUDE_DIRECTORIES ${ASSIMP_INCLUDE_DIR}
+  )
   # Find version number in pkgconfig file
-  get_filename_component(_lib_dir ${ASSIMP_LIBRARIES} DIRECTORY)
+  get_filename_component(_lib_dir ${ASSIMP_LIBRARY} DIRECTORY)
   find_file(_pkgconfig assimp.pc
             PATHS /usr/local /opt /usr $ENV{ASSIMP_ROOT} ${ASSIMP_DIR}
             HINTS ${_lib_dir}
@@ -27,3 +31,5 @@ if(ASSIMP_INCLUDE_DIRS AND ASSIMP_LIBRARIES)
 else()
   set(HAVE_ASSIMP FALSE)
 endif()
+
+mark_as_advanced(ASSIMP_INCLUDE_DIR ASSIMP_LIBRARY)

@@ -274,9 +274,7 @@ class Sensor : public QThread {
  * @return
  */
 inline bool Sensor::isNaN(const Eigen::Vector3f &pt) {
-  if (std::isnan(pt[0]) || std::isnan(pt[1]) || std::isnan(pt[2]))
-    return true;
-  return false;
+  return std::isnan(pt[0]) || std::isnan(pt[1]) || std::isnan(pt[2]);
 }
 
 inline double Sensor::sqr(const double &val) {

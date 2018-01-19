@@ -60,7 +60,6 @@ struct HistIntersectionUnionDistance {
   template <typename Iterator1, typename Iterator2>
   ResultType operator()(Iterator1 a, Iterator2 b, size_t size, ResultType worst_dist = -1) const {
     (void)worst_dist;
-    ResultType result = ResultType();
     ResultType min0, min1, min2, min3;
     ResultType max0, max1, max2, max3;
     Iterator1 last = a + size;

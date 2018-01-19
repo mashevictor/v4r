@@ -93,7 +93,7 @@ cv::Mat PCLOpenCVConverter<PointT>::getOccupiedPixel() {
 
 template <class PointT>
 template <typename MatType>
-cv::Mat PCLOpenCVConverter<PointT>::fillMatrix(std::vector<MatType> (PCLOpenCVConverter<PointT>::*pf)(int v, int u)) {
+cv::Mat PCLOpenCVConverter<PointT>::fillMatrix(std::vector<MatType> (PCLOpenCVConverter<PointT>::*pf)(int, int)) {
   CHECK(!cloud_->points.empty());
 
   if (!cloud_->isOrganized())

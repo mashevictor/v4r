@@ -1,13 +1,13 @@
+#include <glog/logging.h>
 #include <v4r/recognition/hypotheses_verification_visualization.h>
-#include <pcl/impl/instantiate.hpp>
 
 namespace v4r {
 
-template <typename ModelT, typename SceneT>
-void HV_CuesVisualizer<ModelT, SceneT>::visualize(const HypothesisVerification<ModelT, SceneT> *hv,
-                                                  const boost::dynamic_bitset<> &active_solution, float cost,
-                                                  int times_evaluated) {
-  typename pcl::PointCloud<SceneT>::Ptr scene_cloud_vis(new pcl::PointCloud<SceneT>(*hv->scene_cloud_downsampled_));
+template <typename PointT>
+void HV_CuesVisualizer<PointT>::visualize(const HypothesisVerification<PointT> *hv,
+                                          const boost::dynamic_bitset<> &active_solution, float cost,
+                                          int times_evaluated) {
+  typename pcl::PointCloud<PointT>::Ptr scene_cloud_vis(new pcl::PointCloud<PointT>(*hv->scene_cloud_downsampled_));
   scene_cloud_vis->sensor_orientation_ = Eigen::Quaternionf::Identity();
   scene_cloud_vis->sensor_origin_ = Eigen::Vector4f::Zero(4);
 
@@ -25,14 +25,12 @@ void HV_CuesVisualizer<ModelT, SceneT>::visualize(const HypothesisVerification<M
   vis_go_cues_->removeAllPointClouds();
   vis_go_cues_->removeAllShapes();
 
-  size_t model_outliers = 0;
   float pairwise_cost = 0.f;
 
   // model uni term
   size_t num_active_hypotheses = 0;
   for (size_t i = 0; i < active_solution.size(); i++) {
     if (active_solution[i]) {
-      model_outliers += hv->global_hypotheses_[i]->visible_pt_is_outlier_.count();
       num_active_hypotheses++;
     }
   }
@@ -49,7 +47,7 @@ void HV_CuesVisualizer<ModelT, SceneT>::visualize(const HypothesisVerification<M
   out << "Active Hypotheses: " << active_solution << std::endl
       << "Cost: " << std::setprecision(5) << cost << " , #Evaluations: " << times_evaluated << std::endl
       << "; pairwise cost: " << pairwise_cost << "; total cost: " << cost << std::endl;
-  model_fitness_txt << "model fitness. Outliers: " << model_outliers;
+  model_fitness_txt << "model fitness.";
 
   vis_go_cues_->addText("Scene", 1, 30, 16, vis_param_->text_color_[0], vis_param_->text_color_[1],
                         vis_param_->text_color_[2], "inliers_outliers", vp_scene_scene_);
@@ -59,7 +57,7 @@ void HV_CuesVisualizer<ModelT, SceneT>::visualize(const HypothesisVerification<M
                         vis_param_->text_color_[2], "model fitness", vp_model_fitness_);
   vis_go_cues_->addPointCloud(scene_cloud_vis, "scene_cloud", vp_scene_scene_);
 
-  pcl::visualization::PointCloudColorHandlerCustom<SceneT> gray(scene_cloud_vis, 128, 128, 128);
+  pcl::visualization::PointCloudColorHandlerCustom<PointT> gray(scene_cloud_vis, 128, 128, 128);
   vis_go_cues_->addPointCloud(scene_cloud_vis, gray, "input_active_hypotheses", vp_scene_active_hypotheses_);
   vis_go_cues_->setPointCloudRenderingProperties(pcl::visualization::PCL_VISUALIZER_OPACITY, 0.2,
                                                  "input_active_hypotheses");
@@ -68,14 +66,14 @@ void HV_CuesVisualizer<ModelT, SceneT>::visualize(const HypothesisVerification<M
   {
     for (size_t i = 0; i < active_solution.size(); i++) {
       if (active_solution[i]) {
-        HVRecognitionModel<ModelT> &rm = *(hv->global_hypotheses_[i]);
+        HVRecognitionModel<PointT> &rm = *(hv->global_hypotheses_[i]);
         std::stringstream model_name;
         model_name << "model_" << i;
         vis_go_cues_->addPointCloud(rm.visible_cloud_, model_name.str(), vp_scene_active_hypotheses_);
         vis_go_cues_->addPointCloud(rm.visible_cloud_, model_name.str() + "_smooth", vp_scene_smooth_regions_);
 
-        typename pcl::PointCloud<ModelT>::Ptr model_fit_cloud(new pcl::PointCloud<ModelT>(*rm.visible_cloud_));
-        for (ModelT &mp : model_fit_cloud->points)
+        typename pcl::PointCloud<PointT>::Ptr model_fit_cloud(new pcl::PointCloud<PointT>(*rm.visible_cloud_));
+        for (PointT &mp : model_fit_cloud->points)
           mp.r = mp.g = mp.b = 0.f;
 
         for (size_t cidx = 0; cidx < rm.model_scene_c_.size(); cidx++) {
@@ -88,15 +86,10 @@ void HV_CuesVisualizer<ModelT, SceneT>::visualize(const HypothesisVerification<M
 
           CHECK(hv->getFitness(c) <= 1);
 
-          ModelT &mp = model_fit_cloud->points[midx];
+          PointT &mp = model_fit_cloud->points[midx];
 
           // scale green color channels with fitness terms
           mp.g = 255.f * hv->getFitness(c);
-        }
-
-        for (size_t midx = 0; midx < model_fit_cloud->points.size(); midx++) {
-          if (rm.visible_pt_is_outlier_[midx])
-            model_fit_cloud->points[midx].r = 255.f;
         }
 
         model_name << "_fitness";
@@ -111,15 +104,16 @@ void HV_CuesVisualizer<ModelT, SceneT>::visualize(const HypothesisVerification<M
 
   // ==== VISUALIZE SCENE FITNESS =======
   {
-    typename pcl::PointCloud<SceneT>::Ptr scene_fit_cloud(new pcl::PointCloud<SceneT>(*scene_cloud_vis));
-    for (SceneT &p : scene_fit_cloud->points)
+    typename pcl::PointCloud<pcl::PointXYZRGB>::Ptr scene_fit_cloud(new pcl::PointCloud<pcl::PointXYZRGB>);
+    pcl::copyPointCloud(*scene_cloud_vis, *scene_fit_cloud);
+    for (pcl::PointXYZRGB &p : scene_fit_cloud->points)
       p.r = p.g = p.b = 0.f;
 
     double scene_fit = 0.;
     for (size_t s_id = 0; s_id < hv->scene_pts_explained_solution_.size(); s_id++) {
       const std::vector<PtFitness> &s_pt = hv->scene_pts_explained_solution_[s_id];
       if (!s_pt.empty()) {
-        SceneT &p = scene_fit_cloud->points[s_id];
+        pcl::PointXYZRGB &p = scene_fit_cloud->points[s_id];
         double s_fit_tmp = static_cast<double>(s_pt.back().fit_);
         scene_fit += s_fit_tmp;
         p.g = 255.f * s_fit_tmp;  // uses the maximum value for scene explanation
@@ -138,14 +132,15 @@ void HV_CuesVisualizer<ModelT, SceneT>::visualize(const HypothesisVerification<M
   // ==== VISUALIZE DUPLICATED POINTS FITNESS =======
   {
     double duplicity = 0.;
-    typename pcl::PointCloud<SceneT>::Ptr duplicity_cloud(new pcl::PointCloud<SceneT>(*scene_cloud_vis));
-    for (SceneT &p : duplicity_cloud->points)
+    typename pcl::PointCloud<pcl::PointXYZRGB>::Ptr duplicity_cloud(new pcl::PointCloud<pcl::PointXYZRGB>);
+    pcl::copyPointCloud(*scene_cloud_vis, *duplicity_cloud);
+    for (pcl::PointXYZRGB &p : duplicity_cloud->points)
       p.r = p.g = p.b = 0.f;
 
     for (size_t s_id = 0; s_id < hv->scene_pts_explained_solution_.size(); s_id++) {
       const std::vector<PtFitness> &s_pt = hv->scene_pts_explained_solution_[s_id];
 
-      SceneT &p = duplicity_cloud->points[s_id];
+      pcl::PointXYZRGB &p = duplicity_cloud->points[s_id];
       if (s_pt.size() > 1)  // two or more hypotheses explain the same scene point
       {
         double duplicity_tmp = static_cast<double>(s_pt[s_pt.size() - 2].fit_);
@@ -168,8 +163,8 @@ void HV_CuesVisualizer<ModelT, SceneT>::visualize(const HypothesisVerification<M
   {
     int max_label = hv->scene_pt_smooth_label_id_.maxCoeff() + 1;
     if (max_label >= 1) {
-      pcl::PointCloud<pcl::PointXYZRGB>::Ptr scene_smooth_labels_rgb(
-          new pcl::PointCloud<pcl::PointXYZRGB>(*scene_cloud_vis));
+      pcl::PointCloud<pcl::PointXYZRGB>::Ptr scene_smooth_labels_rgb(new pcl::PointCloud<pcl::PointXYZRGB>);
+      pcl::copyPointCloud(*scene_cloud_vis, *scene_smooth_labels_rgb);
 
       if (!vis_param_->no_text_)
         vis_go_cues_->addText("smooth regions", 1, 30, vis_param_->fontsize_, vis_param_->text_color_[0],
@@ -230,10 +225,10 @@ void HV_CuesVisualizer<ModelT, SceneT>::visualize(const HypothesisVerification<M
   vis_go_cues_->spin();
 }
 
-template <typename ModelT, typename SceneT>
-void HV_ModelVisualizer<ModelT, SceneT>::visualize(const HypothesisVerification<ModelT, SceneT> *hv,
-                                                   const HVRecognitionModel<ModelT> &rm) {
-  typename pcl::PointCloud<SceneT>::Ptr scene_cloud_vis(new pcl::PointCloud<SceneT>(*hv->scene_cloud_downsampled_));
+template <typename PointT>
+void HV_ModelVisualizer<PointT>::visualize(const HypothesisVerification<PointT> *hv,
+                                           const HVRecognitionModel<PointT> &rm) {
+  typename pcl::PointCloud<PointT>::Ptr scene_cloud_vis(new pcl::PointCloud<PointT>(*hv->scene_cloud_downsampled_));
   scene_cloud_vis->sensor_orientation_ = Eigen::Quaternionf::Identity();
   scene_cloud_vis->sensor_origin_ = Eigen::Vector4f::Zero(4);
 
@@ -270,10 +265,10 @@ void HV_ModelVisualizer<ModelT, SceneT>::visualize(const HypothesisVerification<
 
   // ==== VISUALIZE SURFACE NORMAL INFORMATION ===========
   vis_model_->addPointCloud(scene_cloud_vis, "scene_normals", vp_scene_normals_);
-  vis_model_->addPointCloudNormals<SceneT, pcl::Normal>(scene_cloud_vis, hv->scene_normals_downsampled_, 2, 0.03f,
+  vis_model_->addPointCloudNormals<PointT, pcl::Normal>(scene_cloud_vis, hv->scene_normals_downsampled_, 2, 0.03f,
                                                         "scene_normalss", vp_scene_normals_);
   vis_model_->addPointCloud(rm.visible_cloud_, "model_normals", vp_model_normals_);
-  vis_model_->addPointCloudNormals<ModelT, pcl::Normal>(rm.visible_cloud_, rm.visible_cloud_normals_, 2, 0.03f,
+  vis_model_->addPointCloudNormals<PointT, pcl::Normal>(rm.visible_cloud_, rm.visible_cloud_normals_, 2, 0.03f,
                                                         "model_normalss", vp_model_normals_);
 
   // ==== VISUALIZE SURFACE CURVATURE INFORMATION ======
@@ -316,7 +311,7 @@ void HV_ModelVisualizer<ModelT, SceneT>::visualize(const HypothesisVerification<
   vis_model_->setPointCloudRenderingProperties(pcl::visualization::PCL_VISUALIZER_POINT_SIZE, vis_param_->vis_pt_size_,
                                                "scene1", vp_model_scene_);
 
-  pcl::visualization::PointCloudColorHandlerCustom<SceneT> gray(scene_cloud_vis, 128, 128, 128);
+  pcl::visualization::PointCloudColorHandlerCustom<PointT> gray(scene_cloud_vis, 128, 128, 128);
   vis_model_->addPointCloud(rm.visible_cloud_, "model", vp_model_);
   vis_model_->setPointCloudRenderingProperties(pcl::visualization::PCL_VISUALIZER_POINT_SIZE, vis_param_->vis_pt_size_,
                                                "model", vp_model_);
@@ -342,12 +337,12 @@ void HV_ModelVisualizer<ModelT, SceneT>::visualize(const HypothesisVerification<
   // ===== VISUALIZE VISIBLE PART =================
   {
     bool found_model_foo;
-    typename Model<ModelT>::ConstPtr m = hv->m_db_->getModelById("", rm.oh_->model_id_, found_model_foo);
-    typename pcl::PointCloud<ModelT>::ConstPtr model_cloud = m->getAssembled(-1);  // use full resolution for rendering
+    typename Model<PointT>::ConstPtr m = hv->m_db_->getModelById("", rm.oh_->model_id_, found_model_foo);
+    typename pcl::PointCloud<PointT>::ConstPtr model_cloud = m->getAssembled(-1);  // use full resolution for rendering
 
-    typename pcl::PointCloud<ModelT>::Ptr visible_cloud_colored(new pcl::PointCloud<ModelT>);
+    typename pcl::PointCloud<PointT>::Ptr visible_cloud_colored(new pcl::PointCloud<PointT>);
     pcl::transformPointCloud(*model_cloud, *visible_cloud_colored, rm.oh_->pose_refinement_ * rm.oh_->transform_);
-    for (ModelT &mp : visible_cloud_colored->points)
+    for (PointT &mp : visible_cloud_colored->points)
       mp.r = mp.g = mp.b = 0.f;
 
     for (int idx : rm.visible_indices_by_octree_)
@@ -360,15 +355,15 @@ void HV_ModelVisualizer<ModelT, SceneT>::visualize(const HypothesisVerification<
 
   // ===== VISUALIZE FITNESS SCORES =================
   {
-    typename pcl::PointCloud<ModelT>::Ptr model_3D_fit_cloud(new pcl::PointCloud<ModelT>(*rm.visible_cloud_));
-    typename pcl::PointCloud<ModelT>::Ptr model_color_fit_cloud(new pcl::PointCloud<ModelT>(*rm.visible_cloud_));
-    typename pcl::PointCloud<ModelT>::Ptr model_normals_fit_cloud(new pcl::PointCloud<ModelT>(*rm.visible_cloud_));
-    typename pcl::PointCloud<ModelT>::Ptr model_fit_cloud(new pcl::PointCloud<ModelT>(*rm.visible_cloud_));
+    typename pcl::PointCloud<PointT>::Ptr model_3D_fit_cloud(new pcl::PointCloud<PointT>(*rm.visible_cloud_));
+    typename pcl::PointCloud<PointT>::Ptr model_color_fit_cloud(new pcl::PointCloud<PointT>(*rm.visible_cloud_));
+    typename pcl::PointCloud<PointT>::Ptr model_normals_fit_cloud(new pcl::PointCloud<PointT>(*rm.visible_cloud_));
+    typename pcl::PointCloud<PointT>::Ptr model_fit_cloud(new pcl::PointCloud<PointT>(*rm.visible_cloud_));
     for (size_t p = 0; p < model_3D_fit_cloud->points.size(); p++) {
-      ModelT &mp3d = model_3D_fit_cloud->points[p];
-      ModelT &mpC = model_color_fit_cloud->points[p];
-      ModelT &mpN = model_normals_fit_cloud->points[p];
-      ModelT &mp = model_fit_cloud->points[p];
+      PointT &mp3d = model_3D_fit_cloud->points[p];
+      PointT &mpC = model_color_fit_cloud->points[p];
+      PointT &mpN = model_normals_fit_cloud->points[p];
+      PointT &mp = model_fit_cloud->points[p];
       mp3d.r = mp3d.b = mpC.r = mpC.b = mpN.r = mpN.b = mp.r = mp.b = 0.f;
       mp3d.g = mpC.g = mpN.g = mp.g = 0.f;
     }
@@ -395,18 +390,18 @@ void HV_ModelVisualizer<ModelT, SceneT>::visualize(const HypothesisVerification<
         fitness_3d(midx) = hv->scoreXYZNormalized(c);
 
         CHECK(normals_fitness(midx) <= 1);
-        CHECK(color_fitness(midx) <= 1);
+        CHECK(hv->param_.ignore_color_even_if_exists_ || color_fitness(midx) <= 1);
         CHECK(fitness_3d(midx) <= 1);
         CHECK(hv->getFitness(c) <= 1);
 
-        ModelT &mp3d = model_3D_fit_cloud->points[midx];
-        ModelT &mpC = model_color_fit_cloud->points[midx];
-        ModelT &mpN = model_normals_fit_cloud->points[midx];
-        ModelT &mp = model_fit_cloud->points[midx];
+        PointT &mp3d = model_3D_fit_cloud->points[midx];
+        PointT &mpC = model_color_fit_cloud->points[midx];
+        PointT &mpN = model_normals_fit_cloud->points[midx];
+        PointT &mp = model_fit_cloud->points[midx];
 
         // scale green color channels with fitness terms
         mp3d.g = 255.f * fitness_3d(midx);
-        mpC.g = 255.f * color_fitness(midx);
+        mpC.g = hv->param_.ignore_color_even_if_exists_ ? 0.f : 255.f * color_fitness(midx);
         mpN.g = 255.f * normals_fitness(midx);
         mp.g = 255.f * hv->getFitness(c);
       }
@@ -467,46 +462,12 @@ void HV_ModelVisualizer<ModelT, SceneT>::visualize(const HypothesisVerification<
                                                  "input_rm_vp_model_scene_model_fit_");
   }
 
-  // ===== VISUALIZE MODEL OUTLIERS =================
-  //    {
-  //        typename pcl::PointCloud<ModelT>::Ptr outlier_cloud (new pcl::PointCloud<ModelT> (*rm.visible_cloud_));
-  //        for(size_t p=0; p < outlier_cloud->points.size(); p++)
-  //        {
-  //            ModelT &mp = outlier_cloud->points[p];
-  //            mp.r = mp.g = mp.b = 0.f;
-
-  //            if ( p>=rm.visible_pt_is_outlier_.size() )
-  //            {
-  //                LOG(ERROR) << "Something is wrong with the outlier cloud";
-  //                continue;
-  //            }
-
-  //            if( rm.visible_pt_is_outlier_[p] )
-  //                mp.r = 255.f;
-  //        }
-
-  //        vis_model_->addPointCloud(outlier_cloud, "outlier_cloud", vp_model_outliers_);
-  //        vis_model_->setPointCloudRenderingProperties(pcl::visualization::PCL_VISUALIZER_POINT_SIZE,
-  //        vis_param_->vis_pt_size_, "outlier_cloud", vp_model_outliers_);
-  //        vis_model_->addPointCloud(scene_cloud_vis, gray, "input_rm_vp_model_outliers_", vp_model_outliers_);
-  //        vis_model_->setPointCloudRenderingProperties( pcl::visualization::PCL_VISUALIZER_OPACITY, 0.2,
-  //        "input_rm_vp_model_outliers_");
-  //        if(!vis_param_->no_text_)
-  //        {
-  //            std::stringstream txt;
-  //            txt.str(""); txt << "model outliers (" << rm.visible_pt_is_outlier_.count() << " / " <<
-  //            rm.visible_cloud_->points.size() << " ( " << std::fixed << std::setprecision(2)  << 100.f *
-  //            (float)rm.visible_pt_is_outlier_.count() / rm.visible_cloud_->points.size() << " % )";
-  //            vis_model_->addText(txt.str(),10,10, vis_param_->fontsize_, vis_param_->text_color_[0],
-  //            vis_param_->text_color_[1], vis_param_->text_color_[2], "model outliers txt", vp_model_outliers_);
-  //        }
-  //    }
-
   // ==== VISUALIZE SCENE FITNESS CLOUD =====
   {
-    typename pcl::PointCloud<SceneT>::Ptr scene_fit_cloud(new pcl::PointCloud<SceneT>(*scene_cloud_vis));
+    typename pcl::PointCloud<pcl::PointXYZRGB>::Ptr scene_fit_cloud(new pcl::PointCloud<pcl::PointXYZRGB>);
+    pcl::copyPointCloud(*scene_cloud_vis, *scene_fit_cloud);
     for (int p = 0; p < rm.scene_explained_weight_.rows(); p++) {
-      SceneT &sp = scene_fit_cloud->points[p];
+      pcl::PointXYZRGB &sp = scene_fit_cloud->points[p];
       sp.r = sp.b = 0.f;
       sp.g = 255.f * rm.scene_explained_weight_.coeff(p);
     }
@@ -541,7 +502,7 @@ void HV_ModelVisualizer<ModelT, SceneT>::visualize(const HypothesisVerification<
   //    for(int i=0; i<rm.visible_cloud_->points.size(); i++)
   //    {
   //        pcl::PointXYZRGB &p = model_pt_noise->points[i];
-  //        const SceneT &s = rm.visible_cloud_->points[i];
+  //        const PointT &s = rm.visible_cloud_->points[i];
   //        Eigen::Vector3f n = rm.visible_cloud_normals_->points[i].getNormalVector3fMap();
   //        p.x = s.x;
   //        p.y = s.y;
@@ -567,9 +528,9 @@ void HV_ModelVisualizer<ModelT, SceneT>::visualize(const HypothesisVerification<
   vis_model_->spin();
 }
 
-template <typename ModelT, typename SceneT>
-void HV_PairwiseVisualizer<ModelT, SceneT>::visualize(const HypothesisVerification<ModelT, SceneT> *hv) {
-  typename pcl::PointCloud<SceneT>::Ptr scene_cloud_vis(new pcl::PointCloud<SceneT>(*hv->scene_cloud_downsampled_));
+template <typename PointT>
+void HV_PairwiseVisualizer<PointT>::visualize(const HypothesisVerification<PointT> *hv) {
+  typename pcl::PointCloud<PointT>::Ptr scene_cloud_vis(new pcl::PointCloud<PointT>(*hv->scene_cloud_downsampled_));
   scene_cloud_vis->sensor_orientation_ = Eigen::Quaternionf::Identity();
   scene_cloud_vis->sensor_origin_ = Eigen::Vector4f::Zero(4);
 
@@ -582,10 +543,10 @@ void HV_PairwiseVisualizer<ModelT, SceneT>::visualize(const HypothesisVerificati
   }
 
   for (size_t i = 1; i < hv->global_hypotheses_.size(); i++) {
-    const HVRecognitionModel<ModelT> &rm_a = *(hv->global_hypotheses_[i]);
+    const HVRecognitionModel<PointT> &rm_a = *(hv->global_hypotheses_[i]);
 
     for (size_t j = 0; j < i; j++) {
-      const HVRecognitionModel<ModelT> &rm_b = *(hv->global_hypotheses_[j]);
+      const HVRecognitionModel<PointT> &rm_b = *(hv->global_hypotheses_[j]);
 
       std::stringstream txt;
       txt << "intersection cost (" << i << ", " << j << "): " << hv->intersection_cost_(j, i);
@@ -604,12 +565,7 @@ void HV_PairwiseVisualizer<ModelT, SceneT>::visualize(const HypothesisVerificati
   }
 }
 
-#define PCL_INSTANTIATE_HV_CuesVisualizer(MT, ST) template class V4R_EXPORTS HV_CuesVisualizer<MT, ST>;
-PCL_INSTANTIATE_PRODUCT(HV_CuesVisualizer, ((pcl::PointXYZRGB))((pcl::PointXYZRGB)))
-
-#define PCL_INSTANTIATE_HV_ModelVisualizer(MT, ST) template class V4R_EXPORTS HV_ModelVisualizer<MT, ST>;
-PCL_INSTANTIATE_PRODUCT(HV_ModelVisualizer, ((pcl::PointXYZRGB))((pcl::PointXYZRGB)))
-
-#define PCL_INSTANTIATE_HV_PairwiseVisualizer(MT, ST) template class V4R_EXPORTS HV_PairwiseVisualizer<MT, ST>;
-PCL_INSTANTIATE_PRODUCT(HV_PairwiseVisualizer, ((pcl::PointXYZRGB))((pcl::PointXYZRGB)))
+template class V4R_EXPORTS HV_CuesVisualizer<pcl::PointXYZRGB>;
+template class V4R_EXPORTS HV_ModelVisualizer<pcl::PointXYZRGB>;
+template class V4R_EXPORTS HV_PairwiseVisualizer<pcl::PointXYZRGB>;
 }

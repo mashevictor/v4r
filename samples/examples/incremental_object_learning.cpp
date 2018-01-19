@@ -12,9 +12,9 @@
 namespace po = boost::program_options;
 
 //--do_erosion 1 --radius 0.005 --dot_product 0.99 --normal_method 0 --chop_z 2 --transfer_latest_only 0 --scenes_dir
-///media/Data/datasets/TUW/test_set --input_mask_dir
-///media/Data/datasets/TUW/incremental_object_segmentation/ground_truth_for_first_frame_only --output_dir
-///home/thomas/Desktop/out_test/ -v
+/// media/Data/datasets/TUW/test_set --input_mask_dir
+/// media/Data/datasets/TUW/incremental_object_segmentation/ground_truth_for_first_frame_only --output_dir
+/// home/thomas/Desktop/out_test/ -v
 
 int main(int argc, char** argv) {
   typedef pcl::PointXYZRGB PointT;

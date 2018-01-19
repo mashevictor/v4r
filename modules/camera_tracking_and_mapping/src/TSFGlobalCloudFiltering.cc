@@ -401,6 +401,7 @@ void TSFGlobalCloudFiltering::getMaxPoints(const std::vector<TSFFrame::Ptr> &fra
   {
     ref.clear();
     const v4r::DataMatrix2D<v4r::Surfel> &frame = frames[i]->sf_cloud;
+    //const cv::Mat_<float> &rel = reliability[i];
     v4r::invPose(frames[i]->pose, inv_pose);
     R = inv_pose.topLeftCorner<3,3>();
     t = inv_pose.block<3,1>(0,3);
@@ -481,7 +482,7 @@ void TSFGlobalCloudFiltering::computeRadius(v4r::DataMatrix2D<v4r::Surfel> &sf_c
  * @brief filter
  * @param frames
  */
-void TSFGlobalCloudFiltering::filter(const std::vector<TSFFrame::Ptr> &frames, pcl::PointCloud<pcl::PointXYZRGBNormal> &cloud, const Eigen::Matrix4f &base_transform)
+void TSFGlobalCloudFiltering::filter(const std::vector<TSFFrame::Ptr> &frames, pcl::PointCloud<pcl::PointXYZRGBNormal> &cloud)
 {
   cout<<"[TSFGlobalCloudFiltering::filter] compute point reliability..."<<endl;
 

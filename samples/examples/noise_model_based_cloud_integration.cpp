@@ -32,7 +32,8 @@ using namespace v4r;
 
 int main(int argc, const char *argv[]) {
   typedef pcl::PointXYZRGB PointT;
-  std::string test_dir, out_dir, view_prefix = "cloud_", obj_indices_prefix = "object_indices_", pose_prefix = "pose_";
+  bf::path test_dir, out_dir;
+  std::string view_prefix = "cloud_", obj_indices_prefix = "object_indices_", pose_prefix = "pose_";
   float chop_z = std::numeric_limits<float>::max();
   bool visualize = false, use_object_mask = false, use_pose_file = false, debug = false;
 
@@ -44,13 +45,15 @@ int main(int argc, const char *argv[]) {
 
   NguyenNoiseModelParameter nm_param;
 
+  typename v4r::NormalEstimator<PointT>::Ptr normal_estimator_;
+
   int normal_method = 2;
 
   po::options_description desc(
       "Noise model based cloud integration\n======================================\n**Allowed options");
-  desc.add_options()("help,h", "produce help message")("input_dir,i", po::value<std::string>(&test_dir)->required(),
+  desc.add_options()("help,h", "produce help message")("input_dir,i", po::value<bf::path>(&test_dir)->required(),
                                                        "directory containing point clouds")(
-      "out_dir,o", po::value<std::string>(&out_dir),
+      "out_dir,o", po::value<bf::path>(&out_dir),
       "output directory where the registered cloud will be stored. If not set, nothing will be written to distk")(
       "view_prefix", po::value<std::string>(&view_prefix)->default_value(view_prefix),
       "view filename prefix for each point cloud (used when using object mask)")(
@@ -77,18 +80,20 @@ int main(int argc, const char *argv[]) {
           "reads pose from seperate pose file instead of extracting it directly from .pcd file (only if file exists)")(
           "debug,d", po::bool_switch(&debug), "saves debug information (e.g. point properties) if output dir is set");
   po::variables_map vm;
-  po::store(po::parse_command_line(argc, argv, desc), vm);
+  po::parsed_options parsed = po::command_line_parser(argc, argv).options(desc).allow_unregistered().run();
+  std::vector<std::string> to_pass_further = po::collect_unrecognized(parsed.options, po::include_positional);
+  po::store(parsed, vm);
   if (vm.count("help")) {
     std::cout << desc << std::endl;
-    return false;
+    to_pass_further.push_back("-h");
   }
-
   try {
     po::notify(vm);
   } catch (std::exception &e) {
     std::cerr << "Error: " << e.what() << std::endl << std::endl << desc << std::endl;
-    return false;
   }
+
+  normal_estimator_ = v4r::initNormalEstimator<PointT>(normal_method, to_pass_further);
 
   std::vector<std::string> folder_names = io::getFoldersInDirectory(test_dir);
 
@@ -99,7 +104,7 @@ int main(int argc, const char *argv[]) {
   boost::shared_ptr<pcl::visualization::PCLVisualizer> vis;
 
   for (const std::string &sub_folder : folder_names) {
-    const std::string test_seq = test_dir + "/" + sub_folder;
+    const bf::path test_seq = test_dir / sub_folder;
     std::vector<std::string> views = io::getFilesInDirectory(test_seq, ".*.pcd", false);
 
     pcl::PointCloud<PointT>::Ptr big_cloud_unfiltered(new pcl::PointCloud<PointT>);
@@ -116,7 +121,7 @@ int main(int argc, const char *argv[]) {
       pcl::PointCloud<PointT>::Ptr cloud(new pcl::PointCloud<PointT>);
       pcl::PointCloud<pcl::Normal>::Ptr normal(new pcl::PointCloud<pcl::Normal>);
 
-      pcl::io::loadPCDFile(test_seq + "/" + views[v_id], *cloud);
+      pcl::io::loadPCDFile((test_seq / views[v_id]).string(), *cloud);
 
       std::string obj_fn(views[v_id]);
       boost::replace_first(obj_fn, view_prefix, obj_indices_prefix);
@@ -126,7 +131,7 @@ int main(int argc, const char *argv[]) {
         bf::path object_indices_fn = test_seq;
         object_indices_fn /= obj_fn;
         if (io::existsFile(object_indices_fn.string())) {
-          ifstream f((test_seq + "/" + obj_fn).c_str());
+          ifstream f((test_seq / obj_fn).string().c_str());
           int idx;
           while (f >> idx)
             obj_indices[v_id].push_back(idx);
@@ -140,8 +145,8 @@ int main(int argc, const char *argv[]) {
       boost::replace_first(pose_fn, view_prefix, pose_prefix);
       boost::replace_last(pose_fn, ".pcd", ".txt");
 
-      if (io::existsFile(test_seq + "/" + pose_fn) && use_pose_file)
-        camera_transforms[v_id] = io::readMatrixFromFile(test_seq + "/" + pose_fn);
+      if (io::existsFile(test_seq / pose_fn) && use_pose_file)
+        camera_transforms[v_id] = io::readMatrixFromFile(test_seq / pose_fn);
       else
         camera_transforms[v_id] = RotTrans2Mat4f(cloud->sensor_orientation_, cloud->sensor_origin_);
 
@@ -158,7 +163,8 @@ int main(int argc, const char *argv[]) {
 
       {
         pcl::ScopeTime tt("Computing normals");
-        computeNormals<PointT>(cloud, normal, normal_method);
+        normal_estimator_->setInputCloud(cloud);
+        normal = normal_estimator_->compute();
       }
 
       {
@@ -198,19 +204,19 @@ int main(int argc, const char *argv[]) {
               << ", filtered: " << octree_cloud->points.size() << std::endl;
 
     if (vm.count("out_dir")) {
-      const std::string out_path = out_dir + "/" + sub_folder;
+      const bf::path out_path = out_dir / sub_folder;
       io::createDirIfNotExist(out_path);
-      pcl::io::savePCDFileBinary(out_path + "/registered_cloud_filtered.pcd", *octree_cloud);
-      pcl::io::savePCDFileBinary(out_path + "/registered_cloud_unfiltered.pcd", *big_cloud_unfiltered);
+      pcl::io::savePCDFileBinary((out_path / "/registered_cloud_filtered.pcd").string(), *octree_cloud);
+      pcl::io::savePCDFileBinary((out_path / "/registered_cloud_unfiltered.pcd").string(), *big_cloud_unfiltered);
 
       for (size_t v_id = 0; v_id < clouds_used.size(); v_id++) {
         if (debug) {
           std::stringstream fn;
-          fn << out_path << "/filtered_input_" << setfill('0') << setw(5) << v_id << ".pcd";
+          fn << out_path.string() << "/filtered_input_" << setfill('0') << setw(5) << v_id << ".pcd";
           pcl::io::savePCDFileBinary(fn.str(), *clouds_used[v_id]);
 
           fn.str("");
-          fn << out_path << "/distance_to_edge_px_" << setfill('0') << setw(5) << v_id << ".txt";
+          fn << out_path.string() << "/distance_to_edge_px_" << setfill('0') << setw(5) << v_id << ".txt";
           std::ofstream f(fn.str());
           for (size_t pt_id = 0; pt_id < clouds_used[v_id]->points.size(); pt_id++) {
             f << pt_properties[v_id][pt_id][2] << std::endl;
@@ -222,7 +228,7 @@ int main(int argc, const char *argv[]) {
           f.close();
 
           fn.str("");
-          fn << out_path << "/filter_input_image" << setfill('0') << setw(5) << v_id << ".png";
+          fn << out_path.string() << "/filter_input_image" << setfill('0') << setw(5) << v_id << ".png";
           PCLOpenCVConverter<PointT> pcl_opencv_converter;
           pcl_opencv_converter.setInputCloud(clouds_used[v_id]);
           cv::imwrite(fn.str(), pcl_opencv_converter.getRGBImage());

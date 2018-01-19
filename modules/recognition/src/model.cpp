@@ -3,15 +3,10 @@
 #include <v4r/io/filesystem.h>
 #include <v4r/recognition/model.h>
 
-#include <sstream>
-
 #include <pcl/common/time.h>
 #include <pcl/common/transforms.h>
 #include <pcl/features/integral_image_normal.h>
-#include <pcl/features/normal_3d_omp.h>
 #include <pcl/io/pcd_io.h>
-#include <boost/archive/text_iarchive.hpp>
-#include <boost/archive/text_oarchive.hpp>
 
 namespace v4r {
 

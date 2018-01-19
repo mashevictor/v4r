@@ -73,17 +73,20 @@ class V4R_EXPORTS MultiRecognitionPipeline : public RecognitionPipeline<PointT> 
    */
   void do_recognize();
 
+  /**
+     * @brief initialize the recognizer (extract features, create FLANN,...)
+     * @param[in] path to model database. If training directory exists, will load trained model from disk; if not,
+ * computed features will be stored on disk (in each
+     * object model folder, a feature folder is created with data)
+     * @param[in] retrain if set, will re-compute features and store to disk, no matter if they already exist or not
+    * @param[in] object_instances_to_load vector of object models to load from model_database_path. If emtpy, all
+ * objects
+  * in directory will be loaded.
+     */
+  void doInit(const bf::path &trained_dir, bool retrain, const std::vector<std::string> &object_instances_to_load);
+
  public:
   MultiRecognitionPipeline() {}
-
-  /**
-       * @brief initialize the recognizer (extract features, create FLANN,...)
-       * @param[in] path to model database. If training directory exists, will load trained model from disk; if not,
-   * computed features will be stored on disk (in each
-       * object model folder, a feature folder is created with data)
-       * @param[in] retrain if set, will re-compute features and store to disk, no matter if they already exist or not
-       */
-  void initialize(const bf::path &trained_dir = "", bool retrain = false);
 
   /**
    * @brief oh_tmp

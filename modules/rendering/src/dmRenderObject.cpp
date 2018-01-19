@@ -1,5 +1,4 @@
 #include <v4r/rendering/dmRenderObject.h>
-#include <iostream>
 
 #include <assimp/postprocess.h>
 #include <assimp/scene.h>
@@ -8,15 +7,8 @@
 /// TODO: remove every trace of glm
 #include <glm/glm.hpp>
 
-#include <GL/gl.h>
-#include <GL/glew.h>
-
-#include <pcl/Vertices.h>
 #include <pcl/conversions.h>
-#include <pcl/point_cloud.h>
 #include <pcl/point_types.h>
-
-#include <opencv2/opencv.hpp>
 
 using namespace std;
 using namespace cv;
@@ -122,12 +114,11 @@ DepthmapRendererModel::DepthmapRendererModel(const std::string &file, string pat
       if (shiftToCenterAndNormalizeScale) {
         v.pos = v.pos - glm::vec3(mean);
       }
-      if (scene->mMeshes[i]->HasNormals()){
-        v.normal = glm::vec3(scene->mMeshes[i]->mNormals[j].x,
-                             scene->mMeshes[i]->mNormals[j].y,
+      if (scene->mMeshes[i]->HasNormals()) {
+        v.normal = glm::vec3(scene->mMeshes[i]->mNormals[j].x, scene->mMeshes[i]->mNormals[j].y,
                              scene->mMeshes[i]->mNormals[j].z);
-      }else{
-        v.normal = glm::vec3(-10,-10,-10);
+      } else {
+        v.normal = glm::vec3(-10, -10, -10);
       }
       if (scene->mMeshes[i]->HasVertexColors(0)) {
         aiColor4D *colors = scene->mMeshes[i]->mColors[0];
@@ -181,7 +172,7 @@ DepthmapRendererModel::DepthmapRendererModel(const pcl::PolygonMesh &pclMesh, bo
   pcl::PointCloud<pcl::PointXYZ> points;
   pcl::fromPCLPointCloud2(pclMesh.cloud, points);
 
-  normal =false;
+  normal = false;
   color = false;
   if (points.size() > 3) {
     geometry = true;

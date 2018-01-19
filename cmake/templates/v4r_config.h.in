@@ -38,6 +38,7 @@
    first (like Motorola and SPARC, unlike Intel and VAX). */
 #cmakedefine WORDS_BIGENDIAN
 
+#cmakedefine HAVE_GLM
 #cmakedefine HAVE_SIFTGPU
 #cmakedefine HAVE_LIBSVM
 #cmakedefine HAVE_METSLIB

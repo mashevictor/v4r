@@ -109,7 +109,7 @@ void TSFPoseTrackerKLT::operate()
 
     if (have_todo)
     {
-      cv::goodFeaturesToTrack(im_gray, points, param.max_count, 0.01, 10, cv::Mat(), 3, 0, 0.04);
+      cv::goodFeaturesToTrack(im_gray, points, param.max_count, 0.01, 10, cv::Mat(), 3, false, 0.04);
       getPoints3D(cloud, points, points3d);
       filterValidPoints3D(points, points3d);
 

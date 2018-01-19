@@ -47,13 +47,12 @@
 
 #include <glog/logging.h>
 #include <pcl/io/pcd_io.h>
-#include <pcl/point_types.h>
 #include <boost/format.hpp>
 #include <boost/program_options.hpp>
 #include <boost/serialization/vector.hpp>
 
 #include <v4r/apps/ObjectRecognizer.h>
-#include <v4r/io/filesystem.h>
+#include <v4r/common/pcl_serialization.h>
 
 namespace po = boost::program_options;
 
@@ -66,17 +65,19 @@ int main(int argc, char **argv) {
   int verbosity = -1;
 
   po::options_description desc("Object Instance Recognizer\n======================================\n**Allowed options");
-  desc.add_options()("help,h", "produce help message")(
+  desc.add_options()("help,h", "produce help message");
+  desc.add_options()(
       "test_dir,t", po::value<bf::path>(&test_dir)->required(),
       "Directory with test scenes stored as point clouds (.pcd). The camera pose is taken directly from the pcd header "
       "fields \"sensor_orientation_\" and \"sensor_origin_\" (if the test directory contains subdirectories, each "
-      "subdirectory is considered as seperate sequence for multiview recognition)")(
-      "out_dir,o", po::value<bf::path>(&out_dir)->default_value(out_dir),
-      "Output directory where recognition results will be stored.")(
+      "subdirectory is considered as seperate sequence for multiview recognition)");
+  desc.add_options()("out_dir,o", po::value<bf::path>(&out_dir)->default_value(out_dir),
+                     "Output directory where recognition results will be stored.");
+  desc.add_options()(
       "cfg", po::value<bf::path>(&recognizer_config_dir)->default_value(recognizer_config_dir),
-      "Path to config directory containing the xml config files for the various recognition pipelines and parameters.")(
-      "verbosity", po::value<int>(&verbosity)->default_value(verbosity),
-      "set verbosity level for output (<0 minimal output)");
+      "Path to config directory containing the xml config files for the various recognition pipelines and parameters.");
+  desc.add_options()("verbosity", po::value<int>(&verbosity)->default_value(verbosity),
+                     "set verbosity level for output (<0 minimal output)");
   po::variables_map vm;
   po::parsed_options parsed = po::command_line_parser(argc, argv).options(desc).allow_unregistered().run();
   std::vector<std::string> to_pass_further = po::collect_unrecognized(parsed.options, po::include_positional);

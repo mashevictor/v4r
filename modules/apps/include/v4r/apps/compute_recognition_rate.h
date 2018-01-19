@@ -17,6 +17,8 @@ namespace bf = boost::filesystem;
 namespace v4r {
 namespace apps {
 
+std::vector<std::vector<int>> PermGenerator(int n, int k);
+
 struct Hypothesis {
   Eigen::Matrix4f pose;
   float occlusion;
@@ -176,7 +178,7 @@ class V4R_EXPORTS RecognitionEvaluator {
 
   void compute_recognition_rate(size_t &total_tp, size_t &total_fp, size_t &total_fn);
   float compute_recognition_rate_over_occlusion();  ///< basically checks for each ground-truth object if there exists a
-                                                    ///corresponding recognized object
+                                                    /// corresponding recognized object
   void
   checkIndividualHypotheses();  ///< check for each recognized object if there is a corresponding ground-truth object<w
 

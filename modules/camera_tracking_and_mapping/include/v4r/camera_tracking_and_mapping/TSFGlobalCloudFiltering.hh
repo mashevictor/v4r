@@ -142,7 +142,7 @@ public:
 
   void computeRadius(v4r::DataMatrix2D<v4r::Surfel> &sf_cloud);
 
-  void filter(const std::vector<TSFFrame::Ptr> &frames, pcl::PointCloud<pcl::PointXYZRGBNormal> &cloud, const Eigen::Matrix4f &base_transform=Eigen::Matrix4f::Identity());
+  void filter(const std::vector<TSFFrame::Ptr> &frames, pcl::PointCloud<pcl::PointXYZRGBNormal> &cloud);
 
   void setCameraParameter(const cv::Mat &_intrinsic);
   void setParameter(const Parameter &p);

@@ -49,6 +49,9 @@
 #define _OBJECT_SEGMENTATION_H
 
 #ifndef Q_MOC_RUN
+#include <QMutex>
+#include <QObject>
+#include <QThread>
 #include <pcl/common/transforms.h>
 #include <pcl/io/pcd_io.h>
 #include <pcl/octree/octree.h>
@@ -59,9 +62,6 @@
 #include <pcl/point_types.h>
 #include <v4r/common/ZAdaptiveNormals.h>
 #include <v4r/keypoints/ClusterNormalsToPlanes.h>
-#include <QMutex>
-#include <QObject>
-#include <QThread>
 #include <boost/shared_ptr.hpp>
 #include <opencv2/core/core.hpp>
 #include <v4r/common/impl/DataMatrix2D.hpp>
@@ -202,9 +202,7 @@ class ObjectSegmentation : public QThread {
  * @return
  */
 inline bool ObjectSegmentation::isnan(const Eigen::Vector3f &pt) {
-  if (std::isnan(pt[0]) || std::isnan(pt[1]) || std::isnan(pt[2]))
-    return true;
-  return false;
+  return std::isnan(pt[0]) || std::isnan(pt[1]) || std::isnan(pt[2]);
 }
 
 #endif

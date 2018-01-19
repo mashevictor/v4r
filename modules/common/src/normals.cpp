@@ -1,3 +1,4 @@
+#include <glog/logging.h>
 #include <pcl/features/integral_image_normal.h>
 #include <pcl/features/normal_3d_omp.h>
 #include <v4r/common/ZAdaptiveNormals.h>
@@ -6,7 +7,6 @@
 #include <v4r/common/normal_estimator.h>
 #include <v4r/common/normals.h>
 
-#include <glog/logging.h>
 #include <v4r/common/normal_estimator_integral_image.h>
 #include <v4r/common/normal_estimator_pcl.h>
 #include <v4r/common/normal_estimator_z_adpative.h>
@@ -81,7 +81,7 @@ typename NormalEstimator<PointT>::Ptr initNormalEstimator(int method, std::vecto
     typename ZAdaptiveNormalsPCL<PointT>::Ptr ne_tmp(new ZAdaptiveNormalsPCL<PointT>(param));
     ne = boost::dynamic_pointer_cast<NormalEstimator<PointT>>(ne_tmp);
   } else {
-    std::cerr << "Keypoint extractor method " << method << " is not implemented! " << std::endl;
+    LOG(ERROR) << "Normal estimation method " << method << " is not implemented! ";
   }
 
   return ne;

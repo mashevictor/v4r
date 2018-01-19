@@ -91,7 +91,7 @@ class V4R_EXPORTS Gabor {
   int N;              // Number of orientations
   int M_min, M_max;   // minimum and maximum scale factor
   int filtersNumber;  // size of gabor filters (orientations * number scales)
-  //   CvGabor gabor;
+                      //   CvGabor gabor;
 
  public:
   typedef boost::shared_ptr<Gabor> Ptr;

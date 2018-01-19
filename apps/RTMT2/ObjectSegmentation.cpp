@@ -50,25 +50,14 @@
 
 #include <pcl/sample_consensus/ransac.h>
 #include <pcl/sample_consensus/sac_model_plane.h>
-#include <boost/filesystem.hpp>
-#include <cmath>
 
 #include <pcl/filters/voxel_grid.h>
-#include <pcl/io/ply_io.h>
-#include <pcl/sample_consensus/model_types.h>
 #include <pcl/segmentation/extract_clusters.h>
 #include <pcl/segmentation/sac_segmentation.h>
-#include <v4r/common/convertCloud.h>
-#include <v4r/common/convertImage.h>
 #include <v4r/common/convertNormals.h>
 #include <v4r/common/noise_models.h>
 #include <v4r/registration/MvLMIcp.h>
 #include <v4r/registration/noise_model_based_cloud_integration.h>
-#include <opencv2/highgui/highgui.hpp>
-#include <opencv2/imgproc/imgproc.hpp>
-#include <v4r/keypoints/impl/PoseIO.hpp>
-#include <v4r/keypoints/impl/invPose.hpp>
-#include <v4r/reconstruction/impl/projectPointToImage.hpp>
 #endif
 
 using namespace std;
@@ -110,6 +99,8 @@ ObjectSegmentation::ObjectSegmentation()
   ba.setCameraParameter(intrinsic, dist_coeffs);
   dist_coeffs.copyTo(dist_coeffs_opti);
   intrinsic.copyTo(intrinsic_opti);
+
+  // path_to_crf_file = std::string("ps1080.1310280269.crf");
 }
 
 /**
@@ -220,6 +211,8 @@ bool ObjectSegmentation::savePointClouds(const std::string &_folder, const std::
 
 void ObjectSegmentation::set_roi_params(const double &_bbox_scale_xy, const double &_bbox_scale_height,
                                         const double &_seg_offs) {
+  (void) _bbox_scale_xy;
+  (void) _bbox_scale_height;
   seg_offs = _seg_offs;
 }
 
@@ -269,6 +262,8 @@ void ObjectSegmentation::run() {
     case FINISH_OBJECT_MODELLING: {
       if (map_frames.size() > 0) {
         ba.optimize(map_frames);
+        if (path_to_crf_file.size() > 0)
+          correctColourScale();
         getSegmentedViews();
         if (use_mvicp)
           optimizePosesMultiviewICP();
@@ -299,6 +294,19 @@ void ObjectSegmentation::run() {
 
   cmd = UNDEF;
   m_run = false;
+}
+
+/**
+ * @brief ObjectSegmentation::correctColourScale
+ */
+void ObjectSegmentation::correctColourScale() {
+  ba.getCameraParameter(intrinsic_opti, dist_coeffs_opti);
+
+  cout << "Correct colour scale" << endl;
+  v4r::OptimizeBundleColours optiCol;
+  optiCol.setCRFfile(path_to_crf_file);
+  optiCol.setCameraParameter(intrinsic, dist_coeffs);
+  optiCol.optimize(map_frames);
 }
 
 /**
@@ -572,8 +580,8 @@ void ObjectSegmentation::createCloudModel() {
       gfilt.getGlobalCloudMasked(map_frames, masks, *ncloud_filt);
     }
 
-    cout << "Creat mesh..." << endl;
     if (create_mesh || create_tex_mesh) {
+      cout << "Creat mesh..." << endl;
       gfilt.getMesh(ncloud_filt, mesh);
     }
 

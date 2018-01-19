@@ -1,3 +1,4 @@
+#include <glog/logging.h>
 #include <pcl/common/io.h>
 #include <v4r/common/histogram.h>
 #include <v4r/features/global_color_estimator.h>

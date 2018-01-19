@@ -58,8 +58,6 @@
 #include <boost/program_options.hpp>
 #include <boost/serialization/vector.hpp>
 
-#include <glog/logging.h>
-
 #include <v4r/common/normals.h>
 #include <v4r/core/macros.h>
 #include <v4r/features/global_concatenated.h>
@@ -79,9 +77,9 @@ class V4R_EXPORTS ObjectRecognizerParameter {
   // correspondence grouping parameter
   float cg_size_;  ///< Size for correspondence grouping.
   int cg_thresh_;  ///< Threshold for correspondence grouping. The lower the more hypotheses are generated, the higher
-                   ///the more confident and accurate. Minimum 3.
+                   /// the more confident and accurate. Minimum 3.
   float cg_min_dist_for_cluster_factor_;  ///< factor cg_size is multiplied with to define the minimuim distance between
-                                          ///two keypoints within clustering
+                                          /// two keypoints within clustering
   bool use_graph_based_gc_grouping_;      ///< if true, uses graph-based geometric consistency grouping
 
   // pipeline setup
@@ -89,8 +87,8 @@ class V4R_EXPORTS ObjectRecognizerParameter {
   bool do_shot_;
   int segmentation_method_;
   std::vector<int> global_feature_types_;  ///< Concatenate all feature descriptors which corresponding feature type bit
-                                           ///id (v4r/features/types.h) is set in this variable. Each (outer) element
-                                           ///will be a seperate global recognition pipeline.
+                                           /// id (v4r/features/types.h) is set in this variable. Each (outer) element
+  /// will be a seperate global recognition pipeline.
   std::vector<int> classification_methods_;
   int shot_keypoint_extractor_method_;
   int normal_computation_method_;  ///< normal computation method
@@ -99,7 +97,7 @@ class V4R_EXPORTS ObjectRecognizerParameter {
   // filter parameter
   double chop_z_;       ///< Cut-off distance in meter
   bool remove_planes_;  ///< if enabled, removes the dominant plane in the input cloud (given thera are at least N
-                        ///inliers)
+                        /// inliers)
   float plane_inlier_threshold_;     ///< maximum distance for plane inliers
   size_t min_plane_inliers_;         ///< required inliers for plane to be removed
   bool remove_non_upright_objects_;  ///< removes all objects that are not upright (requires to extract support plane)
@@ -115,7 +113,7 @@ class V4R_EXPORTS ObjectRecognizerParameter {
   size_t
       min_points_for_hyp_removal_;  ///< how many removed points must overlap hypothesis to be also considered removed
   size_t max_views_;  ///< maximum number of views used for multi-view recognition (if more views are available,
-                      ///information from oldest views will be ignored)
+                      /// information from oldest views will be ignored)
 
   size_t
       icp_iterations_;  ///< ICP iterations. Only used if hypotheses are not verified. Otherwise ICP is done inside HV
@@ -126,7 +124,7 @@ class V4R_EXPORTS ObjectRecognizerParameter {
   : cg_size_(0.01f), cg_thresh_(4), cg_min_dist_for_cluster_factor_(1.f), use_graph_based_gc_grouping_(true),
     do_sift_(true), do_shot_(false), segmentation_method_(SegmentationType::OrganizedConnectedComponents),
     global_feature_types_(),  //{ FeatureType::ESF | FeatureType::SIMPLE_SHAPE | FeatureType::GLOBAL_COLOR,
-                              //FeatureType::ALEXNET }  ),
+                              // FeatureType::ALEXNET }  ),
     classification_methods_({ClassifierType::SVM}), shot_keypoint_extractor_method_(KeypointType::HARRIS3D),
     normal_computation_method_(NormalEstimatorType::PCL_INTEGRAL_NORMAL), keypoint_support_radii_({0.04, 0.08}),
     chop_z_(3.f), remove_planes_(true), plane_inlier_threshold_(0.02f), min_plane_inliers_(20000),
@@ -135,22 +133,7 @@ class V4R_EXPORTS ObjectRecognizerParameter {
     tolerance_for_cloud_diff_(0.02f), min_points_for_hyp_removal_(50), max_views_(3), icp_iterations_(0), sift_knn_(0),
     shot_knn_(0) {}
 
-  void validate() {
-    if (global_feature_types_.size() != classification_methods_.size()) {
-      size_t minn = std::min<size_t>(global_feature_types_.size(), classification_methods_.size());
-
-      LOG(ERROR) << "The given parameter for feature types, classification methods "
-                 << "and configuration files for global recognition are not the same size!";
-      if (minn)
-        LOG(ERROR) << " Will only use the first " << minn
-                   << " global recognizers for which all three elements are set! ";
-      else
-        LOG(ERROR) << "Global recognition is disabled!";
-
-      global_feature_types_.resize(minn);
-      classification_methods_.resize(minn);
-    }
-  }
+  void validate();
 
   void save(const std::string &filename) const {
     std::ofstream ofs(filename);
@@ -159,33 +142,9 @@ class V4R_EXPORTS ObjectRecognizerParameter {
     ofs.close();
   }
 
-  void load(const std::string &filename) {
-    if (!v4r::io::existsFile(filename))
-      throw std::runtime_error("Given config file " + filename + " does not exist! Current working directory is " +
-                               boost::filesystem::current_path().string() + ".");
+  void load(const bf::path &filename);
 
-    LOG(INFO) << "Loading parameters from file " << filename;
-
-    try {
-      std::ifstream ifs(filename);
-      boost::archive::xml_iarchive ia(ifs);
-      ia >> boost::serialization::make_nvp("ObjectRecognizerParameter", *this);
-      ifs.close();
-    } catch (const std::exception &e) {
-      LOG(ERROR) << e.what() << std::endl;
-      exit(0);
-    }
-
-    validate();
-  }
-
-  void output() const {
-    std::stringstream ss;
-    boost::archive::text_oarchive oa(ss);
-    oa << boost::serialization::make_nvp("ObjectRecognizerParameter", *this);
-
-    LOG(INFO) << "Loaded Parameters: " << std::endl << ss.str();
-  }
+  void output() const;
 
   /**
    * @brief init parameters

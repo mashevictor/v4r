@@ -56,13 +56,13 @@
 
 namespace v4r {
 
-template <typename ModelT, typename SceneT>
+template <typename PointT>
 class HypothesisVerification;
 
-template <typename ModelT, typename SceneT>
+template <typename PointT>
 class V4R_EXPORTS HV_ModelVisualizer {
  private:
-  friend class HypothesisVerification<ModelT, SceneT>;
+  friend class HypothesisVerification<PointT>;
 
   int vp_model_scene_, vp_model_, vp_model_scene_overlay_, vp_model_outliers_, vp_model_scene_fit_, vp_model_visible_,
       vp_model_total_fit_, vp_model_3d_fit_, vp_model_color_fit_, vp_model_normals_fit_, vp_scene_normals_,
@@ -76,13 +76,13 @@ class V4R_EXPORTS HV_ModelVisualizer {
   HV_ModelVisualizer(const PCLVisualizationParams::ConstPtr &vis_params = boost::make_shared<PCLVisualizationParams>())
   : vis_param_(vis_params) {}
 
-  void visualize(const HypothesisVerification<ModelT, SceneT> *hv, const HVRecognitionModel<ModelT> &rm);
+  void visualize(const HypothesisVerification<PointT> *hv, const HVRecognitionModel<PointT> &rm);
 
-  typedef boost::shared_ptr<HV_ModelVisualizer<ModelT, SceneT>> Ptr;
-  typedef boost::shared_ptr<HV_ModelVisualizer<ModelT, SceneT> const> ConstPtr;
+  typedef boost::shared_ptr<HV_ModelVisualizer<PointT>> Ptr;
+  typedef boost::shared_ptr<HV_ModelVisualizer<PointT> const> ConstPtr;
 };
 
-template <typename ModelT, typename SceneT>
+template <typename PointT>
 class V4R_EXPORTS HV_CuesVisualizer {
  private:
   int vp_scene_scene_, vp_scene_active_hypotheses_, vp_model_fitness_, vp_model_scene_color_dist_, vp_scene_fitness_,
@@ -96,14 +96,14 @@ class V4R_EXPORTS HV_CuesVisualizer {
   HV_CuesVisualizer(const PCLVisualizationParams::ConstPtr &vis_params = boost::make_shared<PCLVisualizationParams>())
   : vis_param_(vis_params) {}
 
-  void visualize(const HypothesisVerification<ModelT, SceneT> *hv, const boost::dynamic_bitset<> &active_solution,
-                 float cost, int times_evaluated);
+  void visualize(const HypothesisVerification<PointT> *hv, const boost::dynamic_bitset<> &active_solution, float cost,
+                 int times_evaluated);
 
-  typedef boost::shared_ptr<HV_CuesVisualizer<ModelT, SceneT>> Ptr;
-  typedef boost::shared_ptr<HV_CuesVisualizer<ModelT, SceneT> const> ConstPtr;
+  typedef boost::shared_ptr<HV_CuesVisualizer<PointT>> Ptr;
+  typedef boost::shared_ptr<HV_CuesVisualizer<PointT> const> ConstPtr;
 };
 
-template <typename ModelT, typename SceneT>
+template <typename PointT>
 class V4R_EXPORTS HV_PairwiseVisualizer {
  private:
   pcl::visualization::PCLVisualizer::Ptr vis_pairwise_;
@@ -116,9 +116,9 @@ class V4R_EXPORTS HV_PairwiseVisualizer {
       const PCLVisualizationParams::ConstPtr &vis_params = boost::make_shared<PCLVisualizationParams>())
   : vis_param_(vis_params) {}
 
-  void visualize(const HypothesisVerification<ModelT, SceneT> *hv);
+  void visualize(const HypothesisVerification<PointT> *hv);
 
-  typedef boost::shared_ptr<HV_PairwiseVisualizer<ModelT, SceneT>> Ptr;
-  typedef boost::shared_ptr<HV_PairwiseVisualizer<ModelT, SceneT> const> ConstPtr;
+  typedef boost::shared_ptr<HV_PairwiseVisualizer<PointT>> Ptr;
+  typedef boost::shared_ptr<HV_PairwiseVisualizer<PointT> const> ConstPtr;
 };
 }

@@ -92,23 +92,30 @@ class V4R_EXPORTS NarfKeypointExtractorParameter {
    */
   std::vector<std::string> init(const std::vector<std::string> &command_line_arguments) {
     po::options_description desc("NARF Keypoint Extractor Parameter\n=====================\n");
-    desc.add_options()("help,h", "produce help message")(
-        "kp_narf_noise_level", po::value<float>(&noise_level_)->default_value(noise_level_), "noise level")(
-        "kp_narf_minimum_range", po::value<float>(&minimum_range_)->default_value(minimum_range_), "minimum range")(
-        "kp_support_size", po::value<float>(&support_size_)->default_value(support_size_), "support_size_")(
+    desc.add_options()("help,h", "produce help message");
+    desc.add_options()("kp_narf_noise_level", po::value<float>(&noise_level_)->default_value(noise_level_),
+                       "noise level");
+    desc.add_options()("kp_narf_minimum_range", po::value<float>(&minimum_range_)->default_value(minimum_range_),
+                       "minimum range");
+    desc.add_options()("kp_support_size", po::value<float>(&support_size_)->default_value(support_size_),
+                       "support_size_");
+    desc.add_options()(
         "kp_min_distance_between_interest_points",
         po::value<float>(&min_distance_between_interest_points_)->default_value(min_distance_between_interest_points_),
-        "min_distance_between_interest_points_")("kp_optimal_distance_to_high_surface_change",
-                                                 po::value<float>(&optimal_distance_to_high_surface_change_)
-                                                     ->default_value(optimal_distance_to_high_surface_change_),
-                                                 "optimal_distance_to_high_surface_change_")(
-        "kp_min_interest_value", po::value<float>(&min_interest_value_)->default_value(min_interest_value_),
-        "min_interest_value_")("kp_min_surface_change_score",
-                               po::value<float>(&min_surface_change_score_)->default_value(min_surface_change_score_),
-                               "min_surface_change_score_")(
-        "kp_optimal_range_image_patch_size",
-        po::value<int>(&optimal_range_image_patch_size_)->default_value(optimal_range_image_patch_size_),
-        "min_surface_change_score_");
+        "min_distance_between_interest_points_");
+    desc.add_options()("kp_optimal_distance_to_high_surface_change",
+                       po::value<float>(&optimal_distance_to_high_surface_change_)
+                           ->default_value(optimal_distance_to_high_surface_change_),
+                       "optimal_distance_to_high_surface_change_");
+    desc.add_options()("kp_min_interest_value",
+                       po::value<float>(&min_interest_value_)->default_value(min_interest_value_),
+                       "min_interest_value_");
+    desc.add_options()("kp_min_surface_change_score",
+                       po::value<float>(&min_surface_change_score_)->default_value(min_surface_change_score_),
+                       "min_surface_change_score_");
+    desc.add_options()("kp_optimal_range_image_patch_size",
+                       po::value<int>(&optimal_range_image_patch_size_)->default_value(optimal_range_image_patch_size_),
+                       "min_surface_change_score_");
     po::variables_map vm;
     po::parsed_options parsed =
         po::command_line_parser(command_line_arguments).options(desc).allow_unregistered().run();

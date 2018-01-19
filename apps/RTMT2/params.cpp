@@ -47,6 +47,7 @@
 
 #ifndef Q_MOC_RUN
 #include "params.h"
+#include <QSettings>
 #include "ui_params.h"
 
 #include <opencv2/opencv.hpp>
@@ -62,9 +63,14 @@ using namespace std;
 
 Params::Params(QWidget *parent) : QDialog(parent), ui(new Ui::Params) {
   ui->setupUi(this);
+
+  settings_file = "rtmt2";
+  loadSettings();
 }
 
 Params::~Params() {
+  saveSettings();
+
   delete ui;
 }
 
@@ -115,6 +121,12 @@ bool Params::useMultiviewICP() {
 bool Params::useNoiseModel() {
   return ui->use_nguyen_noise_model->isChecked();
 }
+std::string Params::getVGNfile() {
+  return ui->editVGNfile->text().toStdString();
+}
+std::string Params::getCRFfile() {
+  return ui->editCRFfile->text().toStdString();
+}
 
 void Params::apply_params() {
   emit set_roi_params(ui->roi_scale_xy->text().toFloat(), ui->roi_scale_height->text().toFloat(),
@@ -160,10 +172,129 @@ void Params::on_pushFindRGBDPath_pressed() {
   }
 }
 
+void Params::on_pushFindVGNfile_pressed() {
+  QString filename = QFileDialog::getOpenFileName(this, tr("VGN Filename"));
+  if (filename.size() != 0) {
+    ui->editVGNfile->setText(filename);
+    emit vignetting_calibration_file_changed();
+  }
+}
+
+void Params::on_pushFindCRFfile_pressed() {
+  QString filename = QFileDialog::getOpenFileName(this, tr("CRF Filename"));
+  if (filename.size() != 0) {
+    ui->editCRFfile->setText(filename);
+    emit vignetting_calibration_file_changed();
+  }
+}
+
 void Params::on_okButton_clicked() {
   apply_params();
 }
 
 void Params::on_applyButton_clicked() {
   apply_cam_params();
+}
+
+void Params::loadSettings() {
+  QSettings settings(settings_file);
+
+  if (settings.contains("store_cloud"))
+    ui->cb_store_cloud->setChecked(settings.value("store_cloud", "").toBool());
+  if (settings.contains("store_views"))
+    ui->cb_store_views->setChecked(settings.value("store_views", "").toBool());
+  if (settings.contains("store_mesh"))
+    ui->cb_store_mesh->setChecked(settings.value("store_mesh", "").toBool());
+  if (settings.contains("store_tex_mesh"))
+    ui->cb_store_tex_mesh->setChecked(settings.value("store_tex_mesh", "").toBool());
+  if (settings.contains("store_tracker"))
+    ui->cb_store_tracker->setChecked(settings.value("store_tracker", "").toBool());
+
+  if (settings.contains("nb_frames_ba"))
+    ui->nb_frames_ba->setText(settings.value("nb_frames_ba", "").toString());
+  if (settings.contains("nb_frames_temp_filt"))
+    ui->nb_frames_temp_filt->setText(settings.value("nb_frames_temp_filt", "").toString());
+  if (settings.contains("min_cam_motion_kf"))
+    ui->min_cam_motion_kf->setText(settings.value("min_cam_motion_kf", "").toString());
+  if (settings.contains("min_cam_rot_kf"))
+    ui->min_cam_rot_kf->setText(settings.value("min_cam_rot_kf", "").toString());
+
+  if (settings.contains("voxel_grid_size"))
+    ui->voxel_grid_size->setText(settings.value("voxel_grid_size", "").toString());
+  if (settings.contains("poisson_depth"))
+    ui->poisson_depth->setText(settings.value("poisson_depth", "").toString());
+  if (settings.contains("poisson_samples"))
+    ui->poisson_samples->setText(settings.value("poisson_samples", "").toString());
+  if (settings.contains("filter_largest_cluster"))
+    ui->filter_largest_cluster->setChecked(settings.value("filter_largest_cluster", "").toBool());
+
+  if (settings.contains("multiview_icp"))
+    ui->multiview_icp->setChecked(settings.value("multiview_icp", "").toBool());
+  if (settings.contains("use_nguyen_noise_model"))
+    ui->use_nguyen_noise_model->setChecked(settings.value("use_nguyen_noise_model", "").toBool());
+
+  if (settings.contains("roi_scale_xy"))
+    ui->roi_scale_xy->setText(settings.value("roi_scale_xy", "").toString());
+  if (settings.contains("roi_scale_height"))
+    ui->roi_scale_height->setText(settings.value("roi_scale_height", "").toString());
+  if (settings.contains("roi_offs"))
+    ui->roi_offs->setText(settings.value("roi_offs", "").toString());
+
+  if (settings.contains("fuRgbEdit"))
+    ui->fuRgbEdit->setText(settings.value("fuRgbEdit", "").toString());
+  if (settings.contains("fvRgbEdit"))
+    ui->fvRgbEdit->setText(settings.value("fvRgbEdit", "").toString());
+  if (settings.contains("cuRgbEdit"))
+    ui->cuRgbEdit->setText(settings.value("cuRgbEdit", "").toString());
+  if (settings.contains("cvRgbEdit"))
+    ui->cvRgbEdit->setText(settings.value("cvRgbEdit", "").toString());
+
+  if (settings.contains("editVGNfile"))
+    ui->editVGNfile->setText(settings.value("editVGNfile", "").toString());
+  if (settings.contains("editCRFfile"))
+    ui->editCRFfile->setText(settings.value("editCRFfile", "").toString());
+
+  if (settings.contains("editRGBDPath"))
+    ui->editRGBDPath->setText(settings.value("editRGBDPath", "").toString());
+
+  cout << "Loaded settings from: " << settings.fileName().toStdString() << endl;
+}
+
+void Params::saveSettings() {
+  QSettings settings(settings_file);
+
+  settings.setValue("store_cloud", ui->cb_store_cloud->isChecked());
+  settings.setValue("store_views", ui->cb_store_views->isChecked());
+  settings.setValue("store_mesh", ui->cb_store_mesh->isChecked());
+  settings.setValue("store_tex_mesh", ui->cb_store_tex_mesh->isChecked());
+  settings.setValue("store_tracker", ui->cb_store_tracker->isChecked());
+
+  settings.setValue("nb_frames_ba", ui->nb_frames_ba->text());
+  settings.setValue("nb_frames_temp_filt", ui->nb_frames_temp_filt->text());
+  settings.setValue("min_cam_motion_kf", ui->min_cam_motion_kf->text());
+  settings.setValue("min_cam_rot_kf", ui->min_cam_rot_kf->text());
+
+  settings.setValue("voxel_grid_size", ui->voxel_grid_size->text());
+  settings.setValue("poisson_depth", ui->poisson_depth->text());
+  settings.setValue("poisson_samples", ui->poisson_samples->text());
+  settings.setValue("filter_largest_cluster", ui->filter_largest_cluster->isChecked());
+
+  settings.setValue("multiview_icp", ui->multiview_icp->isChecked());
+  settings.setValue("use_nguyen_noise_model", ui->use_nguyen_noise_model->isChecked());
+
+  settings.setValue("roi_scale_xy", ui->roi_scale_xy->text());
+  settings.setValue("roi_scale_height", ui->roi_scale_height->text());
+  settings.setValue("roi_offs", ui->roi_offs->text());
+
+  settings.setValue("fuRgbEdit", ui->fuRgbEdit->text());
+  settings.setValue("fvRgbEdit", ui->fvRgbEdit->text());
+  settings.setValue("cuRgbEdit", ui->cuRgbEdit->text());
+  settings.setValue("cvRgbEdit", ui->cvRgbEdit->text());
+
+  settings.setValue("editVGNfile", ui->editVGNfile->text());
+  settings.setValue("editCRFfile", ui->editCRFfile->text());
+
+  settings.setValue("editRGBDPath", ui->editRGBDPath->text());
+
+  cout << "Stored settings to: " << settings.fileName().toStdString() << endl;
 }

@@ -4,7 +4,6 @@
 
 #include <glog/logging.h>
 #include <omp.h>
-#include <opencv2/opencv.hpp>
 
 namespace v4r {
 

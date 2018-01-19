@@ -56,6 +56,7 @@
 #include <v4r/recognition/hypotheses_verification.h>
 #include <v4r/recognition/local_recognition_pipeline.h>
 #include <v4r/recognition/multi_pipeline_recognizer.h>
+#include <v4r_modules.h>
 #include <boost/serialization/vector.hpp>
 
 namespace bf = boost::filesystem;
@@ -70,8 +71,8 @@ class V4R_EXPORTS ObjectRecognizer {
   typename v4r::RecognitionPipeline<PointT>::Ptr mrec_;                             ///< multi-pipeline recognizer
   typename v4r::LocalRecognitionPipeline<PointT>::Ptr local_recognition_pipeline_;  ///< local recognition pipeline
                                                                                     ///(member variable just because of
-                                                                                    ///visualization of keypoints)
-  typename v4r::HypothesisVerification<PointT, PointT>::Ptr hv_;                    ///< hypothesis verification object
+                                                                                    /// visualization of keypoints)
+  typename v4r::HypothesisVerification<PointT>::Ptr hv_;                            ///< hypothesis verification object
   typename v4r::NormalEstimator<PointT>::Ptr
       normal_estimator_;  ///< normal estimator used for computing surface normals (currently only used at training)
 
@@ -103,15 +104,17 @@ class V4R_EXPORTS ObjectRecognizer {
   };
   std::vector<View> views_;  ///< all views in sequence
 
+#ifdef HAVE_V4R_CHANGE_DETECTION
   /**
    * @brief detectChanges detect changes in multi-view sequence (e.g. objects removed or added to the scene within
    * observation period)
    * @param v current view
    */
   void detectChanges(View &v);
+#endif
 
   typename pcl::PointCloud<PointT>::Ptr registered_scene_cloud_;  ///< registered point cloud of all processed input
-                                                                  ///clouds in common camera reference frame
+                                                                  /// clouds in common camera reference frame
 
   std::vector<std::pair<std::string, float>>
       elapsed_time_;  ///< measurements of computation times for various components

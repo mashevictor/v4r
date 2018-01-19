@@ -96,28 +96,33 @@ class V4R_EXPORTS IssKeypointExtractorParameter  // see PCL documentation for fu
    */
   std::vector<std::string> init(const std::vector<std::string> &command_line_arguments) {
     po::options_description desc("ISS Keypoint Extractor Parameter\n=====================\n");
-    desc.add_options()("help,h", "produce help message")(
-        "iss_salient_radius", po::value<double>(&salient_radius_)->default_value(salient_radius_),
-        "Set the radius of the spherical neighborhood used to compute the scatter matrix.")(
-        "iss_non_max_radius", po::value<double>(&non_max_radius_)->default_value(non_max_radius_),
-        "Set the radius for the application of the non maxima supression algorithm.")(
+    desc.add_options()("help,h", "produce help message");
+    desc.add_options()("iss_salient_radius", po::value<double>(&salient_radius_)->default_value(salient_radius_),
+                       "Set the radius of the spherical neighborhood used to compute the scatter matrix.");
+    desc.add_options()("iss_non_max_radius", po::value<double>(&non_max_radius_)->default_value(non_max_radius_),
+                       "Set the radius for the application of the non maxima supression algorithm.");
+    desc.add_options()(
         "iss_normal_radius", po::value<double>(&normal_radius_)->default_value(normal_radius_),
         " Set the radius used for the estimation of the surface normals of the input cloud. If the radius is too "
         "large, the temporal performances of the detector may degrade significantly. Only used if parameter "
-        "with_border_estimation equal true.")(
+        "with_border_estimation equal true.");
+    desc.add_options()(
         "iss_border_radius", po::value<double>(&border_radius_)->default_value(border_radius_),
         "Set the radius used for the estimation of the boundary points. If the radius is too large, the temporal "
         "performances of the detector may degrade significantly. Only used if parameter with_border_estimation equal "
-        "true.")("iss_gamma_21", po::value<double>(&gamma_21_)->default_value(gamma_21_),
-                 "Set the upper bound on the ratio between the second and the first eigenvalue")(
-        "iss_gamma_32", po::value<double>(&gamma_32_)->default_value(gamma_32_),
-        "Set the upper bound on the ratio between the third and the second eigenvalue.")(
+        "true.");
+    desc.add_options()("iss_gamma_21", po::value<double>(&gamma_21_)->default_value(gamma_21_),
+                       "Set the upper bound on the ratio between the second and the first eigenvalue");
+    desc.add_options()("iss_gamma_32", po::value<double>(&gamma_32_)->default_value(gamma_32_),
+                       "Set the upper bound on the ratio between the third and the second eigenvalue.");
+    desc.add_options()(
         "iss_min_neighbors", po::value<int>(&min_neighbors_)->default_value(min_neighbors_),
-        "Set the minimum number of neighbors that has to be found while applying the non maxima suppression algorithm")(
-        "iss_with_border_estimation", po::value<bool>(&with_border_estimation_)->default_value(with_border_estimation_),
-        "")("iss_threads", po::value<int>(&threads_)->default_value(threads_), "number of threads")(
-        "iss_angle_thresh_deg", po::value<float>(&angle_thresh_deg_)->default_value(angle_thresh_deg_),
-        "Set the decision boundary (angle threshold) that marks points as boundary or regular.");
+        "Set the minimum number of neighbors that has to be found while applying the non maxima suppression algorithm");
+    desc.add_options()("iss_with_border_estimation",
+                       po::value<bool>(&with_border_estimation_)->default_value(with_border_estimation_), "");
+    desc.add_options()("iss_threads", po::value<int>(&threads_)->default_value(threads_), "number of threads");
+    desc.add_options()("iss_angle_thresh_deg", po::value<float>(&angle_thresh_deg_)->default_value(angle_thresh_deg_),
+                       "Set the decision boundary (angle threshold) that marks points as boundary or regular.");
     po::variables_map vm;
     po::parsed_options parsed =
         po::command_line_parser(command_line_arguments).options(desc).allow_unregistered().run();

@@ -48,7 +48,6 @@
 #pragma once
 
 #include <flann/flann.h>
-#include <glog/logging.h>
 #include <pcl/common/common.h>
 #include <boost/archive/xml_iarchive.hpp>
 #include <boost/archive/xml_oarchive.hpp>
@@ -117,17 +116,7 @@ class V4R_EXPORTS LocalRecognizerParameter {
     ofs.close();
   }
 
-  void load(const std::string &filename) {
-    if (!v4r::io::existsFile(filename))
-      throw std::runtime_error("Given config file " + filename + " does not exist! Current working directory is " +
-                               boost::filesystem::current_path().string() + ".");
-
-    VLOG(1) << "Loading parameters from file " << filename;
-    std::ifstream ifs(filename);
-    boost::archive::xml_iarchive ia(ifs);
-    ia >> boost::serialization::make_nvp("LocalRecognizerParameter", *this);
-    ifs.close();
-  }
+  void load(const bf::path &filename);
 
  private:
   friend class boost::serialization::access;
@@ -214,7 +203,7 @@ class V4R_EXPORTS LocalFeatureMatcher {
       normal_estimator_;  ///< normal estimator used for computing surface normals (currently only used at training)
 
   bool have_sift_estimator_;  ///< indicates if one of the feature estimator contains SIFT. This is required as this is
-                              /// a special case. For SIFT, keypoint detection and feature description happens at the
+  /// a special case. For SIFT, keypoint detection and feature description happens at the
   /// same time. Therefore it is not allowed to mix with other.
 
   std::string descr_name_;  ///< descriptor name
@@ -232,27 +221,13 @@ class V4R_EXPORTS LocalFeatureMatcher {
   std::vector<typename KeypointExtractor<PointT>::Ptr> keypoint_extractor_;  ///< set of keypoint extractors
 
   void mergeKeypointsFromMultipleEstimators();  ///< this puts the model keypoints extracted from multiple feature
-                                                /// estimators into a common database
+  /// estimators into a common database
 
   std::map<std::string, typename LocalObjectModel::ConstPtr> model_keypoints_;
 
   PCLVisualizationParams::ConstPtr vis_param_;
 
-  void validate() {
-    for (const auto &est : estimators_) {
-      if (est->getFeatureType() == FeatureType::SIFT_GPU ||
-          est->getFeatureType() == FeatureType::SIFT_OPENCV)  // for SIFT we do not need to extract keypoints explicitly
-      {
-        have_sift_estimator_ = true;
-        break;
-      }
-    }
-    CHECK(estimators_.size() <= 1 || !have_sift_estimator_)
-        << "SIFT is not allowed to be mixed with other feature descriptors.";
-
-    CHECK(!have_sift_estimator_ || param_.train_on_individual_views_)
-        << "SIFT needs organized point clouds. Therefore training from a full model is not supported! " << std::endl;
-  }
+  void validate();
 
   bool visualize_keypoints_;  ///< if true, visualizes the extracted keypoints
 
@@ -294,20 +269,13 @@ class V4R_EXPORTS LocalFeatureMatcher {
    */
   std::vector<int> getInlier(const std::vector<KeypointIndex> &input_keypoints) const;
 
-  /**
-   * @brief computeFeatures
-   * @param est local feature descriptor
-   * @return
-   */
-  bool computeFeatures(LocalEstimator<PointT> &est);
-
   void visualizeKeypoints(const std::vector<KeypointIndex> &kp_indices,
                           const std::vector<KeypointIndex> &unfiltered_kp_indices = std::vector<KeypointIndex>()) const;
 
   std::vector<std::map<std::string, size_t>> model_kp_idx_range_start_;  ///< since keypoints are coming from multiple
                                                                          /// local recognizer, we need to store which
-  /// range belongs to which recognizer. This
-  /// variable is the starting parting t
+                                                                         /// range belongs to which recognizer. This
+                                                                         /// variable is the starting parting t
 
  public:
   LocalFeatureMatcher(const LocalRecognizerParameter &p = LocalRecognizerParameter())
@@ -357,8 +325,11 @@ class V4R_EXPORTS LocalFeatureMatcher {
   * @param training directory
   * @param retrain if set to true, re-trains the object no matter if the data already exists in the given training
   * directory
+  * @param object_instances_to_load vector of object models to load from model_database_path. If emtpy, all objects
+  * in directory will be loaded.
   */
-  void initialize(const bf::path &trained_dir, bool retrain = false);
+  void initialize(const bf::path &trained_dir, bool retrain = false,
+                  const std::vector<std::string> &object_instances_to_load = {});
 
   /**
   * @brief adds a keypoint extractor

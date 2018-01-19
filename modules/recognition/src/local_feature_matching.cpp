@@ -6,21 +6,49 @@
 
 #include <boost/archive/binary_iarchive.hpp>
 #include <boost/archive/binary_oarchive.hpp>
-#include <boost/filesystem.hpp>
+
+#include <glog/logging.h>
 
 #include <pcl/common/time.h>
 #include <pcl/common/transforms.h>
 #include <pcl/features/boundary.h>
 #include <pcl/features/integral_image_normal.h>
 #include <pcl/io/pcd_io.h>
-#include <pcl/visualization/pcl_visualizer.h>
 
 #include <opencv2/opencv.hpp>
 
 #include <omp.h>
-#include <sstream>
 
 namespace v4r {
+
+void LocalRecognizerParameter::load(const bf::path &filename) {
+  CHECK(v4r::io::existsFile(filename)) << "Given config file " << filename.string()
+                                       << " does not exist! Current working directory is "
+                                       << boost::filesystem::current_path().string() + ".";
+
+  VLOG(1) << "Loading parameters from file " << filename.string();
+  std::ifstream ifs(filename.string());
+  boost::archive::xml_iarchive ia(ifs);
+  ia >> boost::serialization::make_nvp("LocalRecognizerParameter", *this);
+  ifs.close();
+}
+
+template <typename PointT>
+void LocalFeatureMatcher<PointT>::validate() {
+  for (const auto &est : estimators_) {
+    if (est->getFeatureType() == FeatureType::SIFT_GPU ||
+        est->getFeatureType() == FeatureType::SIFT_OPENCV)  // for SIFT we do not need to extract keypoints explicitly
+    {
+      have_sift_estimator_ = true;
+      break;
+    }
+  }
+  CHECK(estimators_.size() <= 1 || !have_sift_estimator_)
+      << "SIFT is not allowed to be mixed with other feature descriptors.";
+
+  CHECK(!have_sift_estimator_ || param_.train_on_individual_views_)
+      << "SIFT needs organized point clouds. Therefore training from a full model is not supported! " << std::endl;
+}
 
 template <typename PointT>
 void LocalFeatureMatcher<PointT>::visualizeKeypoints(const std::vector<KeypointIndex> &kp_indices,
@@ -94,7 +122,7 @@ std::vector<int> LocalFeatureMatcher<PointT>::getInlier(const std::vector<Keypoi
   //        keypoint_indices_unfiltered_ = input_keypoints;
 
   if (param_.filter_planar_) {
-    pcl::ScopeTime tt("Computing planar keypoints");
+    pcl::StopWatch t;
     typename pcl::search::KdTree<PointT>::Ptr tree(new pcl::search::KdTree<PointT>);
     pcl::NormalEstimationOMP<PointT, pcl::Normal> normalEstimation;
     normalEstimation.setInputCloud(scene_);
@@ -110,10 +138,13 @@ std::vector<int> LocalFeatureMatcher<PointT>::getInlier(const std::vector<Keypoi
       if (normals_for_planarity_check->points[i].curvature < param_.threshold_planar_)
         kp_is_kept.reset(i);
     }
+
+    float time = t.getTime();
+    VLOG(1) << "Computing planar keypoints took " << time << " ms.";
   }
 
   if (param_.filter_border_pts_) {
-    pcl::ScopeTime t("Computing boundary points");
+    pcl::StopWatch t;
     if (scene_->isOrganized()) {
       // compute depth discontinuity edges
       pcl_1_8::OrganizedEdgeBase<PointT, pcl::Label> oed;
@@ -156,7 +187,7 @@ std::vector<int> LocalFeatureMatcher<PointT>::getInlier(const std::vector<Keypoi
       cv::Mat boundary_mask_dilated;
       cv::dilate(boundary_mask, boundary_mask_dilated, element);
 
-      kept = 0;
+      // kept = 0;
       for (size_t i = 0; i < input_keypoints.size(); i++) {
         int idx = input_keypoints[i];
         int u = idx % scene_->width;
@@ -167,6 +198,9 @@ std::vector<int> LocalFeatureMatcher<PointT>::getInlier(const std::vector<Keypoi
       }
     } else
       LOG(ERROR) << "Input scene is not organized so cannot extract edge points.";
+
+    double time = t.getTime();
+    VLOG(1) << "Computing boundary points took " << time << " ms.";
   }
 
   return createIndicesFromMask<int>(kp_is_kept);
@@ -179,7 +213,7 @@ std::vector<int> LocalFeatureMatcher<PointT>::extractKeypoints(const std::vector
     return std::vector<int>();
   }
 
-  pcl::ScopeTime t("Extracting all keypoints with filtering");
+  pcl::StopWatch t;
   boost::dynamic_bitset<> obj_mask;
   boost::dynamic_bitset<> kp_mask(scene_->points.size(), 0);
 
@@ -215,11 +249,16 @@ std::vector<int> LocalFeatureMatcher<PointT>::extractKeypoints(const std::vector
       }
     }
   }
+
+  float time = t.getTime();
+  VLOG(1) << "Extracting all keypoints with filtering took " << time << " ms.";
+
   return createIndicesFromMask<int>(kp_mask);
 }
 
 template <typename PointT>
-void LocalFeatureMatcher<PointT>::initialize(const bf::path &trained_dir, bool retrain) {
+void LocalFeatureMatcher<PointT>::initialize(const bf::path &trained_dir, bool retrain,
+                                             const std::vector<std::string> &object_instances_to_load) {
   CHECK(m_db_);
   validate();
   lomdbs_.resize(estimators_.size());
@@ -233,7 +272,15 @@ void LocalFeatureMatcher<PointT>::initialize(const bf::path &trained_dir, bool r
     typename LocalEstimator<PointT>::Ptr &est = estimators_[est_id];
 
     for (typename Model<PointT>::ConstPtr m : models) {
-      bf::path trained_path_feat = trained_dir / m->id_ / bf::path(est->getFeatureDescriptorName() + est->getUniqueId());
+      bf::path trained_path_feat =
+          trained_dir / m->id_ / bf::path(est->getFeatureDescriptorName() + est->getUniqueId());
+
+      if (!object_instances_to_load.empty() &&
+          std::find(object_instances_to_load.begin(), object_instances_to_load.end(), m->id_) ==
+              object_instances_to_load.end()) {
+        LOG(INFO) << "Skipping object " << m->id_ << " because it is not in the lists of objects to load.";
+        continue;
+      }
 
       std::vector<FeatureDescriptor> model_signatures;
       pcl::PointCloud<pcl::PointXYZ>::Ptr model_keypoints(new pcl::PointCloud<pcl::PointXYZ>);
@@ -256,9 +303,7 @@ void LocalFeatureMatcher<PointT>::initialize(const bf::path &trained_dir, bool r
 
         if (param_.train_on_individual_views_) {
           for (const auto &tv : training_views) {
-            std::string txt = "Training " + est->getFeatureDescriptorName() + " (with id \"" + est->getUniqueId() +
-                              "\") on view " + m->class_ + "/" + m->id_ + "/" + tv->filename_;
-            pcl::ScopeTime t(txt.c_str());
+            pcl::StopWatch t;
 
             std::vector<int> obj_indices;
 
@@ -381,6 +426,11 @@ void LocalFeatureMatcher<PointT>::initialize(const bf::path &trained_dir, bool r
               indices_.clear();
             } else
               LOG(INFO) << "Ignoring view " << tv->filename_ << " because a similar camera pose exists.";
+
+            float time = t.getTime();
+            LOG(INFO) << "Training " + est->getFeatureDescriptorName() + " (with id \"" + est->getUniqueId() +
+                             "\") on view " + m->class_ + "/" + m->id_ + "/" + tv->filename_
+                      << ") took " << time << " ms.";
           }
         } else {
           scene_ = m->getAssembled(1);
@@ -578,17 +628,22 @@ void LocalFeatureMatcher<PointT>::featureMatching(const std::vector<KeypointInde
 }
 
 template <typename PointT>
+
 void LocalFeatureMatcher<PointT>::featureEncoding(LocalEstimator<PointT> &est,
                                                   const std::vector<KeypointIndex> &keypoint_indices,
                                                   std::vector<KeypointIndex> &filtered_keypoint_indices,
                                                   std::vector<FeatureDescriptor> &signatures) {
   {
-    pcl::ScopeTime t("Feature Encoding");
+    pcl::StopWatch t;
     est.setInputCloud(scene_);
     est.setNormals(scene_normals_);
     est.setIndices(keypoint_indices);
     est.compute(signatures);
     filtered_keypoint_indices = est.getKeypointIndices();
+
+    float time = t.getTime();
+    VLOG(1) << "Feature encoding for " << est.getFeatureDescriptorName() << " with id " << est.getUniqueId() << " took "
+            << time << " ms.";
   }
 
   CHECK(filtered_keypoint_indices.size() == signatures.size());

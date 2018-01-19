@@ -146,7 +146,6 @@ class V4R_EXPORTS DepthmapRendererModel {
    */
   bool hasNormals();
 
-
   /**
    * @brief hasGeometry
    * @return

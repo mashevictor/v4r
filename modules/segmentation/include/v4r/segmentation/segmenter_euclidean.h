@@ -47,7 +47,6 @@
 
 #pragma once
 
-#include <glog/logging.h>
 #include <v4r/common/pcl_utils.h>
 #include <v4r/core/macros.h>
 #include <v4r/segmentation/segmenter.h>

@@ -533,6 +533,7 @@ int KeyframeManagementRGBD2::addLinkHyp1(const cv::Mat &image, const DataMatrix2
 int KeyframeManagementRGBD2::addLinkHyp2(const cv::Mat &image, const DataMatrix2D<Eigen::Vector3f> &cloud,
                                          const Eigen::Matrix4f &pose, int last_view_idx, int new_view_idx,
                                          const std::vector<std::pair<int, cv::Point2f>> &_im_pts) {
+  (void)last_view_idx;  // TODO remove this from function signature
   int cam_id = -1;
   std::vector<Eigen::Vector3f> pts3(_im_pts.size());
 

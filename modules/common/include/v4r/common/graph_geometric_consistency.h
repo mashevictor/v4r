@@ -50,7 +50,6 @@
 #include <boost/graph/graph_traits.hpp>
 #include <boost/graph/undirected_graph.hpp>
 
-#include <glog/logging.h>
 #include <boost/format.hpp>
 #include <boost/program_options.hpp>
 
@@ -101,33 +100,41 @@ class V4R_EXPORTS GraphGeometricConsistencyGroupingParameter {
        */
   std::vector<std::string> init(const std::vector<std::string> &command_line_arguments) {
     po::options_description desc("Graph Geometric Consistency Grouping Parameters\n=====================");
-    desc.add_options()("help,h", "produce help message")(
-        "cg_size_thresh,c", po::value<size_t>(&gc_threshold_)->default_value(gc_threshold_),
-        "Minimum cluster size. At least 3 correspondences are needed to compute the 6DOF pose ")(
+    desc.add_options()("help,h", "produce help message");
+    desc.add_options()("cg_size_thresh,c", po::value<size_t>(&gc_threshold_)->default_value(gc_threshold_),
+                       "Minimum cluster size. At least 3 correspondences are needed to compute the 6DOF pose ");
+    desc.add_options()(
         "cg_size", po::value<float>(&gc_size_)->default_value(gc_size_, boost::str(boost::format("%.2e") % gc_size_)),
-        "Resolution of the consensus set used to cluster correspondences together ")(
+        "Resolution of the consensus set used to cluster correspondences together ");
+    desc.add_options()(
         "cg_thres_dot_distance",
         po::value<float>(&thres_dot_distance_)
             ->default_value(thres_dot_distance_, boost::str(boost::format("%.2e") % thres_dot_distance_)),
-        " ")("cg_use_graph", po::value<bool>(&use_graph_)->default_value(use_graph_), " ")(
+        " ");
+    desc.add_options()("cg_use_graph", po::value<bool>(&use_graph_)->default_value(use_graph_), " ");
+    desc.add_options()(
         "cg_dist_for_clutter_factor",
         po::value<float>(&dist_for_cluster_factor_)
             ->default_value(dist_for_cluster_factor_, boost::str(boost::format("%.2e") % dist_for_cluster_factor_)),
-        " ")("cg_max_taken_correspondences",
-             po::value<size_t>(&max_taken_correspondence_)->default_value(max_taken_correspondence_), " ")(
-        "cg_cliques_big_to_small", po::value<bool>(&cliques_big_to_small_)->default_value(cliques_big_to_small_), " ")(
-        "cg_check_normals_orientation",
-        po::value<bool>(&check_normals_orientation_)->default_value(check_normals_orientation_), " ")(
+        " ");
+    desc.add_options()("cg_max_taken_correspondences",
+                       po::value<size_t>(&max_taken_correspondence_)->default_value(max_taken_correspondence_), " ");
+    desc.add_options()("cg_cliques_big_to_small",
+                       po::value<bool>(&cliques_big_to_small_)->default_value(cliques_big_to_small_), " ");
+    desc.add_options()("cg_check_normals_orientation",
+                       po::value<bool>(&check_normals_orientation_)->default_value(check_normals_orientation_), " ");
+    desc.add_options()(
         "cg_max_time_for_cliques_computation", po::value<double>(&max_time_allowed_cliques_comptutation_)
                                                    ->default_value(max_time_allowed_cliques_comptutation_, "100.0"),
         " if grouping correspondences takes more processing time in milliseconds than this defined value, "
         "correspondences will be no longer computed by this graph based approach but by the simpler greedy "
-        "correspondence grouping algorithm")(
-        "cg_ransac_threshold",
-        po::value<float>(&ransac_threshold_)
-            ->default_value(ransac_threshold_, boost::str(boost::format("%.2e") % ransac_threshold_)),
-        " ")("cg_prune", po::value<bool>(&prune_)->default_value(prune_), " ")(
-        "cg_prune_by_CC", po::value<bool>(&prune_by_CC_)->default_value(prune_by_CC_), " ");
+        "correspondence grouping algorithm");
+    desc.add_options()("cg_ransac_threshold",
+                       po::value<float>(&ransac_threshold_)
+                           ->default_value(ransac_threshold_, boost::str(boost::format("%.2e") % ransac_threshold_)),
+                       " ");
+    desc.add_options()("cg_prune", po::value<bool>(&prune_)->default_value(prune_), " ");
+    desc.add_options()("cg_prune_by_CC", po::value<bool>(&prune_by_CC_)->default_value(prune_by_CC_), " ");
     po::variables_map vm;
     po::parsed_options parsed =
         po::command_line_parser(command_line_arguments).options(desc).allow_unregistered().run();

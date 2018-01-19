@@ -51,8 +51,6 @@
 #include <v4r/features/global_estimator.h>
 #include <v4r/features/types.h>
 
-#include <glog/logging.h>
-
 namespace v4r {
 /**
  * @brief The SimpleShapeEstimator class implements a simple global description

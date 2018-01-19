@@ -68,7 +68,7 @@ void InitParameter();
 void InitParameter() {}
 
 //------------------------------ helper methods -----------------------------------
-static void onMouse(int event, int x, int y, int flags, void *);
+// static void onMouse(int event, int x, int y, int flags, void *);
 void setup(int argc, char **argv);
 
 //----------------------------- data containers -----------------------------------
@@ -249,7 +249,8 @@ int main(int argc, char *argv[]) {
 
 /******************************** SOME HELPER METHODS **********************************/
 
-static void onMouse(int event, int x, int y, int flags, void *) {
+/*
+ * static void onMouse(int event, int x, int y, int flags, void *) {
   if (x < 0 || x >= im_draw.cols || y < 0 || y >= im_draw.rows)
     return;
   if (event == CV_EVENT_LBUTTONUP && (flags & CV_EVENT_FLAG_LBUTTON)) {
@@ -261,6 +262,7 @@ static void onMouse(int event, int x, int y, int flags, void *) {
     ul_lr++;
   }
 }
+ */
 
 /**
  * setup

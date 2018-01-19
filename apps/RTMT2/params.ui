@@ -34,7 +34,7 @@
       <rect>
        <x>10</x>
        <y>10</y>
-       <width>341</width>
+       <width>771</width>
        <height>341</height>
       </rect>
      </property>
@@ -95,11 +95,50 @@
        </item>
       </layout>
      </widget>
+     <widget class="QGroupBox" name="groupBox_2">
+      <property name="geometry">
+       <rect>
+        <x>0</x>
+        <y>130</y>
+        <width>701</width>
+        <height>61</height>
+       </rect>
+      </property>
+      <property name="title">
+       <string>RADICAL vgn-file for vignetting correction (optional)</string>
+      </property>
+      <widget class="QLineEdit" name="editVGNfile">
+       <property name="geometry">
+        <rect>
+         <x>20</x>
+         <y>30</y>
+         <width>621</width>
+         <height>27</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string/>
+       </property>
+      </widget>
+      <widget class="QPushButton" name="pushFindVGNfile">
+       <property name="geometry">
+        <rect>
+         <x>650</x>
+         <y>30</y>
+         <width>31</width>
+         <height>27</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>...</string>
+       </property>
+      </widget>
+     </widget>
     </widget>
     <widget class="QPushButton" name="applyButton">
      <property name="geometry">
       <rect>
-       <x>590</x>
+       <x>593</x>
        <y>320</y>
        <width>98</width>
        <height>27</height>
@@ -108,6 +147,45 @@
      <property name="text">
       <string>Apply</string>
      </property>
+    </widget>
+    <widget class="QGroupBox" name="groupBox_3">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>210</y>
+       <width>701</width>
+       <height>61</height>
+      </rect>
+     </property>
+     <property name="title">
+      <string>RADICAL crf-file for vignetting correction (optional)</string>
+     </property>
+     <widget class="QLineEdit" name="editCRFfile">
+      <property name="geometry">
+       <rect>
+        <x>20</x>
+        <y>30</y>
+        <width>621</width>
+        <height>27</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string/>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="pushFindCRFfile">
+      <property name="geometry">
+       <rect>
+        <x>650</x>
+        <y>30</y>
+        <width>31</width>
+        <height>27</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>...</string>
+      </property>
+     </widget>
     </widget>
    </widget>
    <widget class="QWidget" name="ioTab">
@@ -511,7 +589,7 @@
       </rect>
      </property>
      <property name="text">
-      <string>20</string>
+      <string>11</string>
      </property>
     </widget>
     <widget class="QLabel" name="label_22">

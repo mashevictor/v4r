@@ -54,6 +54,8 @@ string(REPLACE ";" " " V4R_INCLUDE_DIRS_CONFIGCMAKE "${V4R_INCLUDE_DIRS_CONFIGCM
 
 export(TARGETS ${V4RModules_TARGETS} FILE "${CMAKE_BINARY_DIR}/V4RModules.cmake")
 
+v4r_generate_dependencies_config_template(BUILD)
+configure_file("${CMAKE_BINARY_DIR}/V4RDependencies.cmake.in" "${CMAKE_BINARY_DIR}/V4RDependencies.cmake" @ONLY)
 configure_file("${V4R_SOURCE_DIR}/cmake/templates/V4RConfig.cmake.in" "${CMAKE_BINARY_DIR}/V4RConfig.cmake" @ONLY)
 configure_file("${V4R_SOURCE_DIR}/cmake/templates/V4RConfig-version.cmake.in" "${CMAKE_BINARY_DIR}/V4RConfig-version.cmake" @ONLY)
 
@@ -63,7 +65,7 @@ configure_file("${V4R_SOURCE_DIR}/cmake/templates/V4RConfig-version.cmake.in" "$
 set(V4R_INCLUDE_DIRS_CONFIGCMAKE "\"\${V4R_INSTALL_PATH}/${V4R_3P_INCLUDE_INSTALL_PATH}" "\${V4R_INSTALL_PATH}/${V4R_INCLUDE_INSTALL_PATH}\"")
 
 #set(V4R2_INCLUDE_DIRS_CONFIGCMAKE "\"\"")
-set(V4R_3RDPARTY_LIB_DIRS_CONFIGCMAKE "\"\${V4R_INSTALL_PATH}/${V4R_3P_LIB_INSTALL_PATH}\"")
+set(V4R_3P_INSTALL_PATH_CONFIGCMAKE "\${V4R_INSTALL_PATH}/${V4R_3P_INSTALL_PATH}")
 
 if(UNIX)
   #http://www.vtk.org/Wiki/CMake/Tutorials/Packaging reference
@@ -72,8 +74,11 @@ if(UNIX)
   #                <prefix>/(share|lib)/cmake/<name>*/                     (U)
   #                <prefix>/(share|lib)/<name>*/                           (U)
   #                <prefix>/(share|lib)/<name>*/(cmake|CMake)/             (U)
+  v4r_generate_dependencies_config_template(INSTALL)
+  configure_file("${CMAKE_BINARY_DIR}/V4RDependencies.cmake.in" "${CMAKE_BINARY_DIR}/unix-install/V4RDependencies.cmake" @ONLY)
   configure_file("${V4R_SOURCE_DIR}/cmake/templates/V4RConfig.cmake.in" "${CMAKE_BINARY_DIR}/unix-install/V4RConfig.cmake" @ONLY)
   configure_file("${V4R_SOURCE_DIR}/cmake/templates/V4RConfig-version.cmake.in" "${CMAKE_BINARY_DIR}/unix-install/V4RConfig-version.cmake" @ONLY)
+  install(FILES "${CMAKE_BINARY_DIR}/unix-install/V4RDependencies.cmake" DESTINATION ${V4R_CONFIG_INSTALL_PATH}/ COMPONENT dev)
   install(FILES "${CMAKE_BINARY_DIR}/unix-install/V4RConfig.cmake" DESTINATION ${V4R_CONFIG_INSTALL_PATH}/ COMPONENT dev)
   install(FILES ${CMAKE_BINARY_DIR}/unix-install/V4RConfig-version.cmake DESTINATION ${V4R_CONFIG_INSTALL_PATH}/ COMPONENT dev)
   install(EXPORT V4RModules DESTINATION ${V4R_CONFIG_INSTALL_PATH}/ FILE V4RModules.cmake COMPONENT dev)
