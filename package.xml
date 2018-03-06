@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
   <name>v4r</name>
-  <version>2.0.5</version>
+  <version>2.0.6</version>
   <description>The Vision for Robotics Library of ACIN TUW</description>
 
   <maintainer email="faeulhammer@acin.tuwien.ac.at">Thomas Faeulhammer</maintainer>

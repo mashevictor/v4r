@@ -429,6 +429,9 @@ Changelog for package v4r
   Arrange them in lexicographical order
 * Contributors: Georg, Johann Prankl, Markus 'Bajo' Bajones, Markus Bajones, Sergey Alexandrov, Simon Schreiberhuber, Thomas Faeulhammer, Thomas Fäulhammer, Unknown, V4R Release Manager
 
+2.0.6 (2018-03-06)
+------------------
+
 2.0.5 (2018-01-19)
 ------------------
   Make sure the same OpenCV version is used to build both radical and V4R
