@@ -1,0 +1,2 @@
+/usr/bin/ar qc libpcl_1_8.a  CMakeFiles/pcl_1_8.dir/uniform_sampling.cpp.o CMakeFiles/pcl_1_8.dir/conditional_euclidean_clustering.cpp.o CMakeFiles/pcl_1_8.dir/organized_edge_detection.cpp.o CMakeFiles/pcl_1_8.dir/convolution_2d.cpp.o
+/usr/bin/ranlib libpcl_1_8.a

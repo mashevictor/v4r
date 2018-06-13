@@ -1,0 +1,14 @@
+# Target labels
+ opennurbs
+# Source files and their labels
+/home/victor/software/v4r/build/3rdparty/opennurbs/downloader/CMakeFiles/opennurbs
+/home/victor/software/v4r/build/3rdparty/opennurbs/downloader/CMakeFiles/opennurbs.rule
+/home/victor/software/v4r/build/3rdparty/opennurbs/downloader/CMakeFiles/opennurbs-complete.rule
+/home/victor/software/v4r/build/3rdparty/opennurbs/stamp/opennurbs-install.rule
+/home/victor/software/v4r/build/3rdparty/opennurbs/stamp/opennurbs-mkdir.rule
+/home/victor/software/v4r/build/3rdparty/opennurbs/stamp/opennurbs-download.rule
+/home/victor/software/v4r/build/3rdparty/opennurbs/stamp/opennurbs-update.rule
+/home/victor/software/v4r/build/3rdparty/opennurbs/stamp/opennurbs-patch.rule
+/home/victor/software/v4r/build/3rdparty/opennurbs/stamp/opennurbs-configure.rule
+/home/victor/software/v4r/build/3rdparty/opennurbs/stamp/opennurbs-build.rule
+/home/victor/software/v4r/build/3rdparty/opennurbs/stamp/opennurbs-ROBUST_PATCH.rule

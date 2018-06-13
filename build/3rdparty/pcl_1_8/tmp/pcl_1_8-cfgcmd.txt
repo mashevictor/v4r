@@ -1,0 +1,1 @@
+cmd='/usr/bin/cmake;-G;Unix Makefiles;-DCMAKE_INSTALL_PREFIX=<INSTALL_DIR>;-DPCL_DIR=/usr/local/share/pcl-1.8;-GUnix Makefiles;/home/victor/software/v4r/3rdparty/pcl_1_8'

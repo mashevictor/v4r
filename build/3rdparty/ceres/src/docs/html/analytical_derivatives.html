@@ -1,0 +1,414 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Analytic Derivatives &mdash; Ceres Solver</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+    <link rel="top" title="Ceres Solver" href="index.html"/>
+        <link rel="up" title="On Derivatives" href="derivatives.html"/>
+        <link rel="next" title="Numeric derivatives" href="numerical_derivatives.html"/>
+        <link rel="prev" title="Spivak Notation" href="spivak_notation.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="index.html" class="icon icon-home"> Ceres Solver
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                1.13
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="features.html">Why?</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorial.html">Tutorial</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="derivatives.html">On Derivatives</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="spivak_notation.html">Spivak Notation</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Analytic Derivatives</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#when-should-you-use-analytical-derivatives">When should you use analytical derivatives?</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="numerical_derivatives.html">Numeric derivatives</a></li>
+<li class="toctree-l2"><a class="reference internal" href="automatic_derivatives.html">Automatic Derivatives</a></li>
+<li class="toctree-l2"><a class="reference internal" href="interfacing_with_autodiff.html">Interfacing with Automatic Differentiation</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="nnls_modeling.html">Modeling Non-linear Least Squares</a></li>
+<li class="toctree-l1"><a class="reference internal" href="nnls_solving.html">Solving Non-linear Least Squares</a></li>
+<li class="toctree-l1"><a class="reference internal" href="nnls_covariance.html">Covariance Estimation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="gradient_solver.html">General Unconstrained Minimization</a></li>
+<li class="toctree-l1"><a class="reference internal" href="faqs.html">FAQS, Tips &amp; Tricks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="users.html">Users</a></li>
+<li class="toctree-l1"><a class="reference internal" href="contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="version_history.html">Version History</a></li>
+<li class="toctree-l1"><a class="reference internal" href="bibliography.html">Bibliography</a></li>
+<li class="toctree-l1"><a class="reference internal" href="license.html">License</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="index.html">Ceres Solver</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+ 
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="index.html">Docs</a> &raquo;</li>
+      
+          <li><a href="derivatives.html">On Derivatives</a> &raquo;</li>
+      
+    <li>Analytic Derivatives</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="analytic-derivatives">
+<span id="chapter-analytical-derivatives"></span><h1>Analytic Derivatives<a class="headerlink" href="#analytic-derivatives" title="Permalink to this headline">¶</a></h1>
+<p>Consider the problem of fitting the following curve (<a class="reference external" href="http://www.itl.nist.gov/div898/strd/nls/data/ratkowsky3.shtml">Rat43</a>) to
+data:</p>
+<div class="math">
+\[y = \frac{b_1}{(1+e^{b_2-b_3x})^{1/b_4}}\]</div>
+<p>That is, given some data <span class="math">\(\{x_i, y_i\},\ \forall i=1,... ,n\)</span>,
+determine parameters <span class="math">\(b_1, b_2, b_3\)</span> and <span class="math">\(b_4\)</span> that best
+fit this data.</p>
+<p>Which can be stated as the problem of finding the
+values of <span class="math">\(b_1, b_2, b_3\)</span> and <span class="math">\(b_4\)</span> are the ones that
+minimize the following objective function <a class="footnote-reference" href="#f1" id="id1">[1]</a>:</p>
+<div class="math">
+\[\begin{split}\begin{align}
+E(b_1, b_2, b_3, b_4)
+&amp;= \sum_i f^2(b_1, b_2, b_3, b_4 ; x_i, y_i)\\
+&amp;= \sum_i \left(\frac{b_1}{(1+e^{b_2-b_3x_i})^{1/b_4}} - y_i\right)^2\\
+\end{align}\end{split}\]</div>
+<p>To solve this problem using Ceres Solver, we need to define a
+<a class="reference internal" href="nnls_modeling.html#_CPPv2N5ceres12CostFunctionE" title="ceres::CostFunction"><code class="xref cpp cpp-class docutils literal"><span class="pre">CostFunction</span></code></a> that computes the residual <span class="math">\(f\)</span> for a given
+<span class="math">\(x\)</span> and <span class="math">\(y\)</span> and its derivatives with respect to
+<span class="math">\(b_1, b_2, b_3\)</span> and <span class="math">\(b_4\)</span>.</p>
+<p>Using elementary differential calculus, we can see that:</p>
+<div class="math">
+\[\begin{split}\begin{align}
+D_1 f(b_1, b_2, b_3, b_4; x,y) &amp;= \frac{1}{(1+e^{b_2-b_3x})^{1/b_4}}\\
+D_2 f(b_1, b_2, b_3, b_4; x,y) &amp;=
+\frac{-b_1e^{b_2-b_3x}}{b_4(1+e^{b_2-b_3x})^{1/b_4 + 1}} \\
+D_3 f(b_1, b_2, b_3, b_4; x,y) &amp;=
+\frac{b_1xe^{b_2-b_3x}}{b_4(1+e^{b_2-b_3x})^{1/b_4 + 1}} \\
+D_4 f(b_1, b_2, b_3, b_4; x,y) &amp; = \frac{b_1  \log\left(1+e^{b_2-b_3x}\right) }{b_4^2(1+e^{b_2-b_3x})^{1/b_4}}
+\end{align}\end{split}\]</div>
+<p>With these derivatives in hand, we can now implement the
+<a class="reference internal" href="nnls_modeling.html#_CPPv2N5ceres12CostFunctionE" title="ceres::CostFunction"><code class="xref cpp cpp-class docutils literal"><span class="pre">CostFunction</span></code></a> as:</p>
+<div class="highlight-c++"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">Rat43Analytic</span> <span class="o">:</span> <span class="k">public</span> <span class="n">SizedCostFunction</span><span class="o">&lt;</span><span class="mi">1</span><span class="p">,</span><span class="mi">4</span><span class="o">&gt;</span> <span class="p">{</span>
+   <span class="k">public</span><span class="o">:</span>
+     <span class="n">Rat43Analytic</span><span class="p">(</span><span class="k">const</span> <span class="kt">double</span> <span class="n">x</span><span class="p">,</span> <span class="k">const</span> <span class="kt">double</span> <span class="n">y</span><span class="p">)</span> <span class="o">:</span> <span class="n">x_</span><span class="p">(</span><span class="n">x</span><span class="p">),</span> <span class="n">y_</span><span class="p">(</span><span class="n">y</span><span class="p">)</span> <span class="p">{}</span>
+     <span class="k">virtual</span> <span class="o">~</span><span class="n">Rat43Analytic</span><span class="p">()</span> <span class="p">{}</span>
+     <span class="k">virtual</span> <span class="kt">bool</span> <span class="n">Evaluate</span><span class="p">(</span><span class="kt">double</span> <span class="k">const</span><span class="o">*</span> <span class="k">const</span><span class="o">*</span> <span class="n">parameters</span><span class="p">,</span>
+                           <span class="kt">double</span><span class="o">*</span> <span class="n">residuals</span><span class="p">,</span>
+                           <span class="kt">double</span><span class="o">**</span> <span class="n">jacobians</span><span class="p">)</span> <span class="k">const</span> <span class="p">{</span>
+       <span class="k">const</span> <span class="kt">double</span> <span class="n">b1</span> <span class="o">=</span> <span class="n">parameters</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">];</span>
+       <span class="k">const</span> <span class="kt">double</span> <span class="n">b2</span> <span class="o">=</span> <span class="n">parameters</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">1</span><span class="p">];</span>
+       <span class="k">const</span> <span class="kt">double</span> <span class="n">b3</span> <span class="o">=</span> <span class="n">parameters</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">2</span><span class="p">];</span>
+       <span class="k">const</span> <span class="kt">double</span> <span class="n">b4</span> <span class="o">=</span> <span class="n">parameters</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">3</span><span class="p">];</span>
+
+       <span class="n">residuals</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">b1</span> <span class="o">*</span>  <span class="n">pow</span><span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">exp</span><span class="p">(</span><span class="n">b2</span> <span class="o">-</span>  <span class="n">b3</span> <span class="o">*</span> <span class="n">x_</span><span class="p">),</span> <span class="o">-</span><span class="mf">1.0</span> <span class="o">/</span> <span class="n">b4</span><span class="p">)</span> <span class="o">-</span> <span class="n">y_</span><span class="p">;</span>
+
+       <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">jacobians</span><span class="p">)</span> <span class="k">return</span> <span class="nb">true</span><span class="p">;</span>
+       <span class="kt">double</span><span class="o">*</span> <span class="n">jacobian</span> <span class="o">=</span> <span class="n">jacobians</span><span class="p">[</span><span class="mi">0</span><span class="p">];</span>
+       <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">jacobian</span><span class="p">)</span> <span class="k">return</span> <span class="nb">true</span><span class="p">;</span>
+
+       <span class="n">jacobian</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">pow</span><span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">exp</span><span class="p">(</span><span class="n">b2</span> <span class="o">-</span> <span class="n">b3</span> <span class="o">*</span> <span class="n">x_</span><span class="p">),</span> <span class="o">-</span><span class="mf">1.0</span> <span class="o">/</span> <span class="n">b4</span><span class="p">);</span>
+       <span class="n">jacobian</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="n">b1</span> <span class="o">*</span> <span class="n">exp</span><span class="p">(</span><span class="n">b2</span> <span class="o">-</span> <span class="n">b3</span> <span class="o">*</span> <span class="n">x_</span><span class="p">)</span> <span class="o">*</span>
+                     <span class="n">pow</span><span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">exp</span><span class="p">(</span><span class="n">b2</span> <span class="o">-</span> <span class="n">b3</span> <span class="o">*</span> <span class="n">x_</span><span class="p">),</span> <span class="o">-</span><span class="mf">1.0</span> <span class="o">/</span> <span class="n">b4</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="n">b4</span><span class="p">;</span>
+       <span class="n">jacobian</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">x_</span> <span class="o">*</span> <span class="n">b1</span> <span class="o">*</span> <span class="n">exp</span><span class="p">(</span><span class="n">b2</span> <span class="o">-</span> <span class="n">b3</span> <span class="o">*</span> <span class="n">x_</span><span class="p">)</span> <span class="o">*</span>
+                     <span class="n">pow</span><span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">exp</span><span class="p">(</span><span class="n">b2</span> <span class="o">-</span> <span class="n">b3</span> <span class="o">*</span> <span class="n">x_</span><span class="p">),</span> <span class="o">-</span><span class="mf">1.0</span> <span class="o">/</span> <span class="n">b4</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="n">b4</span><span class="p">;</span>
+       <span class="n">jacobian</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="o">=</span> <span class="n">b1</span> <span class="o">*</span> <span class="n">log</span><span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">exp</span><span class="p">(</span><span class="n">b2</span> <span class="o">-</span> <span class="n">b3</span> <span class="o">*</span> <span class="n">x_</span><span class="p">))</span> <span class="o">*</span>
+                     <span class="n">pow</span><span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">exp</span><span class="p">(</span><span class="n">b2</span> <span class="o">-</span> <span class="n">b3</span> <span class="o">*</span> <span class="n">x_</span><span class="p">),</span> <span class="o">-</span><span class="mf">1.0</span> <span class="o">/</span> <span class="n">b4</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">b4</span> <span class="o">*</span> <span class="n">b4</span><span class="p">);</span>
+       <span class="k">return</span> <span class="nb">true</span><span class="p">;</span>
+     <span class="p">}</span>
+
+    <span class="k">private</span><span class="o">:</span>
+     <span class="k">const</span> <span class="kt">double</span> <span class="n">x_</span><span class="p">;</span>
+     <span class="k">const</span> <span class="kt">double</span> <span class="n">y_</span><span class="p">;</span>
+ <span class="p">};</span>
+</pre></div>
+</div>
+<p>This is tedious code, hard to read and with a lot of
+redundancy. So in practice we will cache some sub-expressions to
+improve its efficiency, which would give us something like:</p>
+<div class="highlight-c++"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">Rat43AnalyticOptimized</span> <span class="o">:</span> <span class="k">public</span> <span class="n">SizedCostFunction</span><span class="o">&lt;</span><span class="mi">1</span><span class="p">,</span><span class="mi">4</span><span class="o">&gt;</span> <span class="p">{</span>
+   <span class="k">public</span><span class="o">:</span>
+     <span class="n">Rat43AnalyticOptimized</span><span class="p">(</span><span class="k">const</span> <span class="kt">double</span> <span class="n">x</span><span class="p">,</span> <span class="k">const</span> <span class="kt">double</span> <span class="n">y</span><span class="p">)</span> <span class="o">:</span> <span class="n">x_</span><span class="p">(</span><span class="n">x</span><span class="p">),</span> <span class="n">y_</span><span class="p">(</span><span class="n">y</span><span class="p">)</span> <span class="p">{}</span>
+     <span class="k">virtual</span> <span class="o">~</span><span class="n">Rat43AnalyticOptimized</span><span class="p">()</span> <span class="p">{}</span>
+     <span class="k">virtual</span> <span class="kt">bool</span> <span class="n">Evaluate</span><span class="p">(</span><span class="kt">double</span> <span class="k">const</span><span class="o">*</span> <span class="k">const</span><span class="o">*</span> <span class="n">parameters</span><span class="p">,</span>
+                           <span class="kt">double</span><span class="o">*</span> <span class="n">residuals</span><span class="p">,</span>
+                           <span class="kt">double</span><span class="o">**</span> <span class="n">jacobians</span><span class="p">)</span> <span class="k">const</span> <span class="p">{</span>
+       <span class="k">const</span> <span class="kt">double</span> <span class="n">b1</span> <span class="o">=</span> <span class="n">parameters</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">];</span>
+       <span class="k">const</span> <span class="kt">double</span> <span class="n">b2</span> <span class="o">=</span> <span class="n">parameters</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">1</span><span class="p">];</span>
+       <span class="k">const</span> <span class="kt">double</span> <span class="n">b3</span> <span class="o">=</span> <span class="n">parameters</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">2</span><span class="p">];</span>
+       <span class="k">const</span> <span class="kt">double</span> <span class="n">b4</span> <span class="o">=</span> <span class="n">parameters</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">3</span><span class="p">];</span>
+
+       <span class="k">const</span> <span class="kt">double</span> <span class="n">t1</span> <span class="o">=</span> <span class="n">exp</span><span class="p">(</span><span class="n">b2</span> <span class="o">-</span>  <span class="n">b3</span> <span class="o">*</span> <span class="n">x_</span><span class="p">);</span>
+       <span class="k">const</span> <span class="kt">double</span> <span class="n">t2</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">+</span> <span class="n">t1</span><span class="p">;</span>
+       <span class="k">const</span> <span class="kt">double</span> <span class="n">t3</span> <span class="o">=</span> <span class="n">pow</span><span class="p">(</span><span class="n">t2</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.0</span> <span class="o">/</span> <span class="n">b4</span><span class="p">);</span>
+       <span class="n">residuals</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">b1</span> <span class="o">*</span> <span class="n">t3</span> <span class="o">-</span> <span class="n">y_</span><span class="p">;</span>
+
+       <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">jacobians</span><span class="p">)</span> <span class="k">return</span> <span class="nb">true</span><span class="p">;</span>
+       <span class="kt">double</span><span class="o">*</span> <span class="n">jacobian</span> <span class="o">=</span> <span class="n">jacobians</span><span class="p">[</span><span class="mi">0</span><span class="p">];</span>
+       <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">jacobian</span><span class="p">)</span> <span class="k">return</span> <span class="nb">true</span><span class="p">;</span>
+
+       <span class="k">const</span> <span class="kt">double</span> <span class="n">t4</span> <span class="o">=</span> <span class="n">pow</span><span class="p">(</span><span class="n">t2</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.0</span> <span class="o">/</span> <span class="n">b4</span> <span class="o">-</span> <span class="mi">1</span><span class="p">);</span>
+       <span class="n">jacobian</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">t3</span><span class="p">;</span>
+       <span class="n">jacobian</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="n">b1</span> <span class="o">*</span> <span class="n">t1</span> <span class="o">*</span> <span class="n">t4</span> <span class="o">/</span> <span class="n">b4</span><span class="p">;</span>
+       <span class="n">jacobian</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="n">x_</span> <span class="o">*</span> <span class="n">jacobian</span><span class="p">[</span><span class="mi">1</span><span class="p">];</span>
+       <span class="n">jacobian</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="o">=</span> <span class="n">b1</span> <span class="o">*</span> <span class="n">log</span><span class="p">(</span><span class="n">t2</span><span class="p">)</span> <span class="o">*</span> <span class="n">t3</span> <span class="o">/</span> <span class="p">(</span><span class="n">b4</span> <span class="o">*</span> <span class="n">b4</span><span class="p">);</span>
+       <span class="k">return</span> <span class="nb">true</span><span class="p">;</span>
+     <span class="p">}</span>
+
+   <span class="k">private</span><span class="o">:</span>
+     <span class="k">const</span> <span class="kt">double</span> <span class="n">x_</span><span class="p">;</span>
+     <span class="k">const</span> <span class="kt">double</span> <span class="n">y_</span><span class="p">;</span>
+ <span class="p">};</span>
+</pre></div>
+</div>
+<p>What is the difference in performance of these two implementations?</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="74%" />
+<col width="26%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">CostFunction</th>
+<th class="head">Time (ns)</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>Rat43Analytic</td>
+<td>255</td>
+</tr>
+<tr class="row-odd"><td>Rat43AnalyticOptimized</td>
+<td>92</td>
+</tr>
+</tbody>
+</table>
+<p><code class="docutils literal"><span class="pre">Rat43AnalyticOptimized</span></code> is <span class="math">\(2.8\)</span> times faster than
+<code class="docutils literal"><span class="pre">Rat43Analytic</span></code>.  This difference in run-time is not uncommon. To
+get the best performance out of analytically computed derivatives, one
+usually needs to optimize the code to account for common
+sub-expressions.</p>
+<div class="section" id="when-should-you-use-analytical-derivatives">
+<h2>When should you use analytical derivatives?<a class="headerlink" href="#when-should-you-use-analytical-derivatives" title="Permalink to this headline">¶</a></h2>
+<ol class="arabic">
+<li><p class="first">The expressions are simple, e.g. mostly linear.</p>
+</li>
+<li><p class="first">A computer algebra system like <a class="reference external" href="https://www.maplesoft.com/products/maple/">Maple</a> , <a class="reference external" href="https://www.wolfram.com/mathematica/">Mathematica</a>, or <a class="reference external" href="http://www.sympy.org/en/index.html">SymPy</a> can be used to symbolically
+differentiate the objective function and generate the C++ to
+evaluate them.</p>
+</li>
+<li><p class="first">Performance is of utmost concern and there is algebraic structure
+in the terms that you can exploit to get better performance than
+automatic differentiation.</p>
+<p>That said, getting the best performance out of analytical
+derivatives requires a non-trivial amount of work.  Before going
+down this path, it is useful to measure the amount of time being
+spent evaluating the Jacobian as a fraction of the total solve time
+and remember <a class="reference external" href="https://en.wikipedia.org/wiki/Amdahl's_law">Amdahl&#8217;s Law</a> is your friend.</p>
+</li>
+<li><p class="first">There is no other way to compute the derivatives, e.g. you
+wish to compute the derivative of the root of a polynomial:</p>
+<div class="math">
+\[a_3(x,y)z^3 + a_2(x,y)z^2 + a_1(x,y)z + a_0(x,y) = 0\]</div>
+<p>with respect to <span class="math">\(x\)</span> and <span class="math">\(y\)</span>. This requires the use of
+the <a class="reference external" href="https://en.wikipedia.org/wiki/Inverse_function_theorem">Inverse Function Theorem</a></p>
+</li>
+<li><p class="first">You love the chain rule and actually enjoy doing all the algebra by
+hand.</p>
+</li>
+</ol>
+<p class="rubric">Footnotes</p>
+<table class="docutils footnote" frame="void" id="f1" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id1">[1]</a></td><td>The notion of best fit depends on the choice of the objective
+function used to measure the quality of fit, which in turn
+depends on the underlying noise process which generated the
+observations. Minimizing the sum of squared differences is
+the right thing to do when the noise is <a class="reference external" href="https://en.wikipedia.org/wiki/Normal_distribution">Gaussian</a>. In
+that case the optimal value of the parameters is the <a class="reference external" href="https://en.wikipedia.org/wiki/Maximum_likelihood_estimation">Maximum
+Likelihood Estimate</a>.</td></tr>
+</tbody>
+</table>
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="numerical_derivatives.html" class="btn btn-neutral float-right" title="Numeric derivatives" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="spivak_notation.html" class="btn btn-neutral" title="Spivak Notation" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2016 Google Inc.
+
+    </p>
+  </div> 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'1.13.0',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS_HTML">
+      MathJax.Hub.Config({
+          "HTML-CSS": {
+            availableFonts: ["TeX"]
+          }
+        });
+      </script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+  
+ 
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+  ga('create', 'UA-49769510-1', 'ceres-solver.org');
+  ga('send', 'pageview');
+</script>
+
+
+</body>
+</html>

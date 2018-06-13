@@ -1,0 +1,501 @@
+# ===================================================================================
+#  The V4R CMake dependencies file
+#
+#             ** File generated automatically, do not modify **
+#
+
+# Utility functions
+
+# remove all matching elements from the list
+macro(v4r_list_filterout lst regex)
+  foreach(item ${${lst}})
+    if(item MATCHES "${regex}")
+      list(REMOVE_ITEM ${lst} "${item}")
+    endif()
+  endforeach()
+endmacro()
+
+# Add a global imported library
+# Type is automatically determined from IMPORTED_LOCATION
+# TODO: keep in sync with the original function in V4RUtils
+macro(v4r_add_imported_library _name)
+  # Extract (supported) target properties
+  set(options)
+  set(one_value_args IMPORTED_LOCATION)
+  set(multi_value_args INTERFACE_LINK_LIBRARIES INTERFACE_INCLUDE_DIRECTORIES)
+  cmake_parse_arguments(ARG "${options}" "${one_value_args}" "${multi_value_args}" ${ARGN})
+
+  # Determine library type (shared/static/interface)
+  if(ARG_IMPORTED_LOCATION)
+    if(ARG_IMPORTED_LOCATION MATCHES ".so$")
+      set(_type "SHARED")
+    elseif(ARG_IMPORTED_LOCATION MATCHES ".a$")
+      set(_type "STATIC")
+    else()
+      message(WARNING "Unable to detect the type of imported library ${ARG_IMPORTED_LOCATION}, assuming SHARED")
+      set(_type "SHARED")
+    endif()
+  else()
+    set(_type "INTERFACE")
+  endif()
+
+  # Create library and set properties
+  add_library(${_name} ${_type} IMPORTED GLOBAL)
+  foreach(_m ${one_value_args} ${multi_value_args})
+    if(ARG_${_m})
+      set_property(TARGET ${_name} PROPERTY ${_m} ${ARG_${_m}})
+    endif()
+  endforeach()
+endmacro()
+
+# clears all passed variables
+macro(v4r_clear_vars)
+  foreach(_var ${ARGN})
+    unset(${_var})
+    unset(${_var} CACHE)
+  endforeach()
+endmacro()
+
+# read set of version defines from the header file
+macro(v4r_parse_header FILENAME FILE_VAR)
+  set(vars_regex "")
+  set(__parnet_scope OFF)
+  set(__add_cache OFF)
+  foreach(name ${ARGN})
+    if(name STREQUAL "PARENT_SCOPE")
+      set(__parnet_scope ON)
+    elseif(name STREQUAL "CACHE")
+      set(__add_cache ON)
+    elseif(vars_regex)
+      set(vars_regex "${vars_regex}|${name}")
+    else()
+      set(vars_regex "${name}")
+    endif()
+  endforeach()
+  if(EXISTS "${FILENAME}")
+    file(STRINGS "${FILENAME}" ${FILE_VAR} REGEX "#define[ \t]+(${vars_regex})[ \t]+[0-9]+" )
+  else()
+    unset(${FILE_VAR})
+  endif()
+  foreach(name ${ARGN})
+    if(NOT name STREQUAL "PARENT_SCOPE" AND NOT name STREQUAL "CACHE")
+      if(${FILE_VAR})
+        if(${FILE_VAR} MATCHES ".+[ \t]${name}[ \t]+([0-9]+).*")
+          string(REGEX REPLACE ".+[ \t]${name}[ \t]+([0-9]+).*" "\\1" ${name} "${${FILE_VAR}}")
+        else()
+          set(${name} "")
+        endif()
+        if(__add_cache)
+          set(${name} ${${name}} CACHE INTERNAL "${name} parsed from ${FILENAME}" FORCE)
+        elseif(__parnet_scope)
+          set(${name} "${${name}}" PARENT_SCOPE)
+        endif()
+      else()
+        unset(${name} CACHE)
+      endif()
+    endif()
+  endforeach()
+endmacro()
+
+#------------------------------------------------------------------------------#
+# PCL
+#------------------------------------------------------------------------------#
+
+set(PCL_DIR "/usr/local/share/pcl-1.8")
+
+find_package(PCL 1.7.1 QUIET)
+if(PCL_FOUND)
+  v4r_list_filterout(PCL_LIBRARIES "optimized|debug|vtkproj4")
+  list(REMOVE_DUPLICATES PCL_LIBRARIES)
+  v4r_add_imported_library(pcl
+    INTERFACE_INCLUDE_DIRECTORIES ${PCL_INCLUDE_DIRS}
+    INTERFACE_LINK_LIBRARIES ${PCL_LIBRARIES}
+  )
+  # This variable may be used to configure third-party dependencies to use this same PCL library
+  set(PCL_CONFIG_PATH ${PCL_ROOT}/share/pcl-${PCL_VERSION_MAJOR}.${PCL_VERSION_MINOR} CACHE INTERNAL "Directory with PCL CMake configuration files")
+  set(HAVE_PCL TRUE)
+else()
+  set(HAVE_PCL FALSE)
+endif()
+
+
+#------------------------------------------------------------------------------#
+# Boost
+#------------------------------------------------------------------------------#
+
+
+find_package(Boost 1.48 COMPONENTS thread program_options serialization system filesystem regex)
+if(Boost_FOUND)
+  set(BOOST_VERSION "${Boost_MAJOR_VERSION}.${Boost_MINOR_VERSION}")
+  v4r_add_imported_library(boost
+    INTERFACE_INCLUDE_DIRECTORIES ${Boost_INCLUDE_DIRS}
+    INTERFACE_LINK_LIBRARIES ${Boost_LIBRARIES}
+  )
+  set(HAVE_BOOST TRUE)
+else()
+  set(HAVE_BOOST FALSE)
+endif()
+
+
+#------------------------------------------------------------------------------#
+# OpenCV
+#------------------------------------------------------------------------------#
+
+set(OpenCV_DIR "/opt/ros/kinetic/share/OpenCV-3.3.1-dev")
+
+find_package(OpenCV)
+if(OpenCV_FOUND)
+  set(OPENCV_VERSION "${OpenCV_VERSION}")
+  v4r_add_imported_library(opencv
+    INTERFACE_LINK_LIBRARIES ${OpenCV_LIBS}
+  )
+  # This variable may be used to configure third-party dependencies to use this same OpenCV library
+  set(OPENCV_CONFIG_PATH "${OpenCV_CONFIG_PATH}" CACHE INTERNAL "Directory with OpenCV CMake configuration files")
+  set(HAVE_OPENCV TRUE)
+else()
+  set(HAVE_OPENCV FALSE)
+endif()
+
+
+#------------------------------------------------------------------------------#
+# Glog
+#------------------------------------------------------------------------------#
+
+
+include(FindPkgConfig)
+if(PKG_CONFIG_FOUND)
+  pkg_search_module(GLOG QUIET libglog)
+  if(GLOG_FOUND)
+    v4r_add_imported_library(glog
+      IMPORTED_LOCATION "${GLOG_LIBDIR}/libglog.so"
+      INTERFACE_INCLUDE_DIRECTORIES ${GLOG_INCLUDEDIR}
+    )
+    set(HAVE_GLOG TRUE)
+  else()
+    set(HAVE_GLOG FALSE)
+  endif()
+  # Completely wipe this variable, because other 3rd party libraries may want to discover Glog themselves (e.g. Ceres)
+  v4r_clear_vars(GLOG_FOUND)
+endif()
+
+#------------------------------------------------------------------------------#
+# EDT
+#------------------------------------------------------------------------------#
+
+set(V4R_3P_EDT_INSTALL_DIR "/home/victor/software/v4r/build/3rdparty/edt/install")
+set(BUILD_EDT YES)
+
+# We only support building bundled version of EDT, so we know for sure where it is installed
+v4r_add_imported_library(edt
+  IMPORTED_LOCATION "${V4R_3P_EDT_INSTALL_DIR}/lib/libedt.a"
+  INTERFACE_INCLUDE_DIRECTORIES "${V4R_3P_EDT_INSTALL_DIR}/include"
+)
+
+set(HAVE_EDT TRUE)
+
+#------------------------------------------------------------------------------#
+# PCL_1_8
+#------------------------------------------------------------------------------#
+
+set(V4R_3P_PCL_1_8_INSTALL_DIR "/home/victor/software/v4r/build/3rdparty/pcl_1_8/install")
+set(BUILD_PCL_1_8 YES)
+
+# We only support building bundled version of PCL_1_8, so we know for sure where it is installed
+v4r_add_imported_library(pcl_1_8
+  INTERFACE_INCLUDE_DIRECTORIES "${V4R_3P_PCL_1_8_INSTALL_DIR}/include"
+  IMPORTED_LOCATION "${V4R_3P_PCL_1_8_INSTALL_DIR}/lib/libpcl_1_8.a"
+  INTERFACE_LINK_LIBRARIES pcl
+)
+
+set(HAVE_PCL_1_8 TRUE)
+
+#------------------------------------------------------------------------------#
+# Qt
+#------------------------------------------------------------------------------#
+
+
+find_package(Qt5 COMPONENTS Core OpenGL Widgets)
+if(Qt5Core_FOUND)
+  v4r_add_imported_library(qt
+    INTERFACE_LINK_LIBRARIES Qt5::Core Qt5::Widgets Qt5::OpenGL
+  )
+  set(QT_VERSION ${Qt5Core_VERSION})
+  set(HAVE_QT TRUE)
+else()
+  set(HAVE_QT FALSE)
+endif()
+
+#------------------------------------------------------------------------------#
+# Eigen
+#------------------------------------------------------------------------------#
+
+
+find_path(EIGEN_INCLUDE_DIR "Eigen/Core"
+          PATHS /usr/local /opt /usr $ENV{EIGEN_ROOT}/include ${EIGEN_DIR}
+          PATH_SUFFIXES include/eigen3 Eigen/include/eigen3
+          DOC "The path to Eigen3 headers"
+          CMAKE_FIND_ROOT_PATH_BOTH)
+
+if(EXISTS ${EIGEN_INCLUDE_DIR})
+  # Create imported target
+  v4r_add_imported_library(eigen
+    INTERFACE_INCLUDE_DIRECTORIES ${EIGEN_INCLUDE_DIR}
+  )
+  # Find version number in headers
+  v4r_parse_header("${EIGEN_INCLUDE_DIR}/Eigen/src/Core/util/Macros.h" EIGEN_VERSION_LINES EIGEN_WORLD_VERSION EIGEN_MAJOR_VERSION EIGEN_MINOR_VERSION)
+  set(EIGEN_VERSION "${EIGEN_WORLD_VERSION}.${EIGEN_MAJOR_VERSION}.${EIGEN_MINOR_VERSION}")
+  v4r_clear_vars(EIGEN_VERSION_LINES EIGEN_WORLD_VERSION EIGEN_MAJOR_VERSION EIGEN_MINOR_VERSION)
+  set(HAVE_EIGEN TRUE)
+else()
+  set(HAVE_EIGEN FALSE)
+endif()
+
+mark_as_advanced(EIGEN_INCLUDE_DIR)
+
+#------------------------------------------------------------------------------#
+# GLM
+#------------------------------------------------------------------------------#
+
+
+if(BUILD_GLM)
+  set(GLM_INCLUDE_DIR ${V4R_3P_GLM_INSTALL_DIR}/include)
+else()
+  find_path(GLM_INCLUDE_DIR glm/glm.hpp
+            PATHS /usr/local/include /usr/include $ENV{GLM_ROOT} ${GLM_DIR}
+            DOC "The path to GLM headers")
+endif()
+
+if(EXISTS ${GLM_INCLUDE_DIR})
+  # Create imported target
+  v4r_add_imported_library(glm
+    INTERFACE_INCLUDE_DIRECTORIES ${GLM_INCLUDE_DIR}
+  )
+  # Find version number
+  v4r_parse_header("${GLM_INCLUDE_DIR}/glm/detail/setup.hpp" GLM_VERSION_LINES GLM_VERSION_MAJOR GLM_VERSION_MINOR GLM_VERSION_PATCH)
+  set(GLM_VERSION "${GLM_VERSION_MAJOR}.${GLM_VERSION_MINOR}.${GLM_VERSION_PATCH}")
+  v4r_clear_vars(GLM_VERSION_LINES GLM_VERSION_MAJOR GLM_VERSION_MINOR GLM_VERSION_PATCH)
+  set(HAVE_GLM TRUE)
+else()
+  set(HAVE_GLM FALSE)
+endif()
+
+mark_as_advanced(GLM_INCLUDE_DIR)
+
+#------------------------------------------------------------------------------#
+# Ceres
+#------------------------------------------------------------------------------#
+
+set(V4R_3P_CERES_INSTALL_DIR "/home/victor/software/v4r/build/3rdparty/ceres/install")
+set(BUILD_CERES YES)
+set(Ceres_DIR "/home/victor/software/v4r/build/3rdparty/ceres/install/lib/cmake/Ceres")
+
+if(BUILD_CERES)
+  set(Ceres_DIR ${V4R_3P_CERES_INSTALL_DIR}/lib/cmake/Ceres)
+  find_package(Ceres 1.12.0 CONFIG)
+else()
+  find_package(Ceres 1.12.0)
+endif()
+
+if(CERES_FOUND)
+  # For some reason Ceres (version 1.13) does not set include directories on the imported target
+  set_property(TARGET ceres APPEND PROPERTY INTERFACE_INCLUDE_DIRECTORIES ${CERES_INCLUDE_DIRS})
+  set(HAVE_CERES TRUE)
+else()
+  set(HAVE_CERES FALSE)
+endif()
+
+mark_as_advanced(Ceres_DIR)
+
+#------------------------------------------------------------------------------#
+# OpenGL
+#------------------------------------------------------------------------------#
+
+
+find_package(OpenGL)
+if(OPENGL_FOUND)
+  v4r_add_imported_library(opengl
+    INTERFACE_INCLUDE_DIRECTORIES ${OPENGL_INCLUDE_DIR}
+    INTERFACE_LINK_LIBRARIES GL
+  )
+  set(HAVE_OPENGL TRUE)
+else()
+  set(HAVE_OPENGL FALSE)
+endif()
+
+#------------------------------------------------------------------------------#
+# GLEW
+#------------------------------------------------------------------------------#
+
+
+find_package(GLEW)
+if(GLEW_FOUND)
+  set(HAVE_GLEW TRUE)
+  v4r_add_imported_library(glew
+    IMPORTED_LOCATION ${GLEW_LIBRARIES}
+    INTERFACE_INCLUDE_DIRECTORIES ${GLEW_INCLUDE_DIR}
+  )
+else()
+  set(HAVE_GLEW FALSE)
+endif()
+
+
+#------------------------------------------------------------------------------#
+# Assimp
+#------------------------------------------------------------------------------#
+
+
+find_path(ASSIMP_INCLUDE_DIR assimp/config.h
+          PATHS /usr/local /opt /usr $ENV{ASSIMP_ROOT} ${ASSIMP_DIR}
+          DOC "The path to Assimp header files"
+          CMAKE_FIND_ROOT_PATH_BOTH)
+find_library(ASSIMP_LIBRARY
+             NAMES assimp
+             PATHS /usr/local /opt /usr $ENV{ASSIMP_ROOT} ${ASSIMP_DIR}
+             DOC "The Assimp library")
+
+if(ASSIMP_INCLUDE_DIR AND ASSIMP_LIBRARY)
+  # Create imported target
+  v4r_add_imported_library(assimp
+    IMPORTED_LOCATION ${ASSIMP_LIBRARY}
+    INTERFACE_INCLUDE_DIRECTORIES ${ASSIMP_INCLUDE_DIR}
+  )
+  # Find version number in pkgconfig file
+  get_filename_component(_lib_dir ${ASSIMP_LIBRARY} DIRECTORY)
+  find_file(_pkgconfig assimp.pc
+            PATHS /usr/local /opt /usr $ENV{ASSIMP_ROOT} ${ASSIMP_DIR}
+            HINTS ${_lib_dir}
+            PATH_SUFFIXES lib/pkgconfig pkgconfig
+            DOC "The Assimp pkfconfig file"
+            CMAKE_FIND_ROOT_PATH_BOTH)
+  if(_pkgconfig)
+    file(STRINGS "${_pkgconfig}" _version REGEX "Version: [0-9.]+")
+    if(_version)
+      string(REGEX REPLACE "Version: " "" ASSIMP_VERSION ${_version})
+    endif()
+  endif()
+  set(HAVE_ASSIMP TRUE)
+else()
+  set(HAVE_ASSIMP FALSE)
+endif()
+
+mark_as_advanced(ASSIMP_INCLUDE_DIR ASSIMP_LIBRARY)
+
+#------------------------------------------------------------------------------#
+# SiftGPU
+#------------------------------------------------------------------------------#
+
+set(V4R_3P_SIFTGPU_INSTALL_DIR "/home/victor/software/v4r/build/3rdparty/siftgpu/install")
+set(BUILD_SIFTGPU YES)
+
+# We only support building SiftGPU from source, so we know for sure where it is installed
+v4r_add_imported_library(siftgpu
+  INTERFACE_INCLUDE_DIRECTORIES "/usr/local/include"
+  IMPORTED_LOCATION "/usr/local//lib/libsiftgpu.a"
+  INTERFACE_LINK_LIBRARIES glew opengl "IL;glut;X11"
+)
+set(SIFTGPU_VERSION "v400")
+set(HAVE_SIFTGPU TRUE)
+
+# We assume that the interface link libraries are available system-wide.
+# This is a valid assumption because by the time we reach this point
+# SiftGPU has been built already (and it is linked against them).
+
+#------------------------------------------------------------------------------#
+# LibSVM
+#------------------------------------------------------------------------------#
+
+
+if(BUILD_LIBSVM)
+  set(LIBSVM_INCLUDE_DIR "${V4R_3P_LIBSVM_INSTALL_DIR}/include")
+  set(LIBSVM_LIBRARY "${V4R_3P_LIBSVM_INSTALL_DIR}/lib/libsvm.so.2")
+else()
+  find_path(LIBSVM_INCLUDE_DIR libsvm/svm.h
+            PATHS /usr/local /opt /usr $ENV{LIBSVM_ROOT} ${LIBSVM_DIR}
+            DOC "The path to LibSVM header"
+            CMAKE_FIND_ROOT_PATH_BOTH)
+  find_library(LIBSVM_LIBRARY
+               NAMES svm
+               PATHS /usr/local /opt /usr $ENV{LIBSVM_ROOT} ${LIBSVM_DIR}
+               DOC "The LibSVM library")
+endif()
+
+if(EXISTS ${LIBSVM_INCLUDE_DIR} AND EXISTS ${LIBSVM_LIBRARY})
+  # Create imported target
+  v4r_add_imported_library(libsvm
+    IMPORTED_LOCATION ${LIBSVM_LIBRARY}
+    INTERFACE_INCLUDE_DIRECTORIES ${LIBSVM_INCLUDE_DIR}
+  )
+  # Find version number
+  v4r_parse_header("${LIBSVM_INCLUDE_DIR}/libsvm/svm.h" LIBSVM_VERSION_LINES LIBSVM_VERSION)
+  v4r_clear_vars(LIBSVM_VERSION_LINES)
+  set(HAVE_LIBSVM TRUE)
+else()
+  set(HAVE_LIBSVM FALSE)
+endif()
+
+mark_as_advanced(LIBSVM_INCLUDE_DIR LIBSVM_LIBRARY)
+
+
+#------------------------------------------------------------------------------#
+# METSlib
+#------------------------------------------------------------------------------#
+
+set(V4R_3P_METSLIB_INSTALL_DIR "/home/victor/software/v4r/build/3rdparty/metslib/install")
+set(BUILD_METSLIB YES)
+
+# We only support building bundled version of METSlib, so we know for sure where it is installed
+v4r_add_imported_library(metslib
+  INTERFACE_INCLUDE_DIRECTORIES "${V4R_3P_METSLIB_INSTALL_DIR}/include"
+)
+
+set(HAVE_METSLIB TRUE)
+
+#------------------------------------------------------------------------------#
+# OpenNURBS
+#------------------------------------------------------------------------------#
+
+set(V4R_3P_OPENNURBS_INSTALL_DIR "/home/victor/software/v4r/build/3rdparty/opennurbs/install")
+set(BUILD_OPENNURBS YES)
+
+# We only support building bundled version of OpenNURBS, so we know for sure where it is installed
+v4r_add_imported_library(opennurbs
+  IMPORTED_LOCATION "${V4R_3P_OPENNURBS_INSTALL_DIR}/lib/libopennurbs.a"
+  INTERFACE_INCLUDE_DIRECTORIES "${V4R_3P_OPENNURBS_INSTALL_DIR}/include"
+)
+
+set(HAVE_OPENNURBS TRUE)
+
+#------------------------------------------------------------------------------#
+# OpenMP
+#------------------------------------------------------------------------------#
+
+
+find_package(OpenMP)
+if(OPENMP_FOUND)
+  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
+  set(HAVE_OPENMP TRUE)
+else()
+  set(HAVE_OPENMP FALSE)
+endif()
+
+#------------------------------------------------------------------------------#
+# Radical
+#------------------------------------------------------------------------------#
+
+set(V4R_3P_RADICAL_INSTALL_DIR "/home/victor/software/v4r/build/3rdparty/radical/install")
+set(BUILD_RADICAL YES)
+
+if(BUILD_RADICAL)
+  set(radical_DIR ${V4R_3P_RADICAL_INSTALL_DIR}/lib/cmake/radical)
+endif()
+
+find_package(radical CONFIG)
+
+if(radical_FOUND)
+  set(RADICAL_VERSION "${radical_VERSION}")
+  set(HAVE_RADICAL TRUE)
+else()
+  set(HAVE_RADICAL FALSE)
+endif()
+

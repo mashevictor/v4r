@@ -1,0 +1,46 @@
+{
+	"sources" : 
+	[
+		{
+			"file" : "/home/victor/software/v4r/build/3rdparty/opennurbs/downloader/CMakeFiles/opennurbs"
+		},
+		{
+			"file" : "/home/victor/software/v4r/build/3rdparty/opennurbs/downloader/CMakeFiles/opennurbs.rule"
+		},
+		{
+			"file" : "/home/victor/software/v4r/build/3rdparty/opennurbs/downloader/CMakeFiles/opennurbs-complete.rule"
+		},
+		{
+			"file" : "/home/victor/software/v4r/build/3rdparty/opennurbs/stamp/opennurbs-install.rule"
+		},
+		{
+			"file" : "/home/victor/software/v4r/build/3rdparty/opennurbs/stamp/opennurbs-mkdir.rule"
+		},
+		{
+			"file" : "/home/victor/software/v4r/build/3rdparty/opennurbs/stamp/opennurbs-download.rule"
+		},
+		{
+			"file" : "/home/victor/software/v4r/build/3rdparty/opennurbs/stamp/opennurbs-update.rule"
+		},
+		{
+			"file" : "/home/victor/software/v4r/build/3rdparty/opennurbs/stamp/opennurbs-patch.rule"
+		},
+		{
+			"file" : "/home/victor/software/v4r/build/3rdparty/opennurbs/stamp/opennurbs-configure.rule"
+		},
+		{
+			"file" : "/home/victor/software/v4r/build/3rdparty/opennurbs/stamp/opennurbs-build.rule"
+		},
+		{
+			"file" : "/home/victor/software/v4r/build/3rdparty/opennurbs/stamp/opennurbs-ROBUST_PATCH.rule"
+		}
+	],
+	"target" : 
+	{
+		"labels" : 
+		[
+			"opennurbs"
+		],
+		"name" : "opennurbs"
+	}
+}

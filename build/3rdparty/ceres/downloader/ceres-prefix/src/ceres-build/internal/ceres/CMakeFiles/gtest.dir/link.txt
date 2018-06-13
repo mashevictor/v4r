@@ -1,0 +1,1 @@
+/usr/bin/c++  -fPIC  -fopenmp -Wno-unknown-pragmas -Wno-sign-compare -Wno-unused-parameter -Wno-missing-field-initializers -O3 -DNDEBUG   -shared -Wl,-soname,libgtest.so -o ../../lib/libgtest.so CMakeFiles/gtest.dir/gmock_gtest_all.cc.o CMakeFiles/gtest.dir/gmock_main.cc.o -lgflags -lpthread -lglog 

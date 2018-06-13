@@ -1,0 +1,3 @@
+repository='external project URL'
+module='/home/victor/SiftGPU-master'
+tag='SHA1=a1c361e34a05dbfc4acc42f9004ba8ac'

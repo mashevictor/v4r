@@ -1,0 +1,2 @@
+/usr/bin/ar qc libedt.a  CMakeFiles/edt.dir/propagation_distance_field.cpp.o
+/usr/bin/ranlib libedt.a

@@ -1,0 +1,11 @@
+# Hashes of file build rules.
+64848f9177fdae187fa6474f0bed1345 /home/victor/software/v4r/build/3rdparty/siftgpu/stamp/siftgpu-ROBUST_PATCH
+6ad17cd05de05bd9eced7d2c735c487f /home/victor/software/v4r/build/3rdparty/siftgpu/stamp/siftgpu-build
+c6e8cda708d35e1455ca1809b32fe930 /home/victor/software/v4r/build/3rdparty/siftgpu/stamp/siftgpu-configure
+68eaabf1a849fafb9982d84d8c534d7b /home/victor/software/v4r/build/3rdparty/siftgpu/stamp/siftgpu-download
+fe0b22fe81039051b2e4e63a3e8b3734 /home/victor/software/v4r/build/3rdparty/siftgpu/stamp/siftgpu-install
+c1dbeb8a0dd8d62a6ba9fd05a30aacf6 /home/victor/software/v4r/build/3rdparty/siftgpu/stamp/siftgpu-mkdir
+86d8d68637d2d1a1a8038ce9a40bbcad /home/victor/software/v4r/build/3rdparty/siftgpu/stamp/siftgpu-patch
+6a13bc04839a783ba3220534ded8595d /home/victor/software/v4r/build/3rdparty/siftgpu/stamp/siftgpu-update
+c1290be7d44548583dbf9d4e983374e3 CMakeFiles/siftgpu
+ae13e42c4c82817c1aba844b878eab54 CMakeFiles/siftgpu-complete

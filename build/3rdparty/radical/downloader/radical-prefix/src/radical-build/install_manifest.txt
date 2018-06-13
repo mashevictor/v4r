@@ -1,0 +1,15 @@
+/home/victor/software/v4r/build/3rdparty/radical/install/lib/libradical.so.1.0.0
+/home/victor/software/v4r/build/3rdparty/radical/install/lib/libradical.so.1.0
+/home/victor/software/v4r/build/3rdparty/radical/install/lib/libradical.so
+/home/victor/software/v4r/build/3rdparty/radical/install/include/radical/exceptions.h
+/home/victor/software/v4r/build/3rdparty/radical/install/include/radical/radiometric_response.h
+/home/victor/software/v4r/build/3rdparty/radical/install/include/radical/polynomial_vignetting_model.h
+/home/victor/software/v4r/build/3rdparty/radical/install/include/radical/vignetting_response.h
+/home/victor/software/v4r/build/3rdparty/radical/install/include/radical/mat_io.h
+/home/victor/software/v4r/build/3rdparty/radical/install/include/radical/check.h
+/home/victor/software/v4r/build/3rdparty/radical/install/include/radical/nonparametric_vignetting_model.h
+/home/victor/software/v4r/build/3rdparty/radical/install/include/radical/vignetting_model.h
+/home/victor/software/v4r/build/3rdparty/radical/install/lib/cmake/radical/radical-config.cmake
+/home/victor/software/v4r/build/3rdparty/radical/install/lib/cmake/radical/radical-config-version.cmake
+/home/victor/software/v4r/build/3rdparty/radical/install/lib/cmake/radical/radical-targets.cmake
+/home/victor/software/v4r/build/3rdparty/radical/install/lib/cmake/radical/radical-targets-release.cmake

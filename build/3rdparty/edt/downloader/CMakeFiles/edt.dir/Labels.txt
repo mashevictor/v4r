@@ -1,0 +1,14 @@
+# Target labels
+ edt
+# Source files and their labels
+/home/victor/software/v4r/build/3rdparty/edt/downloader/CMakeFiles/edt
+/home/victor/software/v4r/build/3rdparty/edt/downloader/CMakeFiles/edt.rule
+/home/victor/software/v4r/build/3rdparty/edt/downloader/CMakeFiles/edt-complete.rule
+/home/victor/software/v4r/build/3rdparty/edt/stamp/edt-install.rule
+/home/victor/software/v4r/build/3rdparty/edt/stamp/edt-mkdir.rule
+/home/victor/software/v4r/build/3rdparty/edt/stamp/edt-download.rule
+/home/victor/software/v4r/build/3rdparty/edt/stamp/edt-update.rule
+/home/victor/software/v4r/build/3rdparty/edt/stamp/edt-patch.rule
+/home/victor/software/v4r/build/3rdparty/edt/stamp/edt-configure.rule
+/home/victor/software/v4r/build/3rdparty/edt/stamp/edt-build.rule
+/home/victor/software/v4r/build/3rdparty/edt/stamp/edt-ROBUST_PATCH.rule

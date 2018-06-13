@@ -1,0 +1,510 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Automatic Derivatives &mdash; Ceres Solver</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+    <link rel="top" title="Ceres Solver" href="index.html"/>
+        <link rel="up" title="On Derivatives" href="derivatives.html"/>
+        <link rel="next" title="Interfacing with Automatic Differentiation" href="interfacing_with_autodiff.html"/>
+        <link rel="prev" title="Numeric derivatives" href="numerical_derivatives.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="index.html" class="icon icon-home"> Ceres Solver
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                1.13
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="features.html">Why?</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorial.html">Tutorial</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="derivatives.html">On Derivatives</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="spivak_notation.html">Spivak Notation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="analytical_derivatives.html">Analytic Derivatives</a></li>
+<li class="toctree-l2"><a class="reference internal" href="numerical_derivatives.html">Numeric derivatives</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Automatic Derivatives</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#dual-numbers-jets">Dual Numbers &amp; Jets</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#implementing-jets">Implementing Jets</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#pitfalls">Pitfalls</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="interfacing_with_autodiff.html">Interfacing with Automatic Differentiation</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="nnls_modeling.html">Modeling Non-linear Least Squares</a></li>
+<li class="toctree-l1"><a class="reference internal" href="nnls_solving.html">Solving Non-linear Least Squares</a></li>
+<li class="toctree-l1"><a class="reference internal" href="nnls_covariance.html">Covariance Estimation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="gradient_solver.html">General Unconstrained Minimization</a></li>
+<li class="toctree-l1"><a class="reference internal" href="faqs.html">FAQS, Tips &amp; Tricks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="users.html">Users</a></li>
+<li class="toctree-l1"><a class="reference internal" href="contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="version_history.html">Version History</a></li>
+<li class="toctree-l1"><a class="reference internal" href="bibliography.html">Bibliography</a></li>
+<li class="toctree-l1"><a class="reference internal" href="license.html">License</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="index.html">Ceres Solver</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+ 
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="index.html">Docs</a> &raquo;</li>
+      
+          <li><a href="derivatives.html">On Derivatives</a> &raquo;</li>
+      
+    <li>Automatic Derivatives</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="automatic-derivatives">
+<span id="chapter-automatic-derivatives"></span><h1>Automatic Derivatives<a class="headerlink" href="#automatic-derivatives" title="Permalink to this headline">¶</a></h1>
+<p>We will now consider automatic differentiation. It is a technique that
+can compute exact derivatives, fast, while requiring about the same
+effort from the user as is needed to use numerical differentiation.</p>
+<p>Don&#8217;t believe me? Well here goes. The following code fragment
+implements an automatically differentiated <code class="docutils literal"><span class="pre">CostFunction</span></code> for <a class="reference external" href="http://www.itl.nist.gov/div898/strd/nls/data/ratkowsky3.shtml">Rat43</a>.</p>
+<div class="highlight-c++"><div class="highlight"><pre><span></span><span class="k">struct</span> <span class="n">Rat43CostFunctor</span> <span class="p">{</span>
+  <span class="n">Rat43CostFunctor</span><span class="p">(</span><span class="k">const</span> <span class="kt">double</span> <span class="n">x</span><span class="p">,</span> <span class="k">const</span> <span class="kt">double</span> <span class="n">y</span><span class="p">)</span> <span class="o">:</span> <span class="n">x_</span><span class="p">(</span><span class="n">x</span><span class="p">),</span> <span class="n">y_</span><span class="p">(</span><span class="n">y</span><span class="p">)</span> <span class="p">{}</span>
+
+  <span class="k">template</span> <span class="o">&lt;</span><span class="k">typename</span> <span class="n">T</span><span class="o">&gt;</span>
+  <span class="kt">bool</span> <span class="k">operator</span><span class="p">()(</span><span class="k">const</span> <span class="n">T</span><span class="o">*</span> <span class="n">parameters</span><span class="p">,</span> <span class="n">T</span><span class="o">*</span> <span class="n">residuals</span><span class="p">)</span> <span class="k">const</span> <span class="p">{</span>
+    <span class="k">const</span> <span class="n">T</span> <span class="n">b1</span> <span class="o">=</span> <span class="n">parameters</span><span class="p">[</span><span class="mi">0</span><span class="p">];</span>
+    <span class="k">const</span> <span class="n">T</span> <span class="n">b2</span> <span class="o">=</span> <span class="n">parameters</span><span class="p">[</span><span class="mi">1</span><span class="p">];</span>
+    <span class="k">const</span> <span class="n">T</span> <span class="n">b3</span> <span class="o">=</span> <span class="n">parameters</span><span class="p">[</span><span class="mi">2</span><span class="p">];</span>
+    <span class="k">const</span> <span class="n">T</span> <span class="n">b4</span> <span class="o">=</span> <span class="n">parameters</span><span class="p">[</span><span class="mi">3</span><span class="p">];</span>
+    <span class="n">residuals</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">b1</span> <span class="o">*</span> <span class="n">pow</span><span class="p">(</span><span class="mf">1.0</span> <span class="o">+</span> <span class="n">exp</span><span class="p">(</span><span class="n">b2</span> <span class="o">-</span>  <span class="n">b3</span> <span class="o">*</span> <span class="n">x_</span><span class="p">),</span> <span class="o">-</span><span class="mf">1.0</span> <span class="o">/</span> <span class="n">b4</span><span class="p">)</span> <span class="o">-</span> <span class="n">y_</span><span class="p">;</span>
+    <span class="k">return</span> <span class="nb">true</span><span class="p">;</span>
+  <span class="p">}</span>
+
+  <span class="k">private</span><span class="o">:</span>
+    <span class="k">const</span> <span class="kt">double</span> <span class="n">x_</span><span class="p">;</span>
+    <span class="k">const</span> <span class="kt">double</span> <span class="n">y_</span><span class="p">;</span>
+<span class="p">};</span>
+
+
+<span class="n">CostFunction</span><span class="o">*</span> <span class="n">cost_function</span> <span class="o">=</span>
+      <span class="k">new</span> <span class="n">AutoDiffCostFunction</span><span class="o">&lt;</span><span class="n">Rat43CostFunctor</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">4</span><span class="o">&gt;</span><span class="p">(</span>
+        <span class="k">new</span> <span class="n">Rat43CostFunctor</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">));</span>
+</pre></div>
+</div>
+<p>Notice that compared to numeric differentiation, the only difference
+when defining the functor for use with automatic differentiation is
+the signature of the <code class="docutils literal"><span class="pre">operator()</span></code>.</p>
+<p>In the case of numeric differentition it was</p>
+<div class="highlight-c++"><div class="highlight"><pre><span></span><span class="kt">bool</span> <span class="nf">operator</span><span class="p">()(</span><span class="k">const</span> <span class="kt">double</span><span class="o">*</span> <span class="n">parameters</span><span class="p">,</span> <span class="kt">double</span><span class="o">*</span> <span class="n">residuals</span><span class="p">)</span> <span class="k">const</span><span class="p">;</span>
+</pre></div>
+</div>
+<p>and for automatic differentiation it is a templated function of the
+form</p>
+<div class="highlight-c++"><div class="highlight"><pre><span></span><span class="k">template</span> <span class="o">&lt;</span><span class="k">typename</span> <span class="n">T</span><span class="o">&gt;</span> <span class="kt">bool</span> <span class="k">operator</span><span class="p">()(</span><span class="k">const</span> <span class="n">T</span><span class="o">*</span> <span class="n">parameters</span><span class="p">,</span> <span class="n">T</span><span class="o">*</span> <span class="n">residuals</span><span class="p">)</span> <span class="k">const</span><span class="p">;</span>
+</pre></div>
+</div>
+<p>So what does this small change buy us? The following table compares
+the time it takes to evaluate the residual and the Jacobian for
+<cite>Rat43</cite> using various methods.</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="74%" />
+<col width="26%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">CostFunction</th>
+<th class="head">Time (ns)</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>Rat43Analytic</td>
+<td>255</td>
+</tr>
+<tr class="row-odd"><td>Rat43AnalyticOptimized</td>
+<td>92</td>
+</tr>
+<tr class="row-even"><td>Rat43NumericDiffForward</td>
+<td>262</td>
+</tr>
+<tr class="row-odd"><td>Rat43NumericDiffCentral</td>
+<td>517</td>
+</tr>
+<tr class="row-even"><td>Rat43NumericDiffRidders</td>
+<td>3760</td>
+</tr>
+<tr class="row-odd"><td>Rat43AutomaticDiff</td>
+<td>129</td>
+</tr>
+</tbody>
+</table>
+<p>We can get exact derivatives using automatic differentiation
+(<code class="docutils literal"><span class="pre">Rat43AutomaticDiff</span></code>) with about the same effort that is required
+to write the code for numeric differentiation but only <span class="math">\(40\%\)</span>
+slower than hand optimized analytical derivatives.</p>
+<p>So how does it work? For this we will have to learn about <strong>Dual
+Numbers</strong> and <strong>Jets</strong> .</p>
+<div class="section" id="dual-numbers-jets">
+<h2>Dual Numbers &amp; Jets<a class="headerlink" href="#dual-numbers-jets" title="Permalink to this headline">¶</a></h2>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Reading this and the next section on implementing Jets is not
+necessary to use automatic differentiation in Ceres Solver. But
+knowing the basics of how Jets work is useful when debugging and
+reasoning about the performance of automatic differentiation.</p>
+</div>
+<p>Dual numbers are an extension of the real numbers analogous to complex
+numbers: whereas complex numbers augment the reals by introducing an
+imaginary unit <span class="math">\(\iota\)</span> such that <span class="math">\(\iota^2 = -1\)</span>, dual
+numbers introduce an <em>infinitesimal</em> unit <span class="math">\(\epsilon\)</span> such that
+<span class="math">\(\epsilon^2 = 0\)</span> . A dual number <span class="math">\(a + v\epsilon\)</span> has two
+components, the <em>real</em> component <span class="math">\(a\)</span> and the <em>infinitesimal</em>
+component <span class="math">\(v\)</span>.</p>
+<p>Surprisingly, this simple change leads to a convenient method for
+computing exact derivatives without needing to manipulate complicated
+symbolic expressions.</p>
+<p>For example, consider the function</p>
+<div class="math">
+\[f(x) = x^2 ,\]</div>
+<p>Then,</p>
+<div class="math">
+\[\begin{split}\begin{align}
+f(10 + \epsilon) &amp;= (10 + \epsilon)^2\\
+         &amp;= 100 + 20 \epsilon + \epsilon^2\\
+         &amp;= 100 + 20 \epsilon
+\end{align}\end{split}\]</div>
+<p>Observe that the coefficient of <span class="math">\(\epsilon\)</span> is <span class="math">\(Df(10) =
+20\)</span>. Indeed this generalizes to functions which are not
+polynomial. Consider an arbitrary differentiable function
+<span class="math">\(f(x)\)</span>. Then we can evaluate <span class="math">\(f(x + \epsilon)\)</span> by
+considering the Taylor expansion of <span class="math">\(f\)</span> near <span class="math">\(x\)</span>, which
+gives us the infinite series</p>
+<div class="math">
+\[\begin{split}\begin{align}
+f(x + \epsilon) &amp;= f(x) + Df(x) \epsilon + D^2f(x)
+\frac{\epsilon^2}{2} + D^3f(x) \frac{\epsilon^3}{6} + \cdots\\
+f(x + \epsilon) &amp;= f(x) + Df(x) \epsilon
+\end{align}\end{split}\]</div>
+<p>Here we are using the fact that <span class="math">\(\epsilon^2 = 0\)</span>.</p>
+<p>A <a class="reference external" href="https://en.wikipedia.org/wiki/Jet_(mathematics)">Jet</a> is a
+<span class="math">\(n\)</span>-dimensional dual number, where we augment the real numbers
+with <span class="math">\(n\)</span> infinitesimal units <span class="math">\(\epsilon_i,\ i=1,...,n\)</span> with
+the property that <span class="math">\(\forall i, j\ :\epsilon_i\epsilon_j = 0\)</span>. Then
+a Jet consists of a <em>real</em> part <span class="math">\(a\)</span> and a <span class="math">\(n\)</span>-dimensional
+<em>infinitesimal</em> part <span class="math">\(\mathbf{v}\)</span>, i.e.,</p>
+<div class="math">
+\[x = a + \sum_j v_{j} \epsilon_j\]</div>
+<p>The summation notation gets tedious, so we will also just write</p>
+<div class="math">
+\[x = a + \mathbf{v}.\]</div>
+<p>where the <span class="math">\(\epsilon_i\)</span>&#8216;s are implict. Then, using the same
+Taylor series expansion used above, we can see that:</p>
+<div class="math">
+\[f(a + \mathbf{v}) = f(a) + Df(a) \mathbf{v}.\]</div>
+<p>Similarly for a multivariate function
+<span class="math">\(f:\mathbb{R}^{n}\rightarrow \mathbb{R}^m\)</span>, evaluated on
+<span class="math">\(x_i = a_i + \mathbf{v}_i,\ \forall i = 1,...,n\)</span>:</p>
+<div class="math">
+\[f(x_1,..., x_n) = f(a_1, ..., a_n) + \sum_i D_i f(a_1, ..., a_n) \mathbf{v}_i\]</div>
+<p>So if each <span class="math">\(\mathbf{v}_i = e_i\)</span> were the <span class="math">\(i^{\text{th}}\)</span>
+standard basis vector, then, the above expression would simplify to</p>
+<div class="math">
+\[f(x_1,..., x_n) = f(a_1, ..., a_n) + \sum_i D_i f(a_1, ..., a_n) \epsilon_i\]</div>
+<p>and we can extract the coordinates of the Jacobian by inspecting the
+coefficients of <span class="math">\(\epsilon_i\)</span>.</p>
+<div class="section" id="implementing-jets">
+<h3>Implementing Jets<a class="headerlink" href="#implementing-jets" title="Permalink to this headline">¶</a></h3>
+<p>In order for the above to work in practice, we will need the ability
+to evaluate an arbitrary function <span class="math">\(f\)</span> not just on real numbers
+but also on dual numbers, but one does not usually evaluate functions
+by evaluating their Taylor expansions,</p>
+<p>This is where C++ templates and operator overloading comes into
+play. The following code fragment has a simple implementation of a
+<code class="docutils literal"><span class="pre">Jet</span></code> and some operators/functions that operate on them.</p>
+<div class="highlight-c++"><div class="highlight"><pre><span></span><span class="k">template</span><span class="o">&lt;</span><span class="kt">int</span> <span class="n">N</span><span class="o">&gt;</span> <span class="k">struct</span> <span class="n">Jet</span> <span class="p">{</span>
+  <span class="kt">double</span> <span class="n">a</span><span class="p">;</span>
+  <span class="n">Eigen</span><span class="o">::</span><span class="n">Matrix</span><span class="o">&lt;</span><span class="kt">double</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">N</span><span class="o">&gt;</span> <span class="n">v</span><span class="p">;</span>
+<span class="p">};</span>
+
+<span class="k">template</span><span class="o">&lt;</span><span class="kt">int</span> <span class="n">N</span><span class="o">&gt;</span> <span class="n">Jet</span><span class="o">&lt;</span><span class="n">N</span><span class="o">&gt;</span> <span class="k">operator</span><span class="o">+</span><span class="p">(</span><span class="k">const</span> <span class="n">Jet</span><span class="o">&lt;</span><span class="n">N</span><span class="o">&gt;&amp;</span> <span class="n">f</span><span class="p">,</span> <span class="k">const</span> <span class="n">Jet</span><span class="o">&lt;</span><span class="n">N</span><span class="o">&gt;&amp;</span> <span class="n">g</span><span class="p">)</span> <span class="p">{</span>
+  <span class="k">return</span> <span class="n">Jet</span><span class="o">&lt;</span><span class="n">N</span><span class="o">&gt;</span><span class="p">(</span><span class="n">f</span><span class="p">.</span><span class="n">a</span> <span class="o">+</span> <span class="n">g</span><span class="p">.</span><span class="n">a</span><span class="p">,</span> <span class="n">f</span><span class="p">.</span><span class="n">v</span> <span class="o">+</span> <span class="n">g</span><span class="p">.</span><span class="n">v</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="k">template</span><span class="o">&lt;</span><span class="kt">int</span> <span class="n">N</span><span class="o">&gt;</span> <span class="n">Jet</span><span class="o">&lt;</span><span class="n">N</span><span class="o">&gt;</span> <span class="k">operator</span><span class="o">-</span><span class="p">(</span><span class="k">const</span> <span class="n">Jet</span><span class="o">&lt;</span><span class="n">N</span><span class="o">&gt;&amp;</span> <span class="n">f</span><span class="p">,</span> <span class="k">const</span> <span class="n">Jet</span><span class="o">&lt;</span><span class="n">N</span><span class="o">&gt;&amp;</span> <span class="n">g</span><span class="p">)</span> <span class="p">{</span>
+  <span class="k">return</span> <span class="n">Jet</span><span class="o">&lt;</span><span class="n">N</span><span class="o">&gt;</span><span class="p">(</span><span class="n">f</span><span class="p">.</span><span class="n">a</span> <span class="o">-</span> <span class="n">g</span><span class="p">.</span><span class="n">a</span><span class="p">,</span> <span class="n">f</span><span class="p">.</span><span class="n">v</span> <span class="o">-</span> <span class="n">g</span><span class="p">.</span><span class="n">v</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="k">template</span><span class="o">&lt;</span><span class="kt">int</span> <span class="n">N</span><span class="o">&gt;</span> <span class="n">Jet</span><span class="o">&lt;</span><span class="n">N</span><span class="o">&gt;</span> <span class="k">operator</span><span class="o">*</span><span class="p">(</span><span class="k">const</span> <span class="n">Jet</span><span class="o">&lt;</span><span class="n">N</span><span class="o">&gt;&amp;</span> <span class="n">f</span><span class="p">,</span> <span class="k">const</span> <span class="n">Jet</span><span class="o">&lt;</span><span class="n">N</span><span class="o">&gt;&amp;</span> <span class="n">g</span><span class="p">)</span> <span class="p">{</span>
+  <span class="k">return</span> <span class="n">Jet</span><span class="o">&lt;</span><span class="n">N</span><span class="o">&gt;</span><span class="p">(</span><span class="n">f</span><span class="p">.</span><span class="n">a</span> <span class="o">*</span> <span class="n">g</span><span class="p">.</span><span class="n">a</span><span class="p">,</span> <span class="n">f</span><span class="p">.</span><span class="n">a</span> <span class="o">*</span> <span class="n">g</span><span class="p">.</span><span class="n">v</span> <span class="o">+</span> <span class="n">f</span><span class="p">.</span><span class="n">v</span> <span class="o">*</span> <span class="n">g</span><span class="p">.</span><span class="n">a</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="k">template</span><span class="o">&lt;</span><span class="kt">int</span> <span class="n">N</span><span class="o">&gt;</span> <span class="n">Jet</span><span class="o">&lt;</span><span class="n">N</span><span class="o">&gt;</span> <span class="k">operator</span><span class="o">/</span><span class="p">(</span><span class="k">const</span> <span class="n">Jet</span><span class="o">&lt;</span><span class="n">N</span><span class="o">&gt;&amp;</span> <span class="n">f</span><span class="p">,</span> <span class="k">const</span> <span class="n">Jet</span><span class="o">&lt;</span><span class="n">N</span><span class="o">&gt;&amp;</span> <span class="n">g</span><span class="p">)</span> <span class="p">{</span>
+  <span class="k">return</span> <span class="n">Jet</span><span class="o">&lt;</span><span class="n">N</span><span class="o">&gt;</span><span class="p">(</span><span class="n">f</span><span class="p">.</span><span class="n">a</span> <span class="o">/</span> <span class="n">g</span><span class="p">.</span><span class="n">a</span><span class="p">,</span> <span class="n">f</span><span class="p">.</span><span class="n">v</span> <span class="o">/</span> <span class="n">g</span><span class="p">.</span><span class="n">a</span> <span class="o">-</span> <span class="n">f</span><span class="p">.</span><span class="n">a</span> <span class="o">*</span> <span class="n">g</span><span class="p">.</span><span class="n">v</span> <span class="o">/</span> <span class="p">(</span><span class="n">g</span><span class="p">.</span><span class="n">a</span> <span class="o">*</span> <span class="n">g</span><span class="p">.</span><span class="n">a</span><span class="p">));</span>
+<span class="p">}</span>
+
+<span class="k">template</span> <span class="o">&lt;</span><span class="kt">int</span> <span class="n">N</span><span class="o">&gt;</span> <span class="n">Jet</span><span class="o">&lt;</span><span class="n">N</span><span class="o">&gt;</span> <span class="n">exp</span><span class="p">(</span><span class="k">const</span> <span class="n">Jet</span><span class="o">&lt;</span><span class="n">N</span><span class="o">&gt;&amp;</span> <span class="n">f</span><span class="p">)</span> <span class="p">{</span>
+  <span class="k">return</span> <span class="n">Jet</span><span class="o">&lt;</span><span class="n">T</span><span class="p">,</span> <span class="n">N</span><span class="o">&gt;</span><span class="p">(</span><span class="n">exp</span><span class="p">(</span><span class="n">f</span><span class="p">.</span><span class="n">a</span><span class="p">),</span> <span class="n">exp</span><span class="p">(</span><span class="n">f</span><span class="p">.</span><span class="n">a</span><span class="p">)</span> <span class="o">*</span> <span class="n">f</span><span class="p">.</span><span class="n">v</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="c1">// This is a simple implementation for illustration purposes, the</span>
+<span class="c1">// actual implementation of pow requires careful handling of a number</span>
+<span class="c1">// of corner cases.</span>
+<span class="k">template</span> <span class="o">&lt;</span><span class="kt">int</span> <span class="n">N</span><span class="o">&gt;</span>  <span class="n">Jet</span><span class="o">&lt;</span><span class="n">N</span><span class="o">&gt;</span> <span class="n">pow</span><span class="p">(</span><span class="k">const</span> <span class="n">Jet</span><span class="o">&lt;</span><span class="n">N</span><span class="o">&gt;&amp;</span> <span class="n">f</span><span class="p">,</span> <span class="k">const</span> <span class="n">Jet</span><span class="o">&lt;</span><span class="n">N</span><span class="o">&gt;&amp;</span> <span class="n">g</span><span class="p">)</span> <span class="p">{</span>
+  <span class="k">return</span> <span class="n">Jet</span><span class="o">&lt;</span><span class="n">N</span><span class="o">&gt;</span><span class="p">(</span><span class="n">pow</span><span class="p">(</span><span class="n">f</span><span class="p">.</span><span class="n">a</span><span class="p">,</span> <span class="n">g</span><span class="p">.</span><span class="n">a</span><span class="p">),</span>
+                <span class="n">g</span><span class="p">.</span><span class="n">a</span> <span class="o">*</span> <span class="n">pow</span><span class="p">(</span><span class="n">f</span><span class="p">.</span><span class="n">a</span><span class="p">,</span> <span class="n">g</span><span class="p">.</span><span class="n">a</span> <span class="o">-</span> <span class="mf">1.0</span><span class="p">)</span> <span class="o">*</span> <span class="n">f</span><span class="p">.</span><span class="n">v</span> <span class="o">+</span>
+                <span class="n">pow</span><span class="p">(</span><span class="n">f</span><span class="p">.</span><span class="n">a</span><span class="p">,</span> <span class="n">g</span><span class="p">.</span><span class="n">a</span><span class="p">)</span> <span class="o">*</span> <span class="n">log</span><span class="p">(</span><span class="n">f</span><span class="p">.</span><span class="n">a</span><span class="p">);</span> <span class="o">*</span> <span class="n">g</span><span class="p">.</span><span class="n">v</span><span class="p">);</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>With these overloaded functions in hand, we can now call
+<code class="docutils literal"><span class="pre">Rat43CostFunctor</span></code> with an array of Jets instead of doubles. Putting
+that together with appropriately initialized Jets allows us to compute
+the Jacobian as follows:</p>
+<div class="highlight-c++"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">Rat43Automatic</span> <span class="o">:</span> <span class="k">public</span> <span class="n">ceres</span><span class="o">::</span><span class="n">SizedCostFunction</span><span class="o">&lt;</span><span class="mi">1</span><span class="p">,</span><span class="mi">4</span><span class="o">&gt;</span> <span class="p">{</span>
+ <span class="k">public</span><span class="o">:</span>
+  <span class="n">Rat43Automatic</span><span class="p">(</span><span class="k">const</span> <span class="n">Rat43CostFunctor</span><span class="o">*</span> <span class="n">functor</span><span class="p">)</span> <span class="o">:</span> <span class="n">functor_</span><span class="p">(</span><span class="n">functor</span><span class="p">)</span> <span class="p">{}</span>
+  <span class="k">virtual</span> <span class="o">~</span><span class="n">Rat43Automatic</span><span class="p">()</span> <span class="p">{}</span>
+  <span class="k">virtual</span> <span class="kt">bool</span> <span class="n">Evaluate</span><span class="p">(</span><span class="kt">double</span> <span class="k">const</span><span class="o">*</span> <span class="k">const</span><span class="o">*</span> <span class="n">parameters</span><span class="p">,</span>
+                        <span class="kt">double</span><span class="o">*</span> <span class="n">residuals</span><span class="p">,</span>
+                        <span class="kt">double</span><span class="o">**</span> <span class="n">jacobians</span><span class="p">)</span> <span class="k">const</span> <span class="p">{</span>
+    <span class="c1">// Just evaluate the residuals if Jacobians are not required.</span>
+    <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">jacobians</span><span class="p">)</span> <span class="k">return</span> <span class="p">(</span><span class="o">*</span><span class="n">functor_</span><span class="p">)(</span><span class="n">parameters</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">residuals</span><span class="p">);</span>
+
+    <span class="c1">// Initialize the Jets</span>
+    <span class="n">ceres</span><span class="o">::</span><span class="n">Jet</span><span class="o">&lt;</span><span class="mi">4</span><span class="o">&gt;</span> <span class="n">jets</span><span class="p">[</span><span class="mi">4</span><span class="p">];</span>
+    <span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="mi">4</span><span class="p">;</span> <span class="o">++</span><span class="n">i</span><span class="p">)</span> <span class="p">{</span>
+      <span class="n">jets</span><span class="p">[</span><span class="n">i</span><span class="p">].</span><span class="n">a</span> <span class="o">=</span> <span class="n">parameters</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="n">i</span><span class="p">];</span>
+      <span class="n">jets</span><span class="p">[</span><span class="n">i</span><span class="p">].</span><span class="n">v</span><span class="p">.</span><span class="n">setZero</span><span class="p">();</span>
+      <span class="n">jets</span><span class="p">[</span><span class="n">i</span><span class="p">].</span><span class="n">v</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">;</span>
+    <span class="p">}</span>
+
+    <span class="n">ceres</span><span class="o">::</span><span class="n">Jet</span><span class="o">&lt;</span><span class="mi">4</span><span class="o">&gt;</span> <span class="n">result</span><span class="p">;</span>
+    <span class="p">(</span><span class="o">*</span><span class="n">functor_</span><span class="p">)(</span><span class="n">jets</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">result</span><span class="p">);</span>
+
+    <span class="c1">// Copy the values out of the Jet.</span>
+    <span class="n">residuals</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">result</span><span class="p">.</span><span class="n">a</span><span class="p">;</span>
+    <span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="mi">4</span><span class="p">;</span> <span class="o">++</span><span class="n">i</span><span class="p">)</span> <span class="p">{</span>
+      <span class="n">jacobians</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">result</span><span class="p">.</span><span class="n">v</span><span class="p">[</span><span class="n">i</span><span class="p">];</span>
+    <span class="p">}</span>
+    <span class="k">return</span> <span class="nb">true</span><span class="p">;</span>
+  <span class="p">}</span>
+
+ <span class="k">private</span><span class="o">:</span>
+  <span class="n">std</span><span class="o">::</span><span class="n">unique_ptr</span><span class="o">&lt;</span><span class="k">const</span> <span class="n">Rat43CostFunctor</span><span class="o">&gt;</span> <span class="n">functor_</span><span class="p">;</span>
+<span class="p">};</span>
+</pre></div>
+</div>
+<p>Indeed, this is essentially how <a class="reference internal" href="nnls_modeling.html#_CPPv2N5ceres20AutoDiffCostFunctionE" title="ceres::AutoDiffCostFunction"><code class="xref cpp cpp-class docutils literal"><span class="pre">AutoDiffCostFunction</span></code></a> works.</p>
+</div>
+</div>
+<div class="section" id="pitfalls">
+<h2>Pitfalls<a class="headerlink" href="#pitfalls" title="Permalink to this headline">¶</a></h2>
+<p>Automatic differentiation frees the user from the burden of computing
+and reasoning about the symbolic expressions for the Jacobians, but
+this freedom comes at a cost. For example consider the following
+simple functor:</p>
+<div class="highlight-c++"><div class="highlight"><pre><span></span><span class="k">struct</span> <span class="n">Functor</span> <span class="p">{</span>
+  <span class="k">template</span> <span class="o">&lt;</span><span class="k">typename</span> <span class="n">T</span><span class="o">&gt;</span> <span class="kt">bool</span> <span class="k">operator</span><span class="p">()(</span><span class="k">const</span> <span class="n">T</span><span class="o">*</span> <span class="n">x</span><span class="p">,</span> <span class="n">T</span><span class="o">*</span> <span class="n">residual</span><span class="p">)</span> <span class="k">const</span> <span class="p">{</span>
+    <span class="n">residual</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">-</span> <span class="n">sqrt</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">]);</span>
+    <span class="k">return</span> <span class="nb">true</span><span class="p">;</span>
+  <span class="p">}</span>
+<span class="p">};</span>
+</pre></div>
+</div>
+<p>Looking at the code for the residual computation, one does not foresee
+any problems. However, if we look at the analytical expressions for
+the Jacobian:</p>
+<div class="math">
+\[\begin{split}   y &amp;= 1 - \sqrt{x_0^2 + x_1^2}\\
+D_1y &amp;= -\frac{x_0}{\sqrt{x_0^2 + x_1^2}},\
+D_2y = -\frac{x_1}{\sqrt{x_0^2 + x_1^2}}\end{split}\]</div>
+<p>we find that it is an indeterminate form at <span class="math">\(x_0 = 0, x_1 =
+0\)</span>.</p>
+<p>There is no single solution to this problem. In some cases one needs
+to reason explicitly about the points where indeterminacy may occur
+and use alternate expressions using <a class="reference external" href="https://en.wikipedia.org/wiki/L'H%C3%B4pital's_rule">L&#8217;Hopital&#8217;s rule</a> (see for
+example some of the conversion routines in <a class="reference external" href="https://github.com/ceres-solver/ceres-solver/blob/master/include/ceres/rotation.h">rotation.h</a>. In
+other cases, one may need to regularize the expressions to eliminate
+these points.</p>
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="interfacing_with_autodiff.html" class="btn btn-neutral float-right" title="Interfacing with Automatic Differentiation" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="numerical_derivatives.html" class="btn btn-neutral" title="Numeric derivatives" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2016 Google Inc.
+
+    </p>
+  </div> 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'1.13.0',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS_HTML">
+      MathJax.Hub.Config({
+          "HTML-CSS": {
+            availableFonts: ["TeX"]
+          }
+        });
+      </script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+  
+ 
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+  ga('create', 'UA-49769510-1', 'ceres-solver.org');
+  ga('send', 'pageview');
+</script>
+
+
+</body>
+</html>

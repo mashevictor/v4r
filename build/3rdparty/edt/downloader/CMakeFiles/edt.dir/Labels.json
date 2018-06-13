@@ -1,0 +1,46 @@
+{
+	"sources" : 
+	[
+		{
+			"file" : "/home/victor/software/v4r/build/3rdparty/edt/downloader/CMakeFiles/edt"
+		},
+		{
+			"file" : "/home/victor/software/v4r/build/3rdparty/edt/downloader/CMakeFiles/edt.rule"
+		},
+		{
+			"file" : "/home/victor/software/v4r/build/3rdparty/edt/downloader/CMakeFiles/edt-complete.rule"
+		},
+		{
+			"file" : "/home/victor/software/v4r/build/3rdparty/edt/stamp/edt-install.rule"
+		},
+		{
+			"file" : "/home/victor/software/v4r/build/3rdparty/edt/stamp/edt-mkdir.rule"
+		},
+		{
+			"file" : "/home/victor/software/v4r/build/3rdparty/edt/stamp/edt-download.rule"
+		},
+		{
+			"file" : "/home/victor/software/v4r/build/3rdparty/edt/stamp/edt-update.rule"
+		},
+		{
+			"file" : "/home/victor/software/v4r/build/3rdparty/edt/stamp/edt-patch.rule"
+		},
+		{
+			"file" : "/home/victor/software/v4r/build/3rdparty/edt/stamp/edt-configure.rule"
+		},
+		{
+			"file" : "/home/victor/software/v4r/build/3rdparty/edt/stamp/edt-build.rule"
+		},
+		{
+			"file" : "/home/victor/software/v4r/build/3rdparty/edt/stamp/edt-ROBUST_PATCH.rule"
+		}
+	],
+	"target" : 
+	{
+		"labels" : 
+		[
+			"edt"
+		],
+		"name" : "edt"
+	}
+}

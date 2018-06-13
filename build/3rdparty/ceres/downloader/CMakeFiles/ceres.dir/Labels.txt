@@ -1,0 +1,14 @@
+# Target labels
+ ceres
+# Source files and their labels
+/home/victor/software/v4r/build/3rdparty/ceres/downloader/CMakeFiles/ceres
+/home/victor/software/v4r/build/3rdparty/ceres/downloader/CMakeFiles/ceres.rule
+/home/victor/software/v4r/build/3rdparty/ceres/downloader/CMakeFiles/ceres-complete.rule
+/home/victor/software/v4r/build/3rdparty/ceres/stamp/ceres-install.rule
+/home/victor/software/v4r/build/3rdparty/ceres/stamp/ceres-mkdir.rule
+/home/victor/software/v4r/build/3rdparty/ceres/stamp/ceres-download.rule
+/home/victor/software/v4r/build/3rdparty/ceres/stamp/ceres-update.rule
+/home/victor/software/v4r/build/3rdparty/ceres/stamp/ceres-patch.rule
+/home/victor/software/v4r/build/3rdparty/ceres/stamp/ceres-configure.rule
+/home/victor/software/v4r/build/3rdparty/ceres/stamp/ceres-build.rule
+/home/victor/software/v4r/build/3rdparty/ceres/stamp/ceres-ROBUST_PATCH.rule

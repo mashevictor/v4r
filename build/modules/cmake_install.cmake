@@ -1,0 +1,77 @@
+# Install script for directory: /home/victor/software/v4r/modules
+
+# Set the install prefix
+if(NOT DEFINED CMAKE_INSTALL_PREFIX)
+  set(CMAKE_INSTALL_PREFIX "/usr/local")
+endif()
+string(REGEX REPLACE "/$" "" CMAKE_INSTALL_PREFIX "${CMAKE_INSTALL_PREFIX}")
+
+# Set the install configuration name.
+if(NOT DEFINED CMAKE_INSTALL_CONFIG_NAME)
+  if(BUILD_TYPE)
+    string(REGEX REPLACE "^[^A-Za-z0-9_]+" ""
+           CMAKE_INSTALL_CONFIG_NAME "${BUILD_TYPE}")
+  else()
+    set(CMAKE_INSTALL_CONFIG_NAME "Release")
+  endif()
+  message(STATUS "Install configuration: \"${CMAKE_INSTALL_CONFIG_NAME}\"")
+endif()
+
+# Set the component getting installed.
+if(NOT CMAKE_INSTALL_COMPONENT)
+  if(COMPONENT)
+    message(STATUS "Install component: \"${COMPONENT}\"")
+    set(CMAKE_INSTALL_COMPONENT "${COMPONENT}")
+  else()
+    set(CMAKE_INSTALL_COMPONENT)
+  endif()
+endif()
+
+# Install shared libraries without execute permission?
+if(NOT DEFINED CMAKE_INSTALL_SO_NO_EXE)
+  set(CMAKE_INSTALL_SO_NO_EXE "1")
+endif()
+
+if(NOT CMAKE_INSTALL_LOCAL_ONLY)
+  # Include the install script for each subdirectory.
+  include("/home/victor/software/v4r/build/modules/apps/.apps/cmake_install.cmake")
+  include("/home/victor/software/v4r/build/modules/attention_segmentation/.attention_segmentation/cmake_install.cmake")
+  include("/home/victor/software/v4r/build/modules/camera_tracking_and_mapping/.camera_tracking_and_mapping/cmake_install.cmake")
+  include("/home/victor/software/v4r/build/modules/change_detection/.change_detection/cmake_install.cmake")
+  include("/home/victor/software/v4r/build/modules/common/.common/cmake_install.cmake")
+  include("/home/victor/software/v4r/build/modules/core/.core/cmake_install.cmake")
+  include("/home/victor/software/v4r/build/modules/features/.features/cmake_install.cmake")
+  include("/home/victor/software/v4r/build/modules/io/.io/cmake_install.cmake")
+  include("/home/victor/software/v4r/build/modules/keypoints/.keypoints/cmake_install.cmake")
+  include("/home/victor/software/v4r/build/modules/ml/.ml/cmake_install.cmake")
+  include("/home/victor/software/v4r/build/modules/object_modelling/.object_modelling/cmake_install.cmake")
+  include("/home/victor/software/v4r/build/modules/recognition/.recognition/cmake_install.cmake")
+  include("/home/victor/software/v4r/build/modules/reconstruction/.reconstruction/cmake_install.cmake")
+  include("/home/victor/software/v4r/build/modules/registration/.registration/cmake_install.cmake")
+  include("/home/victor/software/v4r/build/modules/rendering/.rendering/cmake_install.cmake")
+  include("/home/victor/software/v4r/build/modules/segmentation/.segmentation/cmake_install.cmake")
+  include("/home/victor/software/v4r/build/modules/semantic_segmentation/.semantic_segmentation/cmake_install.cmake")
+  include("/home/victor/software/v4r/build/modules/surface_texturing/.surface_texturing/cmake_install.cmake")
+  include("/home/victor/software/v4r/build/modules/tracking/.tracking/cmake_install.cmake")
+  include("/home/victor/software/v4r/build/modules/core/cmake_install.cmake")
+  include("/home/victor/software/v4r/build/modules/io/cmake_install.cmake")
+  include("/home/victor/software/v4r/build/modules/semantic_segmentation/cmake_install.cmake")
+  include("/home/victor/software/v4r/build/modules/common/cmake_install.cmake")
+  include("/home/victor/software/v4r/build/modules/keypoints/cmake_install.cmake")
+  include("/home/victor/software/v4r/build/modules/ml/cmake_install.cmake")
+  include("/home/victor/software/v4r/build/modules/rendering/cmake_install.cmake")
+  include("/home/victor/software/v4r/build/modules/segmentation/cmake_install.cmake")
+  include("/home/victor/software/v4r/build/modules/attention_segmentation/cmake_install.cmake")
+  include("/home/victor/software/v4r/build/modules/change_detection/cmake_install.cmake")
+  include("/home/victor/software/v4r/build/modules/features/cmake_install.cmake")
+  include("/home/victor/software/v4r/build/modules/reconstruction/cmake_install.cmake")
+  include("/home/victor/software/v4r/build/modules/registration/cmake_install.cmake")
+  include("/home/victor/software/v4r/build/modules/tracking/cmake_install.cmake")
+  include("/home/victor/software/v4r/build/modules/object_modelling/cmake_install.cmake")
+  include("/home/victor/software/v4r/build/modules/recognition/cmake_install.cmake")
+  include("/home/victor/software/v4r/build/modules/apps/cmake_install.cmake")
+  include("/home/victor/software/v4r/build/modules/camera_tracking_and_mapping/cmake_install.cmake")
+  include("/home/victor/software/v4r/build/modules/surface_texturing/cmake_install.cmake")
+
+endif()
+

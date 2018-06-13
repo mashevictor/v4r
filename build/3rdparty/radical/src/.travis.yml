@@ -1,0 +1,26 @@
+dist: trusty
+sudo: false
+language: cpp
+compiler: gcc
+git:
+  depth: 1
+  lfs_skip_smudge: true
+env:
+  - OPENCV_VERSION=2.4.8
+  - OPENCV_VERSION=3.1.0
+addons:
+  apt:
+    sources:
+      - boost-latest
+    packages:
+      - libboost1.55-dev libboost-filesystem1.55-dev libboost-program-options1.55-dev libboost-system1.55-dev libboost-test1.55-dev libsuitesparse-dev bc
+cache:
+  directories:
+    - $HOME/opencv
+    - $HOME/cmake
+    - $HOME/eigen
+    - $HOME/glog
+    - $HOME/ceres
+    - $HOME/git-lfs
+script:
+  - bash .travis.sh

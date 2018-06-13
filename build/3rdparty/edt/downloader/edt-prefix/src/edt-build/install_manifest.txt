@@ -1,0 +1,4 @@
+/home/victor/software/v4r/build/3rdparty/edt/install/include/EDT/distance_field.h
+/home/victor/software/v4r/build/3rdparty/edt/install/include/EDT/voxel_grid.h
+/home/victor/software/v4r/build/3rdparty/edt/install/include/EDT/propagation_distance_field.h
+/home/victor/software/v4r/build/3rdparty/edt/install/lib/libedt.a

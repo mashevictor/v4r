@@ -1,0 +1,46 @@
+{
+	"sources" : 
+	[
+		{
+			"file" : "/home/victor/software/v4r/build/3rdparty/ceres/downloader/CMakeFiles/ceres"
+		},
+		{
+			"file" : "/home/victor/software/v4r/build/3rdparty/ceres/downloader/CMakeFiles/ceres.rule"
+		},
+		{
+			"file" : "/home/victor/software/v4r/build/3rdparty/ceres/downloader/CMakeFiles/ceres-complete.rule"
+		},
+		{
+			"file" : "/home/victor/software/v4r/build/3rdparty/ceres/stamp/ceres-install.rule"
+		},
+		{
+			"file" : "/home/victor/software/v4r/build/3rdparty/ceres/stamp/ceres-mkdir.rule"
+		},
+		{
+			"file" : "/home/victor/software/v4r/build/3rdparty/ceres/stamp/ceres-download.rule"
+		},
+		{
+			"file" : "/home/victor/software/v4r/build/3rdparty/ceres/stamp/ceres-update.rule"
+		},
+		{
+			"file" : "/home/victor/software/v4r/build/3rdparty/ceres/stamp/ceres-patch.rule"
+		},
+		{
+			"file" : "/home/victor/software/v4r/build/3rdparty/ceres/stamp/ceres-configure.rule"
+		},
+		{
+			"file" : "/home/victor/software/v4r/build/3rdparty/ceres/stamp/ceres-build.rule"
+		},
+		{
+			"file" : "/home/victor/software/v4r/build/3rdparty/ceres/stamp/ceres-ROBUST_PATCH.rule"
+		}
+	],
+	"target" : 
+	{
+		"labels" : 
+		[
+			"ceres"
+		],
+		"name" : "ceres"
+	}
+}

@@ -1,0 +1,3 @@
+repository='external project URL'
+module='http://ceres-solver.org/ceres-solver-1.13.0.tar.gz'
+tag='SHA256=1DF490A197634D3AAB0A65687DECD362912869C85A61090FF66F073C967A7DCD'

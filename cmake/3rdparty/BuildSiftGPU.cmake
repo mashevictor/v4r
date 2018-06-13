@@ -4,8 +4,8 @@ if(NOT IL_FOUND)
 endif()
 
 v4r_build_external_project("SiftGPU"
-  URL "https://repo.acin.tuwien.ac.at/tmp/permanent/SiftGPU-V400.zip"
-  URL_HASH SHA1=eac08305f14cb35d12a22d493f84f9c21f6b7fdb
+  URL "/home/victor/SiftGPU-master"
+  URL_HASH SHA1=a1c361e34a05dbfc4acc42f9004ba8ac
   CONFIGURE_COMMAND NO
   BUILD_COMMAND "make siftgpu_enable_cuda=0"
   BUILD_IN_SOURCE

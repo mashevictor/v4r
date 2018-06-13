@@ -1,0 +1,605 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Numeric derivatives &mdash; Ceres Solver</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+    <link rel="top" title="Ceres Solver" href="index.html"/>
+        <link rel="up" title="On Derivatives" href="derivatives.html"/>
+        <link rel="next" title="Automatic Derivatives" href="automatic_derivatives.html"/>
+        <link rel="prev" title="Analytic Derivatives" href="analytical_derivatives.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="index.html" class="icon icon-home"> Ceres Solver
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                1.13
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="features.html">Why?</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorial.html">Tutorial</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="derivatives.html">On Derivatives</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="spivak_notation.html">Spivak Notation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="analytical_derivatives.html">Analytic Derivatives</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Numeric derivatives</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#forward-differences">Forward Differences</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#implementation-details">Implementation Details</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#central-differences">Central Differences</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ridders-method">Ridders&#8217; Method</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#recommendations">Recommendations</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="automatic_derivatives.html">Automatic Derivatives</a></li>
+<li class="toctree-l2"><a class="reference internal" href="interfacing_with_autodiff.html">Interfacing with Automatic Differentiation</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="nnls_modeling.html">Modeling Non-linear Least Squares</a></li>
+<li class="toctree-l1"><a class="reference internal" href="nnls_solving.html">Solving Non-linear Least Squares</a></li>
+<li class="toctree-l1"><a class="reference internal" href="nnls_covariance.html">Covariance Estimation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="gradient_solver.html">General Unconstrained Minimization</a></li>
+<li class="toctree-l1"><a class="reference internal" href="faqs.html">FAQS, Tips &amp; Tricks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="users.html">Users</a></li>
+<li class="toctree-l1"><a class="reference internal" href="contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="version_history.html">Version History</a></li>
+<li class="toctree-l1"><a class="reference internal" href="bibliography.html">Bibliography</a></li>
+<li class="toctree-l1"><a class="reference internal" href="license.html">License</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="index.html">Ceres Solver</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+ 
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="index.html">Docs</a> &raquo;</li>
+      
+          <li><a href="derivatives.html">On Derivatives</a> &raquo;</li>
+      
+    <li>Numeric derivatives</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="numeric-derivatives">
+<span id="chapter-numerical-derivatives"></span><h1>Numeric derivatives<a class="headerlink" href="#numeric-derivatives" title="Permalink to this headline">¶</a></h1>
+<p>The other extreme from using analytic derivatives is to use numeric
+derivatives. The key observation here is that the process of
+differentiating a function <span class="math">\(f(x)\)</span> w.r.t <span class="math">\(x\)</span> can be written
+as the limiting process:</p>
+<div class="math">
+\[Df(x) = \lim_{h \rightarrow 0} \frac{f(x + h) - f(x)}{h}\]</div>
+<div class="section" id="forward-differences">
+<h2>Forward Differences<a class="headerlink" href="#forward-differences" title="Permalink to this headline">¶</a></h2>
+<p>Now of course one cannot perform the limiting operation numerically on
+a computer so we do the next best thing, which is to choose a small
+value of <span class="math">\(h\)</span> and approximate the derivative as</p>
+<div class="math">
+\[Df(x) \approx \frac{f(x + h) - f(x)}{h}\]</div>
+<p>The above formula is the simplest most basic form of numeric
+differentiation. It is known as the <em>Forward Difference</em> formula.</p>
+<p>So how would one go about constructing a numerically differentiated
+version of <code class="docutils literal"><span class="pre">Rat43Analytic</span></code> (<a class="reference external" href="http://www.itl.nist.gov/div898/strd/nls/data/ratkowsky3.shtml">Rat43</a>) in
+Ceres Solver. This is done in two steps:</p>
+<blockquote>
+<div><ol class="arabic simple">
+<li>Define <em>Functor</em> that given the parameter values will evaluate the
+residual for a given <span class="math">\((x,y)\)</span>.</li>
+<li>Construct a <a class="reference internal" href="nnls_modeling.html#_CPPv2N5ceres12CostFunctionE" title="ceres::CostFunction"><code class="xref cpp cpp-class docutils literal"><span class="pre">CostFunction</span></code></a> by using
+<a class="reference internal" href="nnls_modeling.html#_CPPv2N5ceres23NumericDiffCostFunctionE" title="ceres::NumericDiffCostFunction"><code class="xref cpp cpp-class docutils literal"><span class="pre">NumericDiffCostFunction</span></code></a> to wrap an instance of
+<code class="docutils literal"><span class="pre">Rat43CostFunctor</span></code>.</li>
+</ol>
+</div></blockquote>
+<div class="highlight-c++"><div class="highlight"><pre><span></span><span class="k">struct</span> <span class="n">Rat43CostFunctor</span> <span class="p">{</span>
+  <span class="n">Rat43CostFunctor</span><span class="p">(</span><span class="k">const</span> <span class="kt">double</span> <span class="n">x</span><span class="p">,</span> <span class="k">const</span> <span class="kt">double</span> <span class="n">y</span><span class="p">)</span> <span class="o">:</span> <span class="n">x_</span><span class="p">(</span><span class="n">x</span><span class="p">),</span> <span class="n">y_</span><span class="p">(</span><span class="n">y</span><span class="p">)</span> <span class="p">{}</span>
+
+  <span class="kt">bool</span> <span class="k">operator</span><span class="p">()(</span><span class="k">const</span> <span class="kt">double</span><span class="o">*</span> <span class="n">parameters</span><span class="p">,</span> <span class="kt">double</span><span class="o">*</span> <span class="n">residuals</span><span class="p">)</span> <span class="k">const</span> <span class="p">{</span>
+    <span class="k">const</span> <span class="kt">double</span> <span class="n">b1</span> <span class="o">=</span> <span class="n">parameters</span><span class="p">[</span><span class="mi">0</span><span class="p">];</span>
+    <span class="k">const</span> <span class="kt">double</span> <span class="n">b2</span> <span class="o">=</span> <span class="n">parameters</span><span class="p">[</span><span class="mi">1</span><span class="p">];</span>
+    <span class="k">const</span> <span class="kt">double</span> <span class="n">b3</span> <span class="o">=</span> <span class="n">parameters</span><span class="p">[</span><span class="mi">2</span><span class="p">];</span>
+    <span class="k">const</span> <span class="kt">double</span> <span class="n">b4</span> <span class="o">=</span> <span class="n">parameters</span><span class="p">[</span><span class="mi">3</span><span class="p">];</span>
+    <span class="n">residuals</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">b1</span> <span class="o">*</span> <span class="n">pow</span><span class="p">(</span><span class="mf">1.0</span> <span class="o">+</span> <span class="n">exp</span><span class="p">(</span><span class="n">b2</span> <span class="o">-</span>  <span class="n">b3</span> <span class="o">*</span> <span class="n">x_</span><span class="p">),</span> <span class="o">-</span><span class="mf">1.0</span> <span class="o">/</span> <span class="n">b4</span><span class="p">)</span> <span class="o">-</span> <span class="n">y_</span><span class="p">;</span>
+    <span class="k">return</span> <span class="nb">true</span><span class="p">;</span>
+  <span class="p">}</span>
+
+  <span class="k">const</span> <span class="kt">double</span> <span class="n">x_</span><span class="p">;</span>
+  <span class="k">const</span> <span class="kt">double</span> <span class="n">y_</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="n">CostFunction</span><span class="o">*</span> <span class="n">cost_function</span> <span class="o">=</span>
+  <span class="k">new</span> <span class="n">NumericDiffCostFunction</span><span class="o">&lt;</span><span class="n">Rat43CostFunctor</span><span class="p">,</span> <span class="n">FORWARD</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">4</span><span class="o">&gt;</span><span class="p">(</span>
+    <span class="k">new</span> <span class="n">Rat43CostFunctor</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">));</span>
+</pre></div>
+</div>
+<p>This is about the minimum amount of work one can expect to do to
+define the cost function. The only thing that the user needs to do is
+to make sure that the evaluation of the residual is implemented
+correctly and efficiently.</p>
+<p>Before going further, it is instructive to get an estimate of the
+error in the forward difference formula. We do this by considering the
+<a class="reference external" href="https://en.wikipedia.org/wiki/Taylor_series">Taylor expansion</a> of
+<span class="math">\(f\)</span> near <span class="math">\(x\)</span>.</p>
+<div class="math">
+\[\begin{split}\begin{align}
+f(x+h) &amp;= f(x) + h Df(x) + \frac{h^2}{2!} D^2f(x) +
+\frac{h^3}{3!}D^3f(x) + \cdots \\
+Df(x) &amp;= \frac{f(x + h) - f(x)}{h} - \left [\frac{h}{2!}D^2f(x) +
+\frac{h^2}{3!}D^3f(x) + \cdots  \right]\\
+Df(x) &amp;= \frac{f(x + h) - f(x)}{h} + O(h)
+\end{align}\end{split}\]</div>
+<p>i.e., the error in the forward difference formula is
+<span class="math">\(O(h)\)</span> <a class="footnote-reference" href="#f4" id="id1">[3]</a>.</p>
+<div class="section" id="implementation-details">
+<h3>Implementation Details<a class="headerlink" href="#implementation-details" title="Permalink to this headline">¶</a></h3>
+<p><a class="reference internal" href="nnls_modeling.html#_CPPv2N5ceres23NumericDiffCostFunctionE" title="ceres::NumericDiffCostFunction"><code class="xref cpp cpp-class docutils literal"><span class="pre">NumericDiffCostFunction</span></code></a> implements a generic algorithm to
+numerically differentiate a given functor. While the actual
+implementation of <a class="reference internal" href="nnls_modeling.html#_CPPv2N5ceres23NumericDiffCostFunctionE" title="ceres::NumericDiffCostFunction"><code class="xref cpp cpp-class docutils literal"><span class="pre">NumericDiffCostFunction</span></code></a> is complicated, the
+net result is a <a class="reference internal" href="nnls_modeling.html#_CPPv2N5ceres12CostFunctionE" title="ceres::CostFunction"><code class="xref cpp cpp-class docutils literal"><span class="pre">CostFunction</span></code></a> that roughly looks something
+like the following:</p>
+<div class="highlight-c++"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">Rat43NumericDiffForward</span> <span class="o">:</span> <span class="k">public</span> <span class="n">SizedCostFunction</span><span class="o">&lt;</span><span class="mi">1</span><span class="p">,</span><span class="mi">4</span><span class="o">&gt;</span> <span class="p">{</span>
+   <span class="k">public</span><span class="o">:</span>
+     <span class="n">Rat43NumericDiffForward</span><span class="p">(</span><span class="k">const</span> <span class="n">Rat43Functor</span><span class="o">*</span> <span class="n">functor</span><span class="p">)</span> <span class="o">:</span> <span class="n">functor_</span><span class="p">(</span><span class="n">functor</span><span class="p">)</span> <span class="p">{}</span>
+     <span class="k">virtual</span> <span class="o">~</span><span class="n">Rat43NumericDiffForward</span><span class="p">()</span> <span class="p">{}</span>
+     <span class="k">virtual</span> <span class="kt">bool</span> <span class="n">Evaluate</span><span class="p">(</span><span class="kt">double</span> <span class="k">const</span><span class="o">*</span> <span class="k">const</span><span class="o">*</span> <span class="n">parameters</span><span class="p">,</span>
+                           <span class="kt">double</span><span class="o">*</span> <span class="n">residuals</span><span class="p">,</span>
+                           <span class="kt">double</span><span class="o">**</span> <span class="n">jacobians</span><span class="p">)</span> <span class="k">const</span> <span class="p">{</span>
+       <span class="n">functor_</span><span class="p">(</span><span class="n">parameters</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">residuals</span><span class="p">);</span>
+       <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">jacobians</span><span class="p">)</span> <span class="k">return</span> <span class="nb">true</span><span class="p">;</span>
+       <span class="kt">double</span><span class="o">*</span> <span class="n">jacobian</span> <span class="o">=</span> <span class="n">jacobians</span><span class="p">[</span><span class="mi">0</span><span class="p">];</span>
+       <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">jacobian</span><span class="p">)</span> <span class="k">return</span> <span class="nb">true</span><span class="p">;</span>
+
+       <span class="k">const</span> <span class="kt">double</span> <span class="n">f</span> <span class="o">=</span> <span class="n">residuals</span><span class="p">[</span><span class="mi">0</span><span class="p">];</span>
+       <span class="kt">double</span> <span class="n">parameters_plus_h</span><span class="p">[</span><span class="mi">4</span><span class="p">];</span>
+       <span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="mi">4</span><span class="p">;</span> <span class="o">++</span><span class="n">i</span><span class="p">)</span> <span class="p">{</span>
+         <span class="n">std</span><span class="o">::</span><span class="n">copy</span><span class="p">(</span><span class="n">parameters</span><span class="p">,</span> <span class="n">parameters</span> <span class="o">+</span> <span class="mi">4</span><span class="p">,</span> <span class="n">parameters_plus_h</span><span class="p">);</span>
+         <span class="k">const</span> <span class="kt">double</span> <span class="n">kRelativeStepSize</span> <span class="o">=</span> <span class="mf">1e-6</span><span class="p">;</span>
+         <span class="k">const</span> <span class="kt">double</span> <span class="n">h</span> <span class="o">=</span> <span class="n">std</span><span class="o">::</span><span class="n">abs</span><span class="p">(</span><span class="n">parameters</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="o">*</span> <span class="n">kRelativeStepSize</span><span class="p">;</span>
+         <span class="n">parameters_plus_h</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+=</span> <span class="n">h</span><span class="p">;</span>
+         <span class="kt">double</span> <span class="n">f_plus</span><span class="p">;</span>
+         <span class="n">functor_</span><span class="p">(</span><span class="n">parameters_plus_h</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">f_plus</span><span class="p">);</span>
+         <span class="n">jacobian</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">f_plus</span> <span class="o">-</span> <span class="n">f</span><span class="p">)</span> <span class="o">/</span> <span class="n">h</span><span class="p">;</span>
+       <span class="p">}</span>
+       <span class="k">return</span> <span class="nb">true</span><span class="p">;</span>
+     <span class="p">}</span>
+
+   <span class="k">private</span><span class="o">:</span>
+     <span class="n">scoped_ptr</span><span class="o">&lt;</span><span class="n">Rat43Functor</span><span class="o">&gt;</span> <span class="n">functor_</span><span class="p">;</span>
+ <span class="p">};</span>
+</pre></div>
+</div>
+<p>Note the choice of step size <span class="math">\(h\)</span> in the above code, instead of
+an absolute step size which is the same for all parameters, we use a
+relative step size of <span class="math">\(\text{kRelativeStepSize} = 10^{-6}\)</span>. This
+gives better derivative estimates than an absolute step size <a class="footnote-reference" href="#f2" id="id2">[1]</a>
+<a class="footnote-reference" href="#f3" id="id3">[2]</a>. This choice of step size only works for parameter values that
+are not close to zero. So the actual implementation of
+<a class="reference internal" href="nnls_modeling.html#_CPPv2N5ceres23NumericDiffCostFunctionE" title="ceres::NumericDiffCostFunction"><code class="xref cpp cpp-class docutils literal"><span class="pre">NumericDiffCostFunction</span></code></a>, uses a more complex step size
+selection logic, where close to zero, it switches to a fixed step
+size.</p>
+</div>
+</div>
+<div class="section" id="central-differences">
+<h2>Central Differences<a class="headerlink" href="#central-differences" title="Permalink to this headline">¶</a></h2>
+<p><span class="math">\(O(h)\)</span> error in the Forward Difference formula is okay but not
+great. A better method is to use the <em>Central Difference</em> formula:</p>
+<div class="math">
+\[Df(x) \approx \frac{f(x + h) - f(x - h)}{2h}\]</div>
+<p>Notice that if the value of <span class="math">\(f(x)\)</span> is known, the Forward
+Difference formula only requires one extra evaluation, but the Central
+Difference formula requires two evaluations, making it twice as
+expensive. So is the extra evaluation worth it?</p>
+<p>To answer this question, we again compute the error of approximation
+in the central difference formula:</p>
+<div class="math">
+\[\begin{split}\begin{align}
+f(x + h) &amp;= f(x) + h Df(x) + \frac{h^2}{2!}
+D^2f(x) + \frac{h^3}{3!} D^3f(x) + \frac{h^4}{4!} D^4f(x) + \cdots\\
+  f(x - h) &amp;= f(x) - h Df(x) + \frac{h^2}{2!}
+D^2f(x) - \frac{h^3}{3!} D^3f(c_2) + \frac{h^4}{4!} D^4f(x) +
+\cdots\\
+Df(x) &amp; =  \frac{f(x + h) - f(x - h)}{2h} + \frac{h^2}{3!}
+D^3f(x) +  \frac{h^4}{5!}
+D^5f(x) + \cdots \\
+Df(x) &amp; =  \frac{f(x + h) - f(x - h)}{2h} + O(h^2)
+ \end{align}\end{split}\]</div>
+<p>The error of the Central Difference formula is <span class="math">\(O(h^2)\)</span>, i.e.,
+the error goes down quadratically whereas the error in the Forward
+Difference formula only goes down linearly.</p>
+<p>Using central differences instead of forward differences in Ceres
+Solver is a simple matter of changing a template argument to
+<a class="reference internal" href="nnls_modeling.html#_CPPv2N5ceres23NumericDiffCostFunctionE" title="ceres::NumericDiffCostFunction"><code class="xref cpp cpp-class docutils literal"><span class="pre">NumericDiffCostFunction</span></code></a> as follows:</p>
+<div class="highlight-c++"><div class="highlight"><pre><span></span><span class="n">CostFunction</span><span class="o">*</span> <span class="n">cost_function</span> <span class="o">=</span>
+  <span class="k">new</span> <span class="n">NumericDiffCostFunction</span><span class="o">&lt;</span><span class="n">Rat43CostFunctor</span><span class="p">,</span> <span class="n">CENTRAL</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">4</span><span class="o">&gt;</span><span class="p">(</span>
+    <span class="k">new</span> <span class="n">Rat43CostFunctor</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">));</span>
+</pre></div>
+</div>
+<p>But what do these differences in the error mean in practice? To see
+this, consider the problem of evaluating the derivative of the
+univariate function</p>
+<div class="math">
+\[f(x) = \frac{e^x}{\sin x - x^2},\]</div>
+<p>at <span class="math">\(x = 1.0\)</span>.</p>
+<p>It is easy to determine that <span class="math">\(Df(1.0) =
+140.73773557129658\)</span>. Using this value as reference, we can now compute
+the relative error in the forward and central difference formulae as a
+function of the absolute step size and plot them.</p>
+<div class="figure align-center" style="width: 100%">
+<img alt="_images/forward_central_error.png" src="_images/forward_central_error.png" />
+</div>
+<p>Reading the graph from right to left, a number of things stand out in
+the above graph:</p>
+<blockquote>
+<div><ol class="arabic simple">
+<li>The graph for both formulae have two distinct regions. At first,
+starting from a large value of <span class="math">\(h\)</span> the error goes down as
+the effect of truncating the Taylor series dominates, but as the
+value of <span class="math">\(h\)</span> continues to decrease, the error starts
+increasing again as roundoff error starts to dominate the
+computation. So we cannot just keep on reducing the value of
+<span class="math">\(h\)</span> to get better estimates of <span class="math">\(Df\)</span>. The fact that we
+are using finite precision arithmetic becomes a limiting factor.</li>
+<li>Forward Difference formula is not a great method for evaluating
+derivatives. Central Difference formula converges much more
+quickly to a more accurate estimate of the derivative with
+decreasing step size. So unless the evaluation of <span class="math">\(f(x)\)</span> is
+so expensive that you absolutely cannot afford the extra
+evaluation required by central differences, <strong>do not use the
+Forward Difference formula</strong>.</li>
+<li>Neither formula works well for a poorly chosen value of <span class="math">\(h\)</span>.</li>
+</ol>
+</div></blockquote>
+</div>
+<div class="section" id="ridders-method">
+<h2>Ridders&#8217; Method<a class="headerlink" href="#ridders-method" title="Permalink to this headline">¶</a></h2>
+<p>So, can we get better estimates of <span class="math">\(Df\)</span> without requiring such
+small values of <span class="math">\(h\)</span> that we start hitting floating point
+roundoff errors?</p>
+<p>One possible approach is to find a method whose error goes down faster
+than <span class="math">\(O(h^2)\)</span>. This can be done by applying <a class="reference external" href="https://en.wikipedia.org/wiki/Richardson_extrapolation">Richardson
+Extrapolation</a> to the
+problem of differentiation. This is also known as <em>Ridders&#8217; Method</em>
+<a class="reference internal" href="bibliography.html#ridders" id="id4">[Ridders]</a>.</p>
+<p>Let us recall, the error in the central differences formula.</p>
+<div class="math">
+\[\begin{split}\begin{align}
+Df(x) &amp; =  \frac{f(x + h) - f(x - h)}{2h} + \frac{h^2}{3!}
+D^3f(x) +  \frac{h^4}{5!}
+D^5f(x) + \cdots\\
+        &amp; =  \frac{f(x + h) - f(x - h)}{2h} + K_2 h^2 + K_4 h^4 + \cdots
+\end{align}\end{split}\]</div>
+<p>The key thing to note here is that the terms <span class="math">\(K_2, K_4, ...\)</span>
+are indepdendent of <span class="math">\(h\)</span> and only depend on <span class="math">\(x\)</span>.</p>
+<p>Let us now define:</p>
+<div class="math">
+\[A(1, m) = \frac{f(x + h/2^{m-1}) - f(x - h/2^{m-1})}{2h/2^{m-1}}.\]</div>
+<p>Then observe that</p>
+<div class="math">
+\[Df(x) = A(1,1) + K_2 h^2 + K_4 h^4 + \cdots\]</div>
+<p>and</p>
+<div class="math">
+\[Df(x) = A(1, 2) + K_2 (h/2)^2 + K_4 (h/2)^4 + \cdots\]</div>
+<p>Here we have halved the step size to obtain a second central
+differences estimate of <span class="math">\(Df(x)\)</span>. Combining these two estimates,
+we get:</p>
+<div class="math">
+\[Df(x) = \frac{4 A(1, 2) - A(1,1)}{4 - 1} + O(h^4)\]</div>
+<p>which is an approximation of <span class="math">\(Df(x)\)</span> with truncation error that
+goes down as <span class="math">\(O(h^4)\)</span>. But we do not have to stop here. We can
+iterate this process to obtain even more accurate estimates as
+follows:</p>
+<div class="math">
+\[\begin{split}A(n, m) =  \begin{cases}
+ \frac{\displaystyle f(x + h/2^{m-1}) - f(x -
+ h/2^{m-1})}{\displaystyle 2h/2^{m-1}} &amp; n = 1 \\
+\frac{\displaystyle 4^{n-1} A(n - 1, m + 1) - A(n - 1, m)}{\displaystyle 4^{n-1} - 1} &amp; n &gt; 1
+\end{cases}\end{split}\]</div>
+<p>It is straightforward to show that the approximation error in
+<span class="math">\(A(n, 1)\)</span> is <span class="math">\(O(h^{2n})\)</span>. To see how the above formula can
+be implemented in practice to compute <span class="math">\(A(n,1)\)</span> it is helpful to
+structure the computation as the following tableau:</p>
+<div class="math">
+\[\begin{split}\begin{array}{ccccc}
+A(1,1) &amp; A(1, 2) &amp; A(1, 3) &amp; A(1, 4) &amp; \cdots\\
+       &amp; A(2, 1) &amp; A(2, 2) &amp; A(2, 3) &amp; \cdots\\
+       &amp;         &amp; A(3, 1) &amp; A(3, 2) &amp; \cdots\\
+       &amp;         &amp;         &amp; A(4, 1) &amp; \cdots \\
+       &amp;         &amp;         &amp;         &amp; \ddots
+\end{array}\end{split}\]</div>
+<p>So, to compute <span class="math">\(A(n, 1)\)</span> for increasing values of <span class="math">\(n\)</span> we
+move from the left to the right, computing one column at a
+time. Assuming that the primary cost here is the evaluation of the
+function <span class="math">\(f(x)\)</span>, the cost of computing a new column of the above
+tableau is two function evaluations. Since the cost of evaluating
+<span class="math">\(A(1, n)\)</span>, requires evaluating the central difference formula
+for step size of <span class="math">\(2^{1-n}h\)</span></p>
+<p>Applying this method to <span class="math">\(f(x) = \frac{e^x}{\sin x - x^2}\)</span>
+starting with a fairly large step size <span class="math">\(h = 0.01\)</span>, we get:</p>
+<div class="math">
+\[\begin{split}\begin{array}{rrrrr}
+141.678097131 &amp;140.971663667 &amp;140.796145400 &amp;140.752333523 &amp;140.741384778\\
+&amp;140.736185846 &amp;140.737639311 &amp;140.737729564 &amp;140.737735196\\
+&amp; &amp;140.737736209 &amp;140.737735581 &amp;140.737735571\\
+&amp; &amp; &amp;140.737735571 &amp;140.737735571\\
+&amp; &amp; &amp; &amp;140.737735571\\
+\end{array}\end{split}\]</div>
+<p>Compared to the <em>correct</em> value <span class="math">\(Df(1.0) = 140.73773557129658\)</span>,
+<span class="math">\(A(5, 1)\)</span> has a relative error of <span class="math">\(10^{-13}\)</span>. For
+comparison, the relative error for the central difference formula with
+the same stepsize (<span class="math">\(0.01/2^4 = 0.000625\)</span>) is <span class="math">\(10^{-5}\)</span>.</p>
+<p>The above tableau is the basis of Ridders&#8217; method for numeric
+differentiation. The full implementation is an adaptive scheme that
+tracks its own estimation error and stops automatically when the
+desired precision is reached. Of course it is more expensive than the
+forward and central difference formulae, but is also significantly
+more robust and accurate.</p>
+<p>Using Ridder&#8217;s method instead of forward or central differences in
+Ceres is again a simple matter of changing a template argument to
+<a class="reference internal" href="nnls_modeling.html#_CPPv2N5ceres23NumericDiffCostFunctionE" title="ceres::NumericDiffCostFunction"><code class="xref cpp cpp-class docutils literal"><span class="pre">NumericDiffCostFunction</span></code></a> as follows:</p>
+<div class="highlight-c++"><div class="highlight"><pre><span></span><span class="n">CostFunction</span><span class="o">*</span> <span class="n">cost_function</span> <span class="o">=</span>
+  <span class="k">new</span> <span class="n">NumericDiffCostFunction</span><span class="o">&lt;</span><span class="n">Rat43CostFunctor</span><span class="p">,</span> <span class="n">RIDDERS</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">4</span><span class="o">&gt;</span><span class="p">(</span>
+    <span class="k">new</span> <span class="n">Rat43CostFunctor</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">));</span>
+</pre></div>
+</div>
+<p>The following graph shows the relative error of the three methods as a
+function of the absolute step size. For Ridders&#8217;s method we assume
+that the step size for evaluating <span class="math">\(A(n,1)\)</span> is <span class="math">\(2^{1-n}h\)</span>.</p>
+<div class="figure align-center" style="width: 100%">
+<img alt="_images/forward_central_ridders_error.png" src="_images/forward_central_ridders_error.png" />
+</div>
+<p>Using the 10 function evaluations that are needed to compute
+<span class="math">\(A(5,1)\)</span> we are able to approximate <span class="math">\(Df(1.0)\)</span> about a 1000
+times better than the best central differences estimate. To put these
+numbers in perspective, machine epsilon for double precision
+arithmetic is <span class="math">\(\approx 2.22 \times 10^{-16}\)</span>.</p>
+<p>Going back to <code class="docutils literal"><span class="pre">Rat43</span></code>, let us also look at the runtime cost of the
+various methods for computing numeric derivatives.</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="74%" />
+<col width="26%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">CostFunction</th>
+<th class="head">Time (ns)</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>Rat43Analytic</td>
+<td>255</td>
+</tr>
+<tr class="row-odd"><td>Rat43AnalyticOptimized</td>
+<td>92</td>
+</tr>
+<tr class="row-even"><td>Rat43NumericDiffForward</td>
+<td>262</td>
+</tr>
+<tr class="row-odd"><td>Rat43NumericDiffCentral</td>
+<td>517</td>
+</tr>
+<tr class="row-even"><td>Rat43NumericDiffRidders</td>
+<td>3760</td>
+</tr>
+</tbody>
+</table>
+<p>As expected, Central Differences is about twice as expensive as
+Forward Differences and the remarkable accuracy improvements of
+Ridders&#8217; method cost an order of magnitude more runtime.</p>
+</div>
+<div class="section" id="recommendations">
+<h2>Recommendations<a class="headerlink" href="#recommendations" title="Permalink to this headline">¶</a></h2>
+<p>Numeric differentiation should be used when you cannot compute the
+derivatives either analytically or using automatic differention. This
+is usually the case when you are calling an external library or
+function whose analytic form you do not know or even if you do, you
+are not in a position to re-write it in a manner required to use
+<a class="reference internal" href="automatic_derivatives.html#chapter-automatic-derivatives"><span class="std std-ref">Automatic Derivatives</span></a>.</p>
+<p>When using numeric differentiation, use at least Central Differences,
+and if execution time is not a concern or the objective function is
+such that determining a good static relative step size is hard,
+Ridders&#8217; method is recommended.</p>
+<p class="rubric">Footnotes</p>
+<table class="docutils footnote" frame="void" id="f2" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id2">[1]</a></td><td><a class="reference external" href="https://en.wikipedia.org/wiki/Numerical_differentiation#Practical_considerations_using_floating_point_arithmetic">Numerical Differentiation</a></td></tr>
+</tbody>
+</table>
+<table class="docutils footnote" frame="void" id="f3" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id3">[2]</a></td><td><a class="reference internal" href="bibliography.html#press" id="id5">[Press]</a> Numerical Recipes, Section 5.7</td></tr>
+</tbody>
+</table>
+<table class="docutils footnote" frame="void" id="f4" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id1">[3]</a></td><td>In asymptotic error analysis, an error of <span class="math">\(O(h^k)\)</span>
+means that the absolute-value of the error is at most some
+constant times <span class="math">\(h^k\)</span> when <span class="math">\(h\)</span> is close enough to
+<span class="math">\(0\)</span>.</td></tr>
+</tbody>
+</table>
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="automatic_derivatives.html" class="btn btn-neutral float-right" title="Automatic Derivatives" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="analytical_derivatives.html" class="btn btn-neutral" title="Analytic Derivatives" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2016 Google Inc.
+
+    </p>
+  </div> 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'1.13.0',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS_HTML">
+      MathJax.Hub.Config({
+          "HTML-CSS": {
+            availableFonts: ["TeX"]
+          }
+        });
+      </script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+  
+ 
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+  ga('create', 'UA-49769510-1', 'ceres-solver.org');
+  ga('send', 'pageview');
+</script>
+
+
+</body>
+</html>

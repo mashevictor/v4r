@@ -1,0 +1,3 @@
+repository='external project URL'
+module='https://github.com/taketwo/radical/archive/1.0.0.tar.gz'
+tag='SHA256=672751353e83472ba81bdde0bfad550784dd1e66502d88721aa9b406a5a90ea8'

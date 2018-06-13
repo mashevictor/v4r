@@ -1,0 +1,13 @@
+/home/victor/software/v4r/build/3rdparty/pcl_1_8/install/include/pcl_1_8/segmentation/impl/conditional_euclidean_clustering.hpp
+/home/victor/software/v4r/build/3rdparty/pcl_1_8/install/include/pcl_1_8/segmentation/conditional_euclidean_clustering.h
+/home/victor/software/v4r/build/3rdparty/pcl_1_8/install/include/pcl_1_8/keypoints/impl/uniform_sampling.hpp
+/home/victor/software/v4r/build/3rdparty/pcl_1_8/install/include/pcl_1_8/keypoints/uniform_sampling.h
+/home/victor/software/v4r/build/3rdparty/pcl_1_8/install/include/pcl_1_8/features/impl/organized_edge_detection.hpp
+/home/victor/software/v4r/build/3rdparty/pcl_1_8/install/include/pcl_1_8/features/organized_edge_detection.h
+/home/victor/software/v4r/build/3rdparty/pcl_1_8/install/include/pcl_1_8/2d/impl/convolution.hpp
+/home/victor/software/v4r/build/3rdparty/pcl_1_8/install/include/pcl_1_8/2d/impl/kernel.hpp
+/home/victor/software/v4r/build/3rdparty/pcl_1_8/install/include/pcl_1_8/2d/impl/edge.hpp
+/home/victor/software/v4r/build/3rdparty/pcl_1_8/install/include/pcl_1_8/2d/kernel.h
+/home/victor/software/v4r/build/3rdparty/pcl_1_8/install/include/pcl_1_8/2d/convolution.h
+/home/victor/software/v4r/build/3rdparty/pcl_1_8/install/include/pcl_1_8/2d/edge.h
+/home/victor/software/v4r/build/3rdparty/pcl_1_8/install/lib/libpcl_1_8.a

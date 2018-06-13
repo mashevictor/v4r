@@ -1,0 +1,11 @@
+# Hashes of file build rules.
+0aa1ec9cc79b294961a2dc9b6a2de78b /home/victor/software/v4r/build/3rdparty/opennurbs/stamp/opennurbs-ROBUST_PATCH
+eecde5b8df3ee356c140ede66b78cdce /home/victor/software/v4r/build/3rdparty/opennurbs/stamp/opennurbs-build
+3a154e9ca8e8ba4140051fe0eaaa5bd5 /home/victor/software/v4r/build/3rdparty/opennurbs/stamp/opennurbs-configure
+e1c3432f212a36f7c7bb2aaae270b915 /home/victor/software/v4r/build/3rdparty/opennurbs/stamp/opennurbs-download
+490b557d743e3b9d70d8eb229d921854 /home/victor/software/v4r/build/3rdparty/opennurbs/stamp/opennurbs-install
+87a42f40e14165536c23dae41a678d68 /home/victor/software/v4r/build/3rdparty/opennurbs/stamp/opennurbs-mkdir
+2c707dd13057a99f30c28f507787eff7 /home/victor/software/v4r/build/3rdparty/opennurbs/stamp/opennurbs-patch
+bc0012de70c63f87b1f9c4243b942ff5 /home/victor/software/v4r/build/3rdparty/opennurbs/stamp/opennurbs-update
+f402767819decd6733e05a09619a4e84 CMakeFiles/opennurbs
+32d11ff43761255e8a27eba340d4ba62 CMakeFiles/opennurbs-complete

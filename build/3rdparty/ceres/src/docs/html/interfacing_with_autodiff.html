@@ -1,0 +1,499 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Interfacing with Automatic Differentiation &mdash; Ceres Solver</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+    <link rel="top" title="Ceres Solver" href="index.html"/>
+        <link rel="up" title="On Derivatives" href="derivatives.html"/>
+        <link rel="next" title="Modeling Non-linear Least Squares" href="nnls_modeling.html"/>
+        <link rel="prev" title="Automatic Derivatives" href="automatic_derivatives.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="index.html" class="icon icon-home"> Ceres Solver
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                1.13
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="features.html">Why?</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorial.html">Tutorial</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="derivatives.html">On Derivatives</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="spivak_notation.html">Spivak Notation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="analytical_derivatives.html">Analytic Derivatives</a></li>
+<li class="toctree-l2"><a class="reference internal" href="numerical_derivatives.html">Numeric derivatives</a></li>
+<li class="toctree-l2"><a class="reference internal" href="automatic_derivatives.html">Automatic Derivatives</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Interfacing with Automatic Differentiation</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#a-function-that-returns-its-value">A function that returns its value</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#a-function-that-returns-its-value-and-derivative">A function that returns its value and derivative</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#a-function-that-is-defined-as-a-table-of-values">A function that is defined as a table of values</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="nnls_modeling.html">Modeling Non-linear Least Squares</a></li>
+<li class="toctree-l1"><a class="reference internal" href="nnls_solving.html">Solving Non-linear Least Squares</a></li>
+<li class="toctree-l1"><a class="reference internal" href="nnls_covariance.html">Covariance Estimation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="gradient_solver.html">General Unconstrained Minimization</a></li>
+<li class="toctree-l1"><a class="reference internal" href="faqs.html">FAQS, Tips &amp; Tricks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="users.html">Users</a></li>
+<li class="toctree-l1"><a class="reference internal" href="contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="version_history.html">Version History</a></li>
+<li class="toctree-l1"><a class="reference internal" href="bibliography.html">Bibliography</a></li>
+<li class="toctree-l1"><a class="reference internal" href="license.html">License</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="index.html">Ceres Solver</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+ 
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="index.html">Docs</a> &raquo;</li>
+      
+          <li><a href="derivatives.html">On Derivatives</a> &raquo;</li>
+      
+    <li>Interfacing with Automatic Differentiation</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="interfacing-with-automatic-differentiation">
+<span id="chapter-interfacing-with-automatic-differentiation"></span><h1>Interfacing with Automatic Differentiation<a class="headerlink" href="#interfacing-with-automatic-differentiation" title="Permalink to this headline">¶</a></h1>
+<p>Automatic differentiation is straightforward to use in cases where an
+explicit expression for the cost function is available. But this is
+not always possible. Often one has to interface with external routines
+or data. In this chapter we will consider a number of different ways
+of doing so.</p>
+<p>To do this, we will consider the problem of finding parameters
+<span class="math">\(\theta\)</span> and <span class="math">\(t\)</span> that solve an optimization problem of the
+form:</p>
+<div class="math">
+\[\begin{split}\min &amp; \quad \sum_i \left \|y_i - f\left (\|q_{i}\|^2\right) q_i
+\right \|^2\\
+\text{such that} &amp; \quad q_i = R(\theta) x_i + t\end{split}\]</div>
+<p>Here, <span class="math">\(R\)</span> is a two dimensional rotation matrix parameterized
+using the angle <span class="math">\(\theta\)</span> and <span class="math">\(t\)</span> is a two dimensional
+vector. <span class="math">\(f\)</span> is an external distortion function.</p>
+<p>We begin by considering the case, where we have a templated function
+<code class="code docutils literal"><span class="pre">TemplatedComputeDistortion</span></code> that can compute the function
+<span class="math">\(f\)</span>. Then the implementation of the corresponding residual
+functor is straightforward and will look as follows:</p>
+<div class="highlight-c++"><div class="highlight"><pre><span></span><span class="k">template</span> <span class="o">&lt;</span><span class="k">typename</span> <span class="n">T</span><span class="o">&gt;</span> <span class="n">T</span> <span class="n">TemplatedComputeDistortion</span><span class="p">(</span><span class="k">const</span> <span class="n">T</span> <span class="n">r2</span><span class="p">)</span> <span class="p">{</span>
+  <span class="k">const</span> <span class="kt">double</span> <span class="n">k1</span> <span class="o">=</span> <span class="mf">0.0082</span><span class="p">;</span>
+  <span class="k">const</span> <span class="kt">double</span> <span class="n">k2</span> <span class="o">=</span> <span class="mf">0.000023</span><span class="p">;</span>
+  <span class="k">return</span> <span class="mf">1.0</span> <span class="o">+</span> <span class="n">k1</span> <span class="o">*</span> <span class="n">y2</span> <span class="o">+</span> <span class="n">k2</span> <span class="o">*</span> <span class="n">r2</span> <span class="o">*</span> <span class="n">r2</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="k">struct</span> <span class="n">Affine2DWithDistortion</span> <span class="p">{</span>
+  <span class="n">Affine2DWithDistortion</span><span class="p">(</span><span class="k">const</span> <span class="kt">double</span> <span class="n">x_in</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="k">const</span> <span class="kt">double</span> <span class="n">y_in</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span> <span class="p">{</span>
+    <span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">x_in</span><span class="p">[</span><span class="mi">0</span><span class="p">];</span>
+    <span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">x_in</span><span class="p">[</span><span class="mi">1</span><span class="p">];</span>
+    <span class="n">y</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">y_in</span><span class="p">[</span><span class="mi">0</span><span class="p">];</span>
+    <span class="n">y</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">y_in</span><span class="p">[</span><span class="mi">1</span><span class="p">];</span>
+  <span class="p">}</span>
+
+  <span class="k">template</span> <span class="o">&lt;</span><span class="k">typename</span> <span class="n">T</span><span class="o">&gt;</span>
+  <span class="kt">bool</span> <span class="k">operator</span><span class="p">()(</span><span class="k">const</span> <span class="n">T</span><span class="o">*</span> <span class="n">theta</span><span class="p">,</span>
+                  <span class="k">const</span> <span class="n">T</span><span class="o">*</span> <span class="n">t</span><span class="p">,</span>
+                  <span class="n">T</span><span class="o">*</span> <span class="n">residuals</span><span class="p">)</span> <span class="k">const</span> <span class="p">{</span>
+    <span class="k">const</span> <span class="n">T</span> <span class="n">q_0</span> <span class="o">=</span>  <span class="n">cos</span><span class="p">(</span><span class="n">theta</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">*</span> <span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">sin</span><span class="p">(</span><span class="n">theta</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">*</span> <span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">t</span><span class="p">[</span><span class="mi">0</span><span class="p">];</span>
+    <span class="k">const</span> <span class="n">T</span> <span class="n">q_1</span> <span class="o">=</span>  <span class="n">sin</span><span class="p">(</span><span class="n">theta</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">*</span> <span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">cos</span><span class="p">(</span><span class="n">theta</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">*</span> <span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">t</span><span class="p">[</span><span class="mi">1</span><span class="p">];</span>
+<span class="hll">    <span class="k">const</span> <span class="n">T</span> <span class="n">f</span> <span class="o">=</span> <span class="n">TemplatedComputeDistortion</span><span class="p">(</span><span class="n">q_0</span> <span class="o">*</span> <span class="n">q_0</span> <span class="o">+</span> <span class="n">q_1</span> <span class="o">*</span> <span class="n">q_1</span><span class="p">);</span>
+</span>    <span class="n">residuals</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">y</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">f</span> <span class="o">*</span> <span class="n">q_0</span><span class="p">;</span>
+    <span class="n">residuals</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">y</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">f</span> <span class="o">*</span> <span class="n">q_1</span><span class="p">;</span>
+    <span class="k">return</span> <span class="nb">true</span><span class="p">;</span>
+  <span class="p">}</span>
+
+  <span class="kt">double</span> <span class="n">x</span><span class="p">[</span><span class="mi">2</span><span class="p">];</span>
+  <span class="kt">double</span> <span class="n">y</span><span class="p">[</span><span class="mi">2</span><span class="p">];</span>
+<span class="p">};</span>
+</pre></div>
+</div>
+<p>So far so good, but let us now consider three ways of defining
+<span class="math">\(f\)</span> which are not directly amenable to being used with automatic
+differentiation:</p>
+<ol class="arabic simple">
+<li>A non-templated function that evaluates its value.</li>
+<li>A function that evaluates its value and derivative.</li>
+<li>A function that is defined as a table of values to be interpolated.</li>
+</ol>
+<p>We will consider them in turn below.</p>
+<div class="section" id="a-function-that-returns-its-value">
+<h2>A function that returns its value<a class="headerlink" href="#a-function-that-returns-its-value" title="Permalink to this headline">¶</a></h2>
+<p>Suppose we were given a function <code class="code docutils literal"><span class="pre">ComputeDistortionValue</span></code> with
+the following signature</p>
+<div class="highlight-c++"><div class="highlight"><pre><span></span><span class="kt">double</span> <span class="nf">ComputeDistortionValue</span><span class="p">(</span><span class="kt">double</span> <span class="n">r2</span><span class="p">);</span>
+</pre></div>
+</div>
+<p>that computes the value of <span class="math">\(f\)</span>. The actual implementation of the
+function does not matter. Interfacing this function with
+<code class="code docutils literal"><span class="pre">Affine2DWithDistortion</span></code> is a three step process:</p>
+<ol class="arabic simple">
+<li>Wrap <code class="code docutils literal"><span class="pre">ComputeDistortionValue</span></code> into a functor
+<code class="code docutils literal"><span class="pre">ComputeDistortionValueFunctor</span></code>.</li>
+<li>Numerically differentiate <code class="code docutils literal"><span class="pre">ComputeDistortionValueFunctor</span></code>
+using <a class="reference internal" href="nnls_modeling.html#_CPPv2N5ceres23NumericDiffCostFunctionE" title="ceres::NumericDiffCostFunction"><code class="xref cpp cpp-class docutils literal"><span class="pre">NumericDiffCostFunction</span></code></a> to create a
+<a class="reference internal" href="nnls_modeling.html#_CPPv2N5ceres12CostFunctionE" title="ceres::CostFunction"><code class="xref cpp cpp-class docutils literal"><span class="pre">CostFunction</span></code></a>.</li>
+<li>Wrap the resulting <a class="reference internal" href="nnls_modeling.html#_CPPv2N5ceres12CostFunctionE" title="ceres::CostFunction"><code class="xref cpp cpp-class docutils literal"><span class="pre">CostFunction</span></code></a> object using
+<a class="reference internal" href="nnls_modeling.html#_CPPv2N5ceres21CostFunctionToFunctorE" title="ceres::CostFunctionToFunctor"><code class="xref cpp cpp-class docutils literal"><span class="pre">CostFunctionToFunctor</span></code></a>. The resulting object is a functor
+with a templated <code class="code docutils literal"><span class="pre">operator()</span></code> method, which pipes the
+Jacobian computed by <a class="reference internal" href="nnls_modeling.html#_CPPv2N5ceres23NumericDiffCostFunctionE" title="ceres::NumericDiffCostFunction"><code class="xref cpp cpp-class docutils literal"><span class="pre">NumericDiffCostFunction</span></code></a> into the
+approproate <code class="code docutils literal"><span class="pre">Jet</span></code> objects.</li>
+</ol>
+<p>An implementation of the above three steps looks as follows:</p>
+<div class="highlight-c++"><div class="highlight"><pre><span></span><span class="k">struct</span> <span class="n">ComputeDistortionValueFunctor</span> <span class="p">{</span>
+  <span class="kt">bool</span> <span class="k">operator</span><span class="p">()(</span><span class="k">const</span> <span class="kt">double</span><span class="o">*</span> <span class="n">r2</span><span class="p">,</span> <span class="kt">double</span><span class="o">*</span> <span class="n">value</span><span class="p">)</span> <span class="k">const</span> <span class="p">{</span>
+    <span class="o">*</span><span class="n">value</span> <span class="o">=</span> <span class="n">ComputeDistortionValue</span><span class="p">(</span><span class="n">r2</span><span class="p">[</span><span class="mi">0</span><span class="p">]);</span>
+    <span class="k">return</span> <span class="nb">true</span><span class="p">;</span>
+  <span class="p">}</span>
+<span class="p">};</span>
+
+<span class="k">struct</span> <span class="n">Affine2DWithDistortion</span> <span class="p">{</span>
+  <span class="n">Affine2DWithDistortion</span><span class="p">(</span><span class="k">const</span> <span class="kt">double</span> <span class="n">x_in</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="k">const</span> <span class="kt">double</span> <span class="n">y_in</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span> <span class="p">{</span>
+    <span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">x_in</span><span class="p">[</span><span class="mi">0</span><span class="p">];</span>
+    <span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">x_in</span><span class="p">[</span><span class="mi">1</span><span class="p">];</span>
+    <span class="n">y</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">y_in</span><span class="p">[</span><span class="mi">0</span><span class="p">];</span>
+    <span class="n">y</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">y_in</span><span class="p">[</span><span class="mi">1</span><span class="p">];</span>
+
+<span class="hll">    <span class="n">compute_distortion</span><span class="p">.</span><span class="n">reset</span><span class="p">(</span><span class="k">new</span> <span class="n">ceres</span><span class="o">::</span><span class="n">CostFunctionToFunctor</span><span class="o">&lt;</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="o">&gt;</span><span class="p">(</span>
+</span><span class="hll">         <span class="k">new</span> <span class="n">ceres</span><span class="o">::</span><span class="n">NumericDiffCostFunction</span><span class="o">&lt;</span><span class="n">ComputeDistortionValueFunctor</span><span class="p">,</span>
+</span><span class="hll">                                            <span class="n">ceres</span><span class="o">::</span><span class="n">CENTRAL</span><span class="p">,</span>
+</span><span class="hll">                                            <span class="mi">1</span><span class="p">,</span>
+</span><span class="hll">                                            <span class="mi">1</span><span class="o">&gt;</span><span class="p">(</span>
+</span><span class="hll">            <span class="k">new</span> <span class="n">ComputeDistortionValueFunctor</span><span class="p">)));</span>
+</span>  <span class="p">}</span>
+
+  <span class="k">template</span> <span class="o">&lt;</span><span class="k">typename</span> <span class="n">T</span><span class="o">&gt;</span>
+  <span class="kt">bool</span> <span class="k">operator</span><span class="p">()(</span><span class="k">const</span> <span class="n">T</span><span class="o">*</span> <span class="n">theta</span><span class="p">,</span> <span class="k">const</span> <span class="n">T</span><span class="o">*</span> <span class="n">t</span><span class="p">,</span> <span class="n">T</span><span class="o">*</span> <span class="n">residuals</span><span class="p">)</span> <span class="k">const</span> <span class="p">{</span>
+    <span class="k">const</span> <span class="n">T</span> <span class="n">q_0</span> <span class="o">=</span> <span class="n">cos</span><span class="p">(</span><span class="n">theta</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">*</span> <span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">sin</span><span class="p">(</span><span class="n">theta</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">*</span> <span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">t</span><span class="p">[</span><span class="mi">0</span><span class="p">];</span>
+    <span class="k">const</span> <span class="n">T</span> <span class="n">q_1</span> <span class="o">=</span> <span class="n">sin</span><span class="p">(</span><span class="n">theta</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">*</span> <span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">cos</span><span class="p">(</span><span class="n">theta</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">*</span> <span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">t</span><span class="p">[</span><span class="mi">1</span><span class="p">];</span>
+    <span class="k">const</span> <span class="n">T</span> <span class="n">r2</span> <span class="o">=</span> <span class="n">q_0</span> <span class="o">*</span> <span class="n">q_0</span> <span class="o">+</span> <span class="n">q_1</span> <span class="o">*</span> <span class="n">q_1</span><span class="p">;</span>
+    <span class="n">T</span> <span class="n">f</span><span class="p">;</span>
+<span class="hll">    <span class="p">(</span><span class="o">*</span><span class="n">compute_distortion</span><span class="p">)(</span><span class="o">&amp;</span><span class="n">r2</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">f</span><span class="p">);</span>
+</span>    <span class="n">residuals</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">y</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">f</span> <span class="o">*</span> <span class="n">q_0</span><span class="p">;</span>
+    <span class="n">residuals</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">y</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">f</span> <span class="o">*</span> <span class="n">q_1</span><span class="p">;</span>
+    <span class="k">return</span> <span class="nb">true</span><span class="p">;</span>
+  <span class="p">}</span>
+
+  <span class="kt">double</span> <span class="n">x</span><span class="p">[</span><span class="mi">2</span><span class="p">];</span>
+  <span class="kt">double</span> <span class="n">y</span><span class="p">[</span><span class="mi">2</span><span class="p">];</span>
+  <span class="n">std</span><span class="o">::</span><span class="n">unique_ptr</span><span class="o">&lt;</span><span class="n">ceres</span><span class="o">::</span><span class="n">CostFunctionToFunctor</span><span class="o">&lt;</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="o">&gt;</span> <span class="o">&gt;</span> <span class="n">compute_distortion</span><span class="p">;</span>
+<span class="p">};</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="a-function-that-returns-its-value-and-derivative">
+<h2>A function that returns its value and derivative<a class="headerlink" href="#a-function-that-returns-its-value-and-derivative" title="Permalink to this headline">¶</a></h2>
+<p>Now suppose we are given a function <code class="code docutils literal"><span class="pre">ComputeDistortionValue</span></code>
+thatis able to compute its value and optionally its Jacobian on demand
+and has the following signature:</p>
+<div class="highlight-c++"><div class="highlight"><pre><span></span><span class="kt">void</span> <span class="nf">ComputeDistortionValueAndJacobian</span><span class="p">(</span><span class="kt">double</span> <span class="n">r2</span><span class="p">,</span>
+                                       <span class="kt">double</span><span class="o">*</span> <span class="n">value</span><span class="p">,</span>
+                                       <span class="kt">double</span><span class="o">*</span> <span class="n">jacobian</span><span class="p">);</span>
+</pre></div>
+</div>
+<p>Again, the actual implementation of the function does not
+matter. Interfacing this function with <code class="code docutils literal"><span class="pre">Affine2DWithDistortion</span></code>
+is a two step process:</p>
+<ol class="arabic simple">
+<li>Wrap <code class="code docutils literal"><span class="pre">ComputeDistortionValueAndJacobian</span></code> into a
+<a class="reference internal" href="nnls_modeling.html#_CPPv2N5ceres12CostFunctionE" title="ceres::CostFunction"><code class="xref cpp cpp-class docutils literal"><span class="pre">CostFunction</span></code></a> object which we call
+<code class="code docutils literal"><span class="pre">ComputeDistortionFunction</span></code>.</li>
+<li>Wrap the resulting <code class="xref cpp cpp-class docutils literal"><span class="pre">ComputeDistortionFunction</span></code> object using
+<a class="reference internal" href="nnls_modeling.html#_CPPv2N5ceres21CostFunctionToFunctorE" title="ceres::CostFunctionToFunctor"><code class="xref cpp cpp-class docutils literal"><span class="pre">CostFunctionToFunctor</span></code></a>. The resulting object is a functor
+with a templated <code class="code docutils literal"><span class="pre">operator()</span></code> method, which pipes the
+Jacobian computed by <a class="reference internal" href="nnls_modeling.html#_CPPv2N5ceres23NumericDiffCostFunctionE" title="ceres::NumericDiffCostFunction"><code class="xref cpp cpp-class docutils literal"><span class="pre">NumericDiffCostFunction</span></code></a> into the
+approproate <code class="code docutils literal"><span class="pre">Jet</span></code> objects.</li>
+</ol>
+<p>The resulting code will look as follows:</p>
+<div class="highlight-c++"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">ComputeDistortionFunction</span> <span class="o">:</span> <span class="k">public</span> <span class="n">ceres</span><span class="o">::</span><span class="n">SizedCostFunction</span><span class="o">&lt;</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="o">&gt;</span> <span class="p">{</span>
+ <span class="k">public</span><span class="o">:</span>
+  <span class="k">virtual</span> <span class="kt">bool</span> <span class="n">Evaluate</span><span class="p">(</span><span class="kt">double</span> <span class="k">const</span><span class="o">*</span> <span class="k">const</span><span class="o">*</span> <span class="n">parameters</span><span class="p">,</span>
+                        <span class="kt">double</span><span class="o">*</span> <span class="n">residuals</span><span class="p">,</span>
+                        <span class="kt">double</span><span class="o">**</span> <span class="n">jacobians</span><span class="p">)</span> <span class="k">const</span> <span class="p">{</span>
+    <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">jacobians</span><span class="p">)</span> <span class="p">{</span>
+      <span class="n">ComputeDistortionValueAndJacobian</span><span class="p">(</span><span class="n">parameters</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span> <span class="n">residuals</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">);</span>
+    <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+      <span class="n">ComputeDistortionValueAndJacobian</span><span class="p">(</span><span class="n">parameters</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span> <span class="n">residuals</span><span class="p">,</span> <span class="n">jacobians</span><span class="p">[</span><span class="mi">0</span><span class="p">]);</span>
+    <span class="p">}</span>
+    <span class="k">return</span> <span class="nb">true</span><span class="p">;</span>
+  <span class="p">}</span>
+<span class="p">};</span>
+
+<span class="k">struct</span> <span class="n">Affine2DWithDistortion</span> <span class="p">{</span>
+  <span class="n">Affine2DWithDistortion</span><span class="p">(</span><span class="k">const</span> <span class="kt">double</span> <span class="n">x_in</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="k">const</span> <span class="kt">double</span> <span class="n">y_in</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span> <span class="p">{</span>
+    <span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">x_in</span><span class="p">[</span><span class="mi">0</span><span class="p">];</span>
+    <span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">x_in</span><span class="p">[</span><span class="mi">1</span><span class="p">];</span>
+    <span class="n">y</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">y_in</span><span class="p">[</span><span class="mi">0</span><span class="p">];</span>
+    <span class="n">y</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">y_in</span><span class="p">[</span><span class="mi">1</span><span class="p">];</span>
+<span class="hll">    <span class="n">compute_distortion</span><span class="p">.</span><span class="n">reset</span><span class="p">(</span>
+</span><span class="hll">        <span class="k">new</span> <span class="n">ceres</span><span class="o">::</span><span class="n">CostFunctionToFunctor</span><span class="o">&lt;</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="o">&gt;</span><span class="p">(</span><span class="k">new</span> <span class="n">ComputeDistortionFunction</span><span class="p">));</span>
+</span>  <span class="p">}</span>
+
+  <span class="k">template</span> <span class="o">&lt;</span><span class="k">typename</span> <span class="n">T</span><span class="o">&gt;</span>
+  <span class="kt">bool</span> <span class="k">operator</span><span class="p">()(</span><span class="k">const</span> <span class="n">T</span><span class="o">*</span> <span class="n">theta</span><span class="p">,</span>
+                  <span class="k">const</span> <span class="n">T</span><span class="o">*</span> <span class="n">t</span><span class="p">,</span>
+                  <span class="n">T</span><span class="o">*</span> <span class="n">residuals</span><span class="p">)</span> <span class="k">const</span> <span class="p">{</span>
+    <span class="k">const</span> <span class="n">T</span> <span class="n">q_0</span> <span class="o">=</span>  <span class="n">cos</span><span class="p">(</span><span class="n">theta</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">*</span> <span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">sin</span><span class="p">(</span><span class="n">theta</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">*</span> <span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">t</span><span class="p">[</span><span class="mi">0</span><span class="p">];</span>
+    <span class="k">const</span> <span class="n">T</span> <span class="n">q_1</span> <span class="o">=</span>  <span class="n">sin</span><span class="p">(</span><span class="n">theta</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">*</span> <span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">cos</span><span class="p">(</span><span class="n">theta</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">*</span> <span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">t</span><span class="p">[</span><span class="mi">1</span><span class="p">];</span>
+    <span class="k">const</span> <span class="n">T</span> <span class="n">r2</span> <span class="o">=</span> <span class="n">q_0</span> <span class="o">*</span> <span class="n">q_0</span> <span class="o">+</span> <span class="n">q_1</span> <span class="o">*</span> <span class="n">q_1</span><span class="p">;</span>
+    <span class="n">T</span> <span class="n">f</span><span class="p">;</span>
+<span class="hll">    <span class="p">(</span><span class="o">*</span><span class="n">compute_distortion</span><span class="p">)(</span><span class="o">&amp;</span><span class="n">r2</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">f</span><span class="p">);</span>
+</span>    <span class="n">residuals</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">y</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">f</span> <span class="o">*</span> <span class="n">q_0</span><span class="p">;</span>
+    <span class="n">residuals</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">y</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">f</span> <span class="o">*</span> <span class="n">q_1</span><span class="p">;</span>
+    <span class="k">return</span> <span class="nb">true</span><span class="p">;</span>
+  <span class="p">}</span>
+
+  <span class="kt">double</span> <span class="n">x</span><span class="p">[</span><span class="mi">2</span><span class="p">];</span>
+  <span class="kt">double</span> <span class="n">y</span><span class="p">[</span><span class="mi">2</span><span class="p">];</span>
+  <span class="n">std</span><span class="o">::</span><span class="n">unique_ptr</span><span class="o">&lt;</span><span class="n">ceres</span><span class="o">::</span><span class="n">CostFunctionToFunctor</span><span class="o">&lt;</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="o">&gt;</span> <span class="o">&gt;</span> <span class="n">compute_distortion</span><span class="p">;</span>
+<span class="p">};</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="a-function-that-is-defined-as-a-table-of-values">
+<h2>A function that is defined as a table of values<a class="headerlink" href="#a-function-that-is-defined-as-a-table-of-values" title="Permalink to this headline">¶</a></h2>
+<p>The third and final case we will consider is where the function
+<span class="math">\(f\)</span> is defined as a table of values on the interval <span class="math">\([0,
+100)\)</span>, with a value for each integer.</p>
+<div class="highlight-c++"><div class="highlight"><pre><span></span><span class="n">vector</span><span class="o">&lt;</span><span class="kt">double</span><span class="o">&gt;</span> <span class="n">distortion_values</span><span class="p">;</span>
+</pre></div>
+</div>
+<p>There are many ways of interpolating a table of values. Perhaps the
+simplest and most common method is linear interpolation. But it is not
+a great idea to use linear interpolation because the interpolating
+function is not differentiable at the sample points.</p>
+<p>A simple (well behaved) differentiable interpolation is the <a class="reference external" href="http://en.wikipedia.org/wiki/Cubic_Hermite_spline">Cubic
+Hermite Spline</a>. Ceres Solver
+ships with routines to perform Cubic &amp; Bi-Cubic interpolation that is
+automatic differentiation friendly.</p>
+<p>Using Cubic interpolation requires first constructing a
+<code class="xref cpp cpp-class docutils literal"><span class="pre">Grid1D</span></code> object to wrap the table of values and then
+constructing a <a class="reference internal" href="nnls_modeling.html#_CPPv2N5ceres17CubicInterpolatorE" title="ceres::CubicInterpolator"><code class="xref cpp cpp-class docutils literal"><span class="pre">CubicInterpolator</span></code></a> object using it.</p>
+<p>The resulting code will look as follows:</p>
+<div class="highlight-c++"><div class="highlight"><pre><span></span><span class="k">struct</span> <span class="n">Affine2DWithDistortion</span> <span class="p">{</span>
+  <span class="n">Affine2DWithDistortion</span><span class="p">(</span><span class="k">const</span> <span class="kt">double</span> <span class="n">x_in</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span>
+                         <span class="k">const</span> <span class="kt">double</span> <span class="n">y_in</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span>
+                         <span class="k">const</span> <span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="kt">double</span><span class="o">&gt;&amp;</span> <span class="n">distortion_values</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">x_in</span><span class="p">[</span><span class="mi">0</span><span class="p">];</span>
+    <span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">x_in</span><span class="p">[</span><span class="mi">1</span><span class="p">];</span>
+    <span class="n">y</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">y_in</span><span class="p">[</span><span class="mi">0</span><span class="p">];</span>
+    <span class="n">y</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">y_in</span><span class="p">[</span><span class="mi">1</span><span class="p">];</span>
+
+<span class="hll">    <span class="n">grid</span><span class="p">.</span><span class="n">reset</span><span class="p">(</span><span class="k">new</span> <span class="n">ceres</span><span class="o">::</span><span class="n">Grid1D</span><span class="o">&lt;</span><span class="kt">double</span><span class="p">,</span> <span class="mi">1</span><span class="o">&gt;</span><span class="p">(</span>
+</span><span class="hll">        <span class="o">&amp;</span><span class="n">distortion_values</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="mi">0</span><span class="p">,</span> <span class="n">distortion_values</span><span class="p">.</span><span class="n">size</span><span class="p">()));</span>
+</span><span class="hll">    <span class="n">compute_distortion</span><span class="p">.</span><span class="n">reset</span><span class="p">(</span>
+</span><span class="hll">        <span class="k">new</span> <span class="n">ceres</span><span class="o">::</span><span class="n">CubicInterpolator</span><span class="o">&lt;</span><span class="n">ceres</span><span class="o">::</span><span class="n">Grid1D</span><span class="o">&lt;</span><span class="kt">double</span><span class="p">,</span> <span class="mi">1</span><span class="o">&gt;</span> <span class="o">&gt;</span><span class="p">(</span><span class="o">*</span><span class="n">grid</span><span class="p">));</span>
+</span>  <span class="p">}</span>
+
+  <span class="k">template</span> <span class="o">&lt;</span><span class="k">typename</span> <span class="n">T</span><span class="o">&gt;</span>
+  <span class="kt">bool</span> <span class="k">operator</span><span class="p">()(</span><span class="k">const</span> <span class="n">T</span><span class="o">*</span> <span class="n">theta</span><span class="p">,</span>
+                  <span class="k">const</span> <span class="n">T</span><span class="o">*</span> <span class="n">t</span><span class="p">,</span>
+                  <span class="n">T</span><span class="o">*</span> <span class="n">residuals</span><span class="p">)</span> <span class="k">const</span> <span class="p">{</span>
+    <span class="k">const</span> <span class="n">T</span> <span class="n">q_0</span> <span class="o">=</span>  <span class="n">cos</span><span class="p">(</span><span class="n">theta</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">*</span> <span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">sin</span><span class="p">(</span><span class="n">theta</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">*</span> <span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">t</span><span class="p">[</span><span class="mi">0</span><span class="p">];</span>
+    <span class="k">const</span> <span class="n">T</span> <span class="n">q_1</span> <span class="o">=</span>  <span class="n">sin</span><span class="p">(</span><span class="n">theta</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">*</span> <span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">cos</span><span class="p">(</span><span class="n">theta</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">*</span> <span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">t</span><span class="p">[</span><span class="mi">1</span><span class="p">];</span>
+    <span class="k">const</span> <span class="n">T</span> <span class="n">r2</span> <span class="o">=</span> <span class="n">q_0</span> <span class="o">*</span> <span class="n">q_0</span> <span class="o">+</span> <span class="n">q_1</span> <span class="o">*</span> <span class="n">q_1</span><span class="p">;</span>
+    <span class="n">T</span> <span class="n">f</span><span class="p">;</span>
+<span class="hll">    <span class="n">compute_distortion</span><span class="o">-&gt;</span><span class="n">Evaluate</span><span class="p">(</span><span class="n">r2</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">f</span><span class="p">);</span>
+</span>    <span class="n">residuals</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">y</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">f</span> <span class="o">*</span> <span class="n">q_0</span><span class="p">;</span>
+    <span class="n">residuals</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">y</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">f</span> <span class="o">*</span> <span class="n">q_1</span><span class="p">;</span>
+    <span class="k">return</span> <span class="nb">true</span><span class="p">;</span>
+  <span class="p">}</span>
+
+  <span class="kt">double</span> <span class="n">x</span><span class="p">[</span><span class="mi">2</span><span class="p">];</span>
+  <span class="kt">double</span> <span class="n">y</span><span class="p">[</span><span class="mi">2</span><span class="p">];</span>
+<span class="hll">  <span class="n">std</span><span class="o">::</span><span class="n">unique_ptr</span><span class="o">&lt;</span><span class="n">ceres</span><span class="o">::</span><span class="n">Grid1D</span><span class="o">&lt;</span><span class="kt">double</span><span class="p">,</span> <span class="mi">1</span><span class="o">&gt;</span> <span class="o">&gt;</span> <span class="n">grid</span><span class="p">;</span>
+</span><span class="hll">  <span class="n">std</span><span class="o">::</span><span class="n">unique_ptr</span><span class="o">&lt;</span><span class="n">ceres</span><span class="o">::</span><span class="n">CubicInterpolator</span><span class="o">&lt;</span><span class="n">ceres</span><span class="o">::</span><span class="n">Grid1D</span><span class="o">&lt;</span><span class="kt">double</span><span class="p">,</span> <span class="mi">1</span><span class="o">&gt;</span> <span class="o">&gt;</span> <span class="o">&gt;</span> <span class="n">compute_distortion</span><span class="p">;</span>
+</span><span class="p">};</span>
+</pre></div>
+</div>
+<p>In the above example we used <code class="xref cpp cpp-class docutils literal"><span class="pre">Grid1D</span></code> and
+<a class="reference internal" href="nnls_modeling.html#_CPPv2N5ceres17CubicInterpolatorE" title="ceres::CubicInterpolator"><code class="xref cpp cpp-class docutils literal"><span class="pre">CubicInterpolator</span></code></a> to interpolate a one dimensional table of
+values. <code class="xref cpp cpp-class docutils literal"><span class="pre">Grid2D</span></code> combined with <a class="reference internal" href="nnls_modeling.html#_CPPv2N5ceres17CubicInterpolatorE" title="ceres::CubicInterpolator"><code class="xref cpp cpp-class docutils literal"><span class="pre">CubicInterpolator</span></code></a> lets
+the user to interpolate two dimensional tables of values. Note that
+neither <code class="xref cpp cpp-class docutils literal"><span class="pre">Grid1D</span></code> or <code class="xref cpp cpp-class docutils literal"><span class="pre">Grid2D</span></code> are limited to scalar
+valued functions, they also work with vector valued functions.</p>
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="nnls_modeling.html" class="btn btn-neutral float-right" title="Modeling Non-linear Least Squares" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="automatic_derivatives.html" class="btn btn-neutral" title="Automatic Derivatives" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2016 Google Inc.
+
+    </p>
+  </div> 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'1.13.0',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS_HTML">
+      MathJax.Hub.Config({
+          "HTML-CSS": {
+            availableFonts: ["TeX"]
+          }
+        });
+      </script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+  
+ 
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+  ga('create', 'UA-49769510-1', 'ceres-solver.org');
+  ga('send', 'pageview');
+</script>
+
+
+</body>
+</html>

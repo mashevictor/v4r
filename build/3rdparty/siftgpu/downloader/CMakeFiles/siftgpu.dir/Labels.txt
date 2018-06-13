@@ -1,0 +1,14 @@
+# Target labels
+ siftgpu
+# Source files and their labels
+/home/victor/software/v4r/build/3rdparty/siftgpu/downloader/CMakeFiles/siftgpu
+/home/victor/software/v4r/build/3rdparty/siftgpu/downloader/CMakeFiles/siftgpu.rule
+/home/victor/software/v4r/build/3rdparty/siftgpu/downloader/CMakeFiles/siftgpu-complete.rule
+/home/victor/software/v4r/build/3rdparty/siftgpu/stamp/siftgpu-install.rule
+/home/victor/software/v4r/build/3rdparty/siftgpu/stamp/siftgpu-mkdir.rule
+/home/victor/software/v4r/build/3rdparty/siftgpu/stamp/siftgpu-download.rule
+/home/victor/software/v4r/build/3rdparty/siftgpu/stamp/siftgpu-update.rule
+/home/victor/software/v4r/build/3rdparty/siftgpu/stamp/siftgpu-patch.rule
+/home/victor/software/v4r/build/3rdparty/siftgpu/stamp/siftgpu-configure.rule
+/home/victor/software/v4r/build/3rdparty/siftgpu/stamp/siftgpu-build.rule
+/home/victor/software/v4r/build/3rdparty/siftgpu/stamp/siftgpu-ROBUST_PATCH.rule

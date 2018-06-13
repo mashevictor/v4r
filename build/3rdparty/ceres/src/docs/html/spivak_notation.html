@@ -1,0 +1,267 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Spivak Notation &mdash; Ceres Solver</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+    <link rel="top" title="Ceres Solver" href="index.html"/>
+        <link rel="up" title="On Derivatives" href="derivatives.html"/>
+        <link rel="next" title="Analytic Derivatives" href="analytical_derivatives.html"/>
+        <link rel="prev" title="On Derivatives" href="derivatives.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="index.html" class="icon icon-home"> Ceres Solver
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                1.13
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="features.html">Why?</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorial.html">Tutorial</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="derivatives.html">On Derivatives</a><ul class="current">
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Spivak Notation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="analytical_derivatives.html">Analytic Derivatives</a></li>
+<li class="toctree-l2"><a class="reference internal" href="numerical_derivatives.html">Numeric derivatives</a></li>
+<li class="toctree-l2"><a class="reference internal" href="automatic_derivatives.html">Automatic Derivatives</a></li>
+<li class="toctree-l2"><a class="reference internal" href="interfacing_with_autodiff.html">Interfacing with Automatic Differentiation</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="nnls_modeling.html">Modeling Non-linear Least Squares</a></li>
+<li class="toctree-l1"><a class="reference internal" href="nnls_solving.html">Solving Non-linear Least Squares</a></li>
+<li class="toctree-l1"><a class="reference internal" href="nnls_covariance.html">Covariance Estimation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="gradient_solver.html">General Unconstrained Minimization</a></li>
+<li class="toctree-l1"><a class="reference internal" href="faqs.html">FAQS, Tips &amp; Tricks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="users.html">Users</a></li>
+<li class="toctree-l1"><a class="reference internal" href="contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="version_history.html">Version History</a></li>
+<li class="toctree-l1"><a class="reference internal" href="bibliography.html">Bibliography</a></li>
+<li class="toctree-l1"><a class="reference internal" href="license.html">License</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="index.html">Ceres Solver</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+ 
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="index.html">Docs</a> &raquo;</li>
+      
+          <li><a href="derivatives.html">On Derivatives</a> &raquo;</li>
+      
+    <li>Spivak Notation</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="spivak-notation">
+<span id="chapter-spivak-notation"></span><h1>Spivak Notation<a class="headerlink" href="#spivak-notation" title="Permalink to this headline">¶</a></h1>
+<p>To preserve our collective sanities, we will use Spivak&#8217;s notation for
+derivatives. It is a functional notation that makes reading and
+reasoning about expressions involving derivatives simple.</p>
+<p>For a univariate function <span class="math">\(f\)</span>, <span class="math">\(f(a)\)</span> denotes its value at
+<span class="math">\(a\)</span>. <span class="math">\(Df\)</span> denotes its first derivative, and
+<span class="math">\(Df(a)\)</span> is the derivative evaluated at <span class="math">\(a\)</span>, i.e</p>
+<div class="math">
+\[Df(a) = \left . \frac{d}{dx} f(x) \right |_{x = a}\]</div>
+<p><span class="math">\(D^kf\)</span> denotes the <span class="math">\(k^{\text{th}}\)</span> derivative of <span class="math">\(f\)</span>.</p>
+<p>For a bi-variate function <span class="math">\(g(x,y)\)</span>. <span class="math">\(D_1g\)</span> and
+<span class="math">\(D_2g\)</span> denote the partial derivatives of <span class="math">\(g\)</span> w.r.t the
+first and second variable respectively. In the classical notation this
+is equivalent to saying:</p>
+<div class="math">
+\[D_1 g = \frac{\partial}{\partial x}g(x,y) \text{ and }  D_2 g  = \frac{\partial}{\partial y}g(x,y).\]</div>
+<p><span class="math">\(Dg\)</span> denotes the Jacobian of <cite>g</cite>, i.e.,</p>
+<div class="math">
+\[Dg = \begin{bmatrix} D_1g &amp; D_2g \end{bmatrix}\]</div>
+<p>More generally for a multivariate function <span class="math">\(g:\mathbb{R}^n
+\longrightarrow \mathbb{R}^m\)</span>, <span class="math">\(Dg\)</span> denotes the <span class="math">\(m\times
+n\)</span> Jacobian matrix. <span class="math">\(D_i g\)</span> is the partial derivative of
+<span class="math">\(g\)</span> w.r.t the <span class="math">\(i^{\text{th}}\)</span> coordinate and the
+<span class="math">\(i^{\text{th}}\)</span> column of <span class="math">\(Dg\)</span>.</p>
+<p>Finally, <span class="math">\(D^2_1g\)</span> and <span class="math">\(D_1D_2g\)</span> have the obvious meaning
+as higher order partial derivatives.</p>
+<p>For more see Michael Spivak&#8217;s book <a class="reference external" href="https://www.amazon.com/Calculus-Manifolds-Approach-Classical-Theorems/dp/0805390219">Calculus on Manifolds</a>
+or a brief discussion of the <a class="reference external" href="http://www.vendian.org/mncharity/dir3/dxdoc/">merits of this notation</a> by
+Mitchell N. Charity.</p>
+</div>
+
+
+           </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="analytical_derivatives.html" class="btn btn-neutral float-right" title="Analytic Derivatives" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="derivatives.html" class="btn btn-neutral" title="On Derivatives" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2016 Google Inc.
+
+    </p>
+  </div> 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'1.13.0',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS_HTML">
+      MathJax.Hub.Config({
+          "HTML-CSS": {
+            availableFonts: ["TeX"]
+          }
+        });
+      </script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+  
+ 
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+  ga('create', 'UA-49769510-1', 'ceres-solver.org');
+  ga('send', 'pageview');
+</script>
+
+
+</body>
+</html>

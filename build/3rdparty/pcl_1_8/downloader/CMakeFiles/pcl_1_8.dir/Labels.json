@@ -1,0 +1,46 @@
+{
+	"sources" : 
+	[
+		{
+			"file" : "/home/victor/software/v4r/build/3rdparty/pcl_1_8/downloader/CMakeFiles/pcl_1_8"
+		},
+		{
+			"file" : "/home/victor/software/v4r/build/3rdparty/pcl_1_8/downloader/CMakeFiles/pcl_1_8.rule"
+		},
+		{
+			"file" : "/home/victor/software/v4r/build/3rdparty/pcl_1_8/downloader/CMakeFiles/pcl_1_8-complete.rule"
+		},
+		{
+			"file" : "/home/victor/software/v4r/build/3rdparty/pcl_1_8/stamp/pcl_1_8-install.rule"
+		},
+		{
+			"file" : "/home/victor/software/v4r/build/3rdparty/pcl_1_8/stamp/pcl_1_8-mkdir.rule"
+		},
+		{
+			"file" : "/home/victor/software/v4r/build/3rdparty/pcl_1_8/stamp/pcl_1_8-download.rule"
+		},
+		{
+			"file" : "/home/victor/software/v4r/build/3rdparty/pcl_1_8/stamp/pcl_1_8-update.rule"
+		},
+		{
+			"file" : "/home/victor/software/v4r/build/3rdparty/pcl_1_8/stamp/pcl_1_8-patch.rule"
+		},
+		{
+			"file" : "/home/victor/software/v4r/build/3rdparty/pcl_1_8/stamp/pcl_1_8-configure.rule"
+		},
+		{
+			"file" : "/home/victor/software/v4r/build/3rdparty/pcl_1_8/stamp/pcl_1_8-build.rule"
+		},
+		{
+			"file" : "/home/victor/software/v4r/build/3rdparty/pcl_1_8/stamp/pcl_1_8-ROBUST_PATCH.rule"
+		}
+	],
+	"target" : 
+	{
+		"labels" : 
+		[
+			"pcl_1_8"
+		],
+		"name" : "pcl_1_8"
+	}
+}

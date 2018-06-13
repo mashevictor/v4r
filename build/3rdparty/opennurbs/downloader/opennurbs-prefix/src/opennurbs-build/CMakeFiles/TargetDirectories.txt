@@ -1,0 +1,7 @@
+/home/victor/software/v4r/build/3rdparty/opennurbs/downloader/opennurbs-prefix/src/opennurbs-build/CMakeFiles/install.dir
+/home/victor/software/v4r/build/3rdparty/opennurbs/downloader/opennurbs-prefix/src/opennurbs-build/CMakeFiles/list_install_components.dir
+/home/victor/software/v4r/build/3rdparty/opennurbs/downloader/opennurbs-prefix/src/opennurbs-build/CMakeFiles/rebuild_cache.dir
+/home/victor/software/v4r/build/3rdparty/opennurbs/downloader/opennurbs-prefix/src/opennurbs-build/CMakeFiles/opennurbs.dir
+/home/victor/software/v4r/build/3rdparty/opennurbs/downloader/opennurbs-prefix/src/opennurbs-build/CMakeFiles/install/local.dir
+/home/victor/software/v4r/build/3rdparty/opennurbs/downloader/opennurbs-prefix/src/opennurbs-build/CMakeFiles/install/strip.dir
+/home/victor/software/v4r/build/3rdparty/opennurbs/downloader/opennurbs-prefix/src/opennurbs-build/CMakeFiles/edit_cache.dir

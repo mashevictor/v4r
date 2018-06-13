@@ -1,0 +1,46 @@
+{
+	"sources" : 
+	[
+		{
+			"file" : "/home/victor/software/v4r/build/3rdparty/metslib/downloader/CMakeFiles/metslib"
+		},
+		{
+			"file" : "/home/victor/software/v4r/build/3rdparty/metslib/downloader/CMakeFiles/metslib.rule"
+		},
+		{
+			"file" : "/home/victor/software/v4r/build/3rdparty/metslib/downloader/CMakeFiles/metslib-complete.rule"
+		},
+		{
+			"file" : "/home/victor/software/v4r/build/3rdparty/metslib/stamp/metslib-install.rule"
+		},
+		{
+			"file" : "/home/victor/software/v4r/build/3rdparty/metslib/stamp/metslib-mkdir.rule"
+		},
+		{
+			"file" : "/home/victor/software/v4r/build/3rdparty/metslib/stamp/metslib-download.rule"
+		},
+		{
+			"file" : "/home/victor/software/v4r/build/3rdparty/metslib/stamp/metslib-update.rule"
+		},
+		{
+			"file" : "/home/victor/software/v4r/build/3rdparty/metslib/stamp/metslib-patch.rule"
+		},
+		{
+			"file" : "/home/victor/software/v4r/build/3rdparty/metslib/stamp/metslib-configure.rule"
+		},
+		{
+			"file" : "/home/victor/software/v4r/build/3rdparty/metslib/stamp/metslib-build.rule"
+		},
+		{
+			"file" : "/home/victor/software/v4r/build/3rdparty/metslib/stamp/metslib-ROBUST_PATCH.rule"
+		}
+	],
+	"target" : 
+	{
+		"labels" : 
+		[
+			"metslib"
+		],
+		"name" : "metslib"
+	}
+}

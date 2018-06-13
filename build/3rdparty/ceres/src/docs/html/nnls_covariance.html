@@ -1,0 +1,577 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Covariance Estimation &mdash; Ceres Solver</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+    <link rel="top" title="Ceres Solver" href="index.html"/>
+        <link rel="next" title="General Unconstrained Minimization" href="gradient_solver.html"/>
+        <link rel="prev" title="Solving Non-linear Least Squares" href="nnls_solving.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="index.html" class="icon icon-home"> Ceres Solver
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                1.13
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="features.html">Why?</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorial.html">Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="derivatives.html">On Derivatives</a></li>
+<li class="toctree-l1"><a class="reference internal" href="nnls_modeling.html">Modeling Non-linear Least Squares</a></li>
+<li class="toctree-l1"><a class="reference internal" href="nnls_solving.html">Solving Non-linear Least Squares</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Covariance Estimation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#introduction">Introduction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#gauge-invariance">Gauge Invariance</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#covariance"><code class="docutils literal"><span class="pre">Covariance</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#rank-of-the-jacobian">Rank of the Jacobian</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#example-usage">Example Usage</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="gradient_solver.html">General Unconstrained Minimization</a></li>
+<li class="toctree-l1"><a class="reference internal" href="faqs.html">FAQS, Tips &amp; Tricks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="users.html">Users</a></li>
+<li class="toctree-l1"><a class="reference internal" href="contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="version_history.html">Version History</a></li>
+<li class="toctree-l1"><a class="reference internal" href="bibliography.html">Bibliography</a></li>
+<li class="toctree-l1"><a class="reference internal" href="license.html">License</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="index.html">Ceres Solver</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+ 
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="index.html">Docs</a> &raquo;</li>
+      
+    <li>Covariance Estimation</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="covariance-estimation">
+<span id="chapter-nnls-covariance"></span><h1>Covariance Estimation<a class="headerlink" href="#covariance-estimation" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="introduction">
+<h2>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h2>
+<p>One way to assess the quality of the solution returned by a non-linear
+least squares solver is to analyze the covariance of the solution.</p>
+<p>Let us consider the non-linear regression problem</p>
+<div class="math">
+\[y = f(x) + N(0, I)\]</div>
+<p>i.e., the observation <span class="math">\(y\)</span> is a random non-linear function of the
+independent variable <span class="math">\(x\)</span> with mean <span class="math">\(f(x)\)</span> and identity
+covariance. Then the maximum likelihood estimate of <span class="math">\(x\)</span> given
+observations <span class="math">\(y\)</span> is the solution to the non-linear least squares
+problem:</p>
+<div class="math">
+\[x^* = \arg \min_x \|f(x)\|^2\]</div>
+<p>And the covariance of <span class="math">\(x^*\)</span> is given by</p>
+<div class="math">
+\[C(x^*) = \left(J'(x^*)J(x^*)\right)^{-1}\]</div>
+<p>Here <span class="math">\(J(x^*)\)</span> is the Jacobian of <span class="math">\(f\)</span> at <span class="math">\(x^*\)</span>. The
+above formula assumes that <span class="math">\(J(x^*)\)</span> has full column rank.</p>
+<p>If <span class="math">\(J(x^*)\)</span> is rank deficient, then the covariance matrix <span class="math">\(C(x^*)\)</span>
+is also rank deficient and is given by the Moore-Penrose pseudo inverse.</p>
+<div class="math">
+\[C(x^*) =  \left(J'(x^*)J(x^*)\right)^{\dagger}\]</div>
+<p>Note that in the above, we assumed that the covariance matrix for
+<span class="math">\(y\)</span> was identity. This is an important assumption. If this is
+not the case and we have</p>
+<div class="math">
+\[y = f(x) + N(0, S)\]</div>
+<p>Where <span class="math">\(S\)</span> is a positive semi-definite matrix denoting the
+covariance of <span class="math">\(y\)</span>, then the maximum likelihood problem to be
+solved is</p>
+<div class="math">
+\[x^* = \arg \min_x f'(x) S^{-1} f(x)\]</div>
+<p>and the corresponding covariance estimate of <span class="math">\(x^*\)</span> is given by</p>
+<div class="math">
+\[C(x^*) = \left(J'(x^*) S^{-1} J(x^*)\right)^{-1}\]</div>
+<p>So, if it is the case that the observations being fitted to have a
+covariance matrix not equal to identity, then it is the user&#8217;s
+responsibility that the corresponding cost functions are correctly
+scaled, e.g. in the above case the cost function for this problem
+should evaluate <span class="math">\(S^{-1/2} f(x)\)</span> instead of just <span class="math">\(f(x)\)</span>,
+where <span class="math">\(S^{-1/2}\)</span> is the inverse square root of the covariance
+matrix <span class="math">\(S\)</span>.</p>
+</div>
+<div class="section" id="gauge-invariance">
+<h2>Gauge Invariance<a class="headerlink" href="#gauge-invariance" title="Permalink to this headline">¶</a></h2>
+<p>In structure from motion (3D reconstruction) problems, the
+reconstruction is ambiguous upto a similarity transform. This is
+known as a <em>Gauge Ambiguity</em>. Handling Gauges correctly requires the
+use of SVD or custom inversion algorithms. For small problems the
+user can use the dense algorithm. For more details see the work of
+Kanatani &amp; Morris <a class="reference internal" href="bibliography.html#kanatanimorris" id="id1">[KanataniMorris]</a>.</p>
+</div>
+<div class="section" id="covariance">
+<h2><a class="reference internal" href="#_CPPv2N5ceres10CovarianceE" title="ceres::Covariance"><code class="xref cpp cpp-class docutils literal"><span class="pre">Covariance</span></code></a><a class="headerlink" href="#covariance" title="Permalink to this headline">¶</a></h2>
+<p><a class="reference internal" href="#_CPPv2N5ceres10CovarianceE" title="ceres::Covariance"><code class="xref cpp cpp-class docutils literal"><span class="pre">Covariance</span></code></a> allows the user to evaluate the covariance for a
+non-linear least squares problem and provides random access to its
+blocks. The computation assumes that the cost functions compute
+residuals such that their covariance is identity.</p>
+<p>Since the computation of the covariance matrix requires computing the
+inverse of a potentially large matrix, this can involve a rather large
+amount of time and memory. However, it is usually the case that the
+user is only interested in a small part of the covariance
+matrix. Quite often just the block diagonal. <a class="reference internal" href="#_CPPv2N5ceres10CovarianceE" title="ceres::Covariance"><code class="xref cpp cpp-class docutils literal"><span class="pre">Covariance</span></code></a>
+allows the user to specify the parts of the covariance matrix that she
+is interested in and then uses this information to only compute and
+store those parts of the covariance matrix.</p>
+</div>
+<div class="section" id="rank-of-the-jacobian">
+<h2>Rank of the Jacobian<a class="headerlink" href="#rank-of-the-jacobian" title="Permalink to this headline">¶</a></h2>
+<p>As we noted above, if the Jacobian is rank deficient, then the inverse
+of <span class="math">\(J'J\)</span> is not defined and instead a pseudo inverse needs to be
+computed.</p>
+<p>The rank deficiency in <span class="math">\(J\)</span> can be <em>structural</em> &#8211; columns
+which are always known to be zero or <em>numerical</em> &#8211; depending on the
+exact values in the Jacobian.</p>
+<p>Structural rank deficiency occurs when the problem contains parameter
+blocks that are constant. This class correctly handles structural rank
+deficiency like that.</p>
+<p>Numerical rank deficiency, where the rank of the matrix cannot be
+predicted by its sparsity structure and requires looking at its
+numerical values is more complicated. Here again there are two
+cases.</p>
+<blockquote>
+<div><ol class="loweralpha simple">
+<li>The rank deficiency arises from overparameterization. e.g., a
+four dimensional quaternion used to parameterize <span class="math">\(SO(3)\)</span>,
+which is a three dimensional manifold. In cases like this, the
+user should use an appropriate
+<a class="reference internal" href="nnls_modeling.html#_CPPv2N5ceres21LocalParameterizationE" title="ceres::LocalParameterization"><code class="xref cpp cpp-class docutils literal"><span class="pre">LocalParameterization</span></code></a>. Not only will this lead to better
+numerical behaviour of the Solver, it will also expose the rank
+deficiency to the <a class="reference internal" href="#_CPPv2N5ceres10CovarianceE" title="ceres::Covariance"><code class="xref cpp cpp-class docutils literal"><span class="pre">Covariance</span></code></a> object so that it can
+handle it correctly.</li>
+<li>More general numerical rank deficiency in the Jacobian requires
+the computation of the so called Singular Value Decomposition
+(SVD) of <span class="math">\(J'J\)</span>. We do not know how to do this for large
+sparse matrices efficiently. For small and moderate sized
+problems this is done using dense linear algebra.</li>
+</ol>
+</div></blockquote>
+<p><a class="reference internal" href="#_CPPv2N5ceres10Covariance7OptionsE" title="ceres::Covariance::Options"><code class="xref cpp cpp-class docutils literal"><span class="pre">Covariance::Options</span></code></a></p>
+<dl class="class">
+<dt id="_CPPv2N5ceres10Covariance7OptionsE">
+<span id="ceres::Covariance::Options"></span><em class="property">class </em><code class="descclassname">Covariance::</code><code class="descname">Options</code><a class="headerlink" href="#_CPPv2N5ceres10Covariance7OptionsE" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="member">
+<dt id="_CPPv2N10Covariance7Options11num_threadsE">
+<span id="ceres::Covariance::Options::num_threads__i"></span>int <code class="descclassname">Covariance::Options::</code><code class="descname">num_threads</code><a class="headerlink" href="#_CPPv2N10Covariance7Options11num_threadsE" title="Permalink to this definition">¶</a></dt>
+<dd><p>Default: <code class="docutils literal"><span class="pre">1</span></code></p>
+<p>Number of threads to be used for evaluating the Jacobian and
+estimation of covariance.</p>
+</dd></dl>
+
+<dl class="member">
+<dt id="_CPPv2N10Covariance7Options34sparse_linear_algebra_library_typeE">
+<span id="ceres::Covariance::Options::sparse_linear_algebra_library_type__SparseLinearAlgebraLibraryType"></span>SparseLinearAlgebraLibraryType <code class="descclassname">Covariance::Options::</code><code class="descname">sparse_linear_algebra_library_type</code><a class="headerlink" href="#_CPPv2N10Covariance7Options34sparse_linear_algebra_library_typeE" title="Permalink to this definition">¶</a></dt>
+<dd><p>Default: <code class="docutils literal"><span class="pre">SUITE_SPARSE</span></code> Ceres Solver is built with support for
+<a class="reference external" href="http://faculty.cse.tamu.edu/davis/suitesparse.html">SuiteSparse</a>
+and <code class="docutils literal"><span class="pre">EIGEN_SPARSE</span></code> otherwise. Note that <code class="docutils literal"><span class="pre">EIGEN_SPARSE</span></code> is
+always available.</p>
+</dd></dl>
+
+<dl class="member">
+<dt id="_CPPv2N10Covariance7Options14algorithm_typeE">
+<span id="ceres::Covariance::Options::algorithm_type__CovarianceAlgorithmType"></span>CovarianceAlgorithmType <code class="descclassname">Covariance::Options::</code><code class="descname">algorithm_type</code><a class="headerlink" href="#_CPPv2N10Covariance7Options14algorithm_typeE" title="Permalink to this definition">¶</a></dt>
+<dd><p>Default: <code class="docutils literal"><span class="pre">SPARSE_QR</span></code></p>
+<p>Ceres supports two different algorithms for covariance estimation,
+which represent different tradeoffs in speed, accuracy and
+reliability.</p>
+<ol class="arabic">
+<li><p class="first"><code class="docutils literal"><span class="pre">SPARSE_QR</span></code> uses the sparse QR factorization algorithm to
+compute the decomposition</p>
+<blockquote>
+<div><div class="math">
+\[\begin{split}QR &amp;= J\\
+\left(J^\top J\right)^{-1} &amp;= \left(R^\top R\right)^{-1}\end{split}\]</div>
+</div></blockquote>
+<p>The speed of this algorithm depends on the sparse linear algebra
+library being used. <code class="docutils literal"><span class="pre">Eigen</span></code>&#8216;s sparse QR factorization is a
+moderately fast algorithm suitable for small to medium sized
+matrices. For best performance we recommend using
+<code class="docutils literal"><span class="pre">SuiteSparseQR</span></code> which is enabled by setting
+<code class="xref cpp cpp-member docutils literal"><span class="pre">Covaraince::Options::sparse_linear_algebra_library_type</span></code>
+to <code class="docutils literal"><span class="pre">SUITE_SPARSE</span></code>.</p>
+<p>Neither <code class="docutils literal"><span class="pre">SPARSE_QR</span></code> cannot compute the covariance if the
+Jacobian is rank deficient.</p>
+</li>
+<li><p class="first"><code class="docutils literal"><span class="pre">DENSE_SVD</span></code> uses <code class="docutils literal"><span class="pre">Eigen</span></code>&#8216;s <code class="docutils literal"><span class="pre">JacobiSVD</span></code> to perform the
+computations. It computes the singular value decomposition</p>
+<div class="math">
+\[U S V^\top = J\]</div>
+<p>and then uses it to compute the pseudo inverse of J&#8217;J as</p>
+<div class="math">
+\[(J'J)^{\dagger} = V  S^{\dagger}  V^\top\]</div>
+<p>It is an accurate but slow method and should only be used for
+small to moderate sized problems. It can handle full-rank as
+well as rank deficient Jacobians.</p>
+</li>
+</ol>
+</dd></dl>
+
+<dl class="member">
+<dt id="_CPPv2N10Covariance7Options31min_reciprocal_condition_numberE">
+<span id="ceres::Covariance::Options::min_reciprocal_condition_number__i"></span>int <code class="descclassname">Covariance::Options::</code><code class="descname">min_reciprocal_condition_number</code><a class="headerlink" href="#_CPPv2N10Covariance7Options31min_reciprocal_condition_numberE" title="Permalink to this definition">¶</a></dt>
+<dd><p>Default: <span class="math">\(10^{-14}\)</span></p>
+<p>If the Jacobian matrix is near singular, then inverting <span class="math">\(J'J\)</span>
+will result in unreliable results, e.g, if</p>
+<div class="math">
+\[\begin{split}J = \begin{bmatrix}
+    1.0&amp; 1.0 \\
+    1.0&amp; 1.0000001
+    \end{bmatrix}\end{split}\]</div>
+<p>which is essentially a rank deficient matrix, we have</p>
+<div class="math">
+\[\begin{split}(J'J)^{-1} = \begin{bmatrix}
+             2.0471e+14&amp;  -2.0471e+14 \\
+             -2.0471e+14   2.0471e+14
+             \end{bmatrix}\end{split}\]</div>
+<p>This is not a useful result. Therefore, by default
+<a class="reference internal" href="#_CPPv2N5ceres10Covariance7ComputeERK6vectorI4pairIPKdPKdEEP7Problem" title="ceres::Covariance::Compute"><code class="xref cpp cpp-func docutils literal"><span class="pre">Covariance::Compute()</span></code></a> will return <code class="docutils literal"><span class="pre">false</span></code> if a rank
+deficient Jacobian is encountered. How rank deficiency is detected
+depends on the algorithm being used.</p>
+<ol class="arabic">
+<li><p class="first"><code class="docutils literal"><span class="pre">DENSE_SVD</span></code></p>
+<div class="math">
+\[\frac{\sigma_{\text{min}}}{\sigma_{\text{max}}}  &lt; \sqrt{\text{min_reciprocal_condition_number}}\]</div>
+<p>where <span class="math">\(\sigma_{\text{min}}\)</span> and
+<span class="math">\(\sigma_{\text{max}}\)</span> are the minimum and maxiumum
+singular values of <span class="math">\(J\)</span> respectively.</p>
+</li>
+<li><p class="first"><code class="docutils literal"><span class="pre">SPARSE_QR</span></code></p>
+<blockquote>
+<div><div class="math">
+\[\operatorname{rank}(J) &lt; \operatorname{num\_col}(J)\]</div>
+<p>Here <span class="math">\(\operatorname{rank}(J)\)</span> is the estimate of the rank
+of <span class="math">\(J\)</span> returned by the sparse QR factorization
+algorithm. It is a fairly reliable indication of rank
+deficiency.</p>
+</div></blockquote>
+</li>
+</ol>
+</dd></dl>
+
+<dl class="member">
+<dt id="_CPPv2N10Covariance7Options15null_space_rankE">
+<span id="ceres::Covariance::Options::null_space_rank__i"></span>int <code class="descclassname">Covariance::Options::</code><code class="descname">null_space_rank</code><a class="headerlink" href="#_CPPv2N10Covariance7Options15null_space_rankE" title="Permalink to this definition">¶</a></dt>
+<dd><p>When using <code class="docutils literal"><span class="pre">DENSE_SVD</span></code>, the user has more control in dealing
+with singular and near singular covariance matrices.</p>
+<p>As mentioned above, when the covariance matrix is near singular,
+instead of computing the inverse of <span class="math">\(J'J\)</span>, the Moore-Penrose
+pseudoinverse of <span class="math">\(J'J\)</span> should be computed.</p>
+<p>If <span class="math">\(J'J\)</span> has the eigen decomposition <span class="math">\((\lambda_i,
+e_i)\)</span>, where <span class="math">\(\lambda_i\)</span> is the <span class="math">\(i^\textrm{th}\)</span>
+eigenvalue and <span class="math">\(e_i\)</span> is the corresponding eigenvector, then
+the inverse of <span class="math">\(J'J\)</span> is</p>
+<div class="math">
+\[(J'J)^{-1} = \sum_i \frac{1}{\lambda_i} e_i e_i'\]</div>
+<p>and computing the pseudo inverse involves dropping terms from this
+sum that correspond to small eigenvalues.</p>
+<p>How terms are dropped is controlled by
+<cite>min_reciprocal_condition_number</cite> and <cite>null_space_rank</cite>.</p>
+<p>If <cite>null_space_rank</cite> is non-negative, then the smallest
+<cite>null_space_rank</cite> eigenvalue/eigenvectors are dropped irrespective
+of the magnitude of <span class="math">\(\lambda_i\)</span>. If the ratio of the
+smallest non-zero eigenvalue to the largest eigenvalue in the
+truncated matrix is still below min_reciprocal_condition_number,
+then the <cite>Covariance::Compute()</cite> will fail and return <cite>false</cite>.</p>
+<p>Setting <cite>null_space_rank = -1</cite> drops all terms for which</p>
+<div class="math">
+\[\frac{\lambda_i}{\lambda_{\textrm{max}}} &lt; \textrm{min_reciprocal_condition_number}\]</div>
+<p>This option has no effect on <code class="docutils literal"><span class="pre">SPARSE_QR</span></code>.</p>
+</dd></dl>
+
+<dl class="member">
+<dt id="_CPPv2N10Covariance7Options19apply_loss_functionE">
+<span id="ceres::Covariance::Options::apply_loss_function__b"></span>bool <code class="descclassname">Covariance::Options::</code><code class="descname">apply_loss_function</code><a class="headerlink" href="#_CPPv2N10Covariance7Options19apply_loss_functionE" title="Permalink to this definition">¶</a></dt>
+<dd><p>Default: <cite>true</cite></p>
+<p>Even though the residual blocks in the problem may contain loss
+functions, setting <code class="docutils literal"><span class="pre">apply_loss_function</span></code> to false will turn off
+the application of the loss function to the output of the cost
+function and in turn its effect on the covariance.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="_CPPv2N5ceres10CovarianceE">
+<span id="ceres::Covariance"></span><em class="property">class </em><code class="descclassname"></code><code class="descname">Covariance</code><a class="headerlink" href="#_CPPv2N5ceres10CovarianceE" title="Permalink to this definition">¶</a></dt>
+<dd><p><a class="reference internal" href="#_CPPv2N5ceres10Covariance7OptionsE" title="ceres::Covariance::Options"><code class="xref cpp cpp-class docutils literal"><span class="pre">Covariance::Options</span></code></a> as the name implies is used to control
+the covariance estimation algorithm. Covariance estimation is a
+complicated and numerically sensitive procedure. Please read the
+entire documentation for <a class="reference internal" href="#_CPPv2N5ceres10Covariance7OptionsE" title="ceres::Covariance::Options"><code class="xref cpp cpp-class docutils literal"><span class="pre">Covariance::Options</span></code></a> before using
+<a class="reference internal" href="#_CPPv2N5ceres10CovarianceE" title="ceres::Covariance"><code class="xref cpp cpp-class docutils literal"><span class="pre">Covariance</span></code></a>.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="_CPPv2N5ceres10Covariance7ComputeERK6vectorI4pairIPKdPKdEEP7Problem">
+<span id="ceres::Covariance::Compute__vector:pair:doubleCP.doubleCP::CR.ProblemP"></span>bool <code class="descclassname">Covariance::</code><code class="descname">Compute</code><span class="sig-paren">(</span><em class="property">const</em> vector&lt;pair&lt;<em class="property">const</em> double *, <em class="property">const</em> double *&gt;&gt; &amp;<em>covariance_blocks</em>, <a class="reference internal" href="nnls_modeling.html#_CPPv2N5ceres7ProblemE" title="ceres::Problem">Problem</a> *<em>problem</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv2N5ceres10Covariance7ComputeERK6vectorI4pairIPKdPKdEEP7Problem" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute a part of the covariance matrix.</p>
+<p>The vector <code class="docutils literal"><span class="pre">covariance_blocks</span></code>, indexes into the covariance
+matrix block-wise using pairs of parameter blocks. This allows the
+covariance estimation algorithm to only compute and store these
+blocks.</p>
+<p>Since the covariance matrix is symmetric, if the user passes
+<code class="docutils literal"><span class="pre">&lt;block1,</span> <span class="pre">block2&gt;</span></code>, then <code class="docutils literal"><span class="pre">GetCovarianceBlock</span></code> can be called with
+<code class="docutils literal"><span class="pre">block1</span></code>, <code class="docutils literal"><span class="pre">block2</span></code> as well as <code class="docutils literal"><span class="pre">block2</span></code>, <code class="docutils literal"><span class="pre">block1</span></code>.</p>
+<p><code class="docutils literal"><span class="pre">covariance_blocks</span></code> cannot contain duplicates. Bad things will
+happen if they do.</p>
+<p>Note that the list of <code class="docutils literal"><span class="pre">covariance_blocks</span></code> is only used to
+determine what parts of the covariance matrix are computed. The
+full Jacobian is used to do the computation, i.e. they do not have
+an impact on what part of the Jacobian is used for computation.</p>
+<p>The return value indicates the success or failure of the covariance
+computation. Please see the documentation for
+<a class="reference internal" href="#_CPPv2N5ceres10Covariance7OptionsE" title="ceres::Covariance::Options"><code class="xref cpp cpp-class docutils literal"><span class="pre">Covariance::Options</span></code></a> for more on the conditions under which
+this function returns <code class="docutils literal"><span class="pre">false</span></code>.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="_CPPv2NK5ceres18GetCovarianceBlockEPKdPKdPd">
+<span id="ceres::GetCovarianceBlock__doubleCP.doubleCP.doublePC"></span>bool <code class="descclassname"></code><code class="descname">GetCovarianceBlock</code><span class="sig-paren">(</span><em class="property">const</em> double *<em>parameter_block1</em>, <em class="property">const</em> double *<em>parameter_block2</em>, double *<em>covariance_block</em><span class="sig-paren">)</span> <em class="property">const</em><a class="headerlink" href="#_CPPv2NK5ceres18GetCovarianceBlockEPKdPKdPd" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the block of the cross-covariance matrix corresponding to
+<code class="docutils literal"><span class="pre">parameter_block1</span></code> and <code class="docutils literal"><span class="pre">parameter_block2</span></code>.</p>
+<p>Compute must be called before the first call to <code class="docutils literal"><span class="pre">GetCovarianceBlock</span></code>
+and the pair <code class="docutils literal"><span class="pre">&lt;parameter_block1,</span> <span class="pre">parameter_block2&gt;</span></code> OR the pair
+<code class="docutils literal"><span class="pre">&lt;parameter_block2,</span> <span class="pre">parameter_block1&gt;</span></code> must have been present in the
+vector covariance_blocks when <code class="docutils literal"><span class="pre">Compute</span></code> was called. Otherwise
+<code class="docutils literal"><span class="pre">GetCovarianceBlock</span></code> will return false.</p>
+<p><code class="docutils literal"><span class="pre">covariance_block</span></code> must point to a memory location that can store
+a <code class="docutils literal"><span class="pre">parameter_block1_size</span> <span class="pre">x</span> <span class="pre">parameter_block2_size</span></code> matrix. The
+returned covariance will be a row-major matrix.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="_CPPv2NK5ceres32GetCovarianceBlockInTangentSpaceEPKdPKdPd">
+<span id="ceres::GetCovarianceBlockInTangentSpace__doubleCP.doubleCP.doublePC"></span>bool <code class="descclassname"></code><code class="descname">GetCovarianceBlockInTangentSpace</code><span class="sig-paren">(</span><em class="property">const</em> double *<em>parameter_block1</em>, <em class="property">const</em> double *<em>parameter_block2</em>, double *<em>covariance_block</em><span class="sig-paren">)</span> <em class="property">const</em><a class="headerlink" href="#_CPPv2NK5ceres32GetCovarianceBlockInTangentSpaceEPKdPKdPd" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the block of the cross-covariance matrix corresponding to
+<code class="docutils literal"><span class="pre">parameter_block1</span></code> and <code class="docutils literal"><span class="pre">parameter_block2</span></code>.
+Returns cross-covariance in the tangent space if a local
+parameterization is associated with either parameter block;
+else returns cross-covariance in the ambient space.</p>
+<p>Compute must be called before the first call to <code class="docutils literal"><span class="pre">GetCovarianceBlock</span></code>
+and the pair <code class="docutils literal"><span class="pre">&lt;parameter_block1,</span> <span class="pre">parameter_block2&gt;</span></code> OR the pair
+<code class="docutils literal"><span class="pre">&lt;parameter_block2,</span> <span class="pre">parameter_block1&gt;</span></code> must have been present in the
+vector covariance_blocks when <code class="docutils literal"><span class="pre">Compute</span></code> was called. Otherwise
+<code class="docutils literal"><span class="pre">GetCovarianceBlock</span></code> will return false.</p>
+<p><code class="docutils literal"><span class="pre">covariance_block</span></code> must point to a memory location that can store
+a <code class="docutils literal"><span class="pre">parameter_block1_local_size</span> <span class="pre">x</span> <span class="pre">parameter_block2_local_size</span></code> matrix. The
+returned covariance will be a row-major matrix.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="example-usage">
+<h2>Example Usage<a class="headerlink" href="#example-usage" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-c++"><div class="highlight"><pre><span></span><span class="kt">double</span> <span class="n">x</span><span class="p">[</span><span class="mi">3</span><span class="p">];</span>
+<span class="kt">double</span> <span class="n">y</span><span class="p">[</span><span class="mi">2</span><span class="p">];</span>
+
+<span class="n">Problem</span> <span class="n">problem</span><span class="p">;</span>
+<span class="n">problem</span><span class="p">.</span><span class="n">AddParameterBlock</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="mi">3</span><span class="p">);</span>
+<span class="n">problem</span><span class="p">.</span><span class="n">AddParameterBlock</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="mi">2</span><span class="p">);</span>
+<span class="o">&lt;</span><span class="n">Build</span> <span class="n">Problem</span><span class="o">&gt;</span>
+<span class="o">&lt;</span><span class="n">Solve</span> <span class="n">Problem</span><span class="o">&gt;</span>
+
+<span class="n">Covariance</span><span class="o">::</span><span class="n">Options</span> <span class="n">options</span><span class="p">;</span>
+<span class="n">Covariance</span> <span class="nf">covariance</span><span class="p">(</span><span class="n">options</span><span class="p">);</span>
+
+<span class="n">vector</span><span class="o">&lt;</span><span class="n">pair</span><span class="o">&lt;</span><span class="k">const</span> <span class="kt">double</span><span class="o">*</span><span class="p">,</span> <span class="k">const</span> <span class="kt">double</span><span class="o">*&gt;</span> <span class="o">&gt;</span> <span class="n">covariance_blocks</span><span class="p">;</span>
+<span class="n">covariance_blocks</span><span class="p">.</span><span class="n">push_back</span><span class="p">(</span><span class="n">make_pair</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">x</span><span class="p">));</span>
+<span class="n">covariance_blocks</span><span class="p">.</span><span class="n">push_back</span><span class="p">(</span><span class="n">make_pair</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">y</span><span class="p">));</span>
+<span class="n">covariance_blocks</span><span class="p">.</span><span class="n">push_back</span><span class="p">(</span><span class="n">make_pair</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">));</span>
+
+<span class="n">CHECK</span><span class="p">(</span><span class="n">covariance</span><span class="p">.</span><span class="n">Compute</span><span class="p">(</span><span class="n">covariance_blocks</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">problem</span><span class="p">));</span>
+
+<span class="kt">double</span> <span class="n">covariance_xx</span><span class="p">[</span><span class="mi">3</span> <span class="o">*</span> <span class="mi">3</span><span class="p">];</span>
+<span class="kt">double</span> <span class="n">covariance_yy</span><span class="p">[</span><span class="mi">2</span> <span class="o">*</span> <span class="mi">2</span><span class="p">];</span>
+<span class="kt">double</span> <span class="n">covariance_xy</span><span class="p">[</span><span class="mi">3</span> <span class="o">*</span> <span class="mi">2</span><span class="p">];</span>
+<span class="n">covariance</span><span class="p">.</span><span class="n">GetCovarianceBlock</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">covariance_xx</span><span class="p">)</span>
+<span class="n">covariance</span><span class="p">.</span><span class="n">GetCovarianceBlock</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">covariance_yy</span><span class="p">)</span>
+<span class="n">covariance</span><span class="p">.</span><span class="n">GetCovarianceBlock</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">covariance_xy</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="gradient_solver.html" class="btn btn-neutral float-right" title="General Unconstrained Minimization" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="nnls_solving.html" class="btn btn-neutral" title="Solving Non-linear Least Squares" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2016 Google Inc.
+
+    </p>
+  </div> 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'1.13.0',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS_HTML">
+      MathJax.Hub.Config({
+          "HTML-CSS": {
+            availableFonts: ["TeX"]
+          }
+        });
+      </script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+  
+ 
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+  ga('create', 'UA-49769510-1', 'ceres-solver.org');
+  ga('send', 'pageview');
+</script>
+
+
+</body>
+</html>

@@ -1,0 +1,14 @@
+# Target labels
+ radical
+# Source files and their labels
+/home/victor/software/v4r/build/3rdparty/radical/downloader/CMakeFiles/radical
+/home/victor/software/v4r/build/3rdparty/radical/downloader/CMakeFiles/radical.rule
+/home/victor/software/v4r/build/3rdparty/radical/downloader/CMakeFiles/radical-complete.rule
+/home/victor/software/v4r/build/3rdparty/radical/stamp/radical-install.rule
+/home/victor/software/v4r/build/3rdparty/radical/stamp/radical-mkdir.rule
+/home/victor/software/v4r/build/3rdparty/radical/stamp/radical-download.rule
+/home/victor/software/v4r/build/3rdparty/radical/stamp/radical-update.rule
+/home/victor/software/v4r/build/3rdparty/radical/stamp/radical-patch.rule
+/home/victor/software/v4r/build/3rdparty/radical/stamp/radical-configure.rule
+/home/victor/software/v4r/build/3rdparty/radical/stamp/radical-build.rule
+/home/victor/software/v4r/build/3rdparty/radical/stamp/radical-ROBUST_PATCH.rule

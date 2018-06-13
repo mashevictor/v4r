@@ -1,0 +1,11 @@
+# Hashes of file build rules.
+81cf293ee284258d264e93dd4e89e7e7 /home/victor/software/v4r/build/3rdparty/ceres/stamp/ceres-ROBUST_PATCH
+b65db3df74c4513d09ab803fd32cc122 /home/victor/software/v4r/build/3rdparty/ceres/stamp/ceres-build
+98fde62b7a5786ea45dee4d19873d19b /home/victor/software/v4r/build/3rdparty/ceres/stamp/ceres-configure
+ae52609de826ef3e26471aa54304c707 /home/victor/software/v4r/build/3rdparty/ceres/stamp/ceres-download
+5526150a60f748c8dc040f67a529dd82 /home/victor/software/v4r/build/3rdparty/ceres/stamp/ceres-install
+cd058281a2896b20a95b2e97a12b49d6 /home/victor/software/v4r/build/3rdparty/ceres/stamp/ceres-mkdir
+389e543043bb61bbc710d091e15dea83 /home/victor/software/v4r/build/3rdparty/ceres/stamp/ceres-patch
+68c5c0e23f906c3380768a9c5955b4f4 /home/victor/software/v4r/build/3rdparty/ceres/stamp/ceres-update
+5887614a6db27e08cb5fa326c908e0b5 CMakeFiles/ceres
+9c2dba99145dee9297b6258288ee52b9 CMakeFiles/ceres-complete

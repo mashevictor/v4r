@@ -1,0 +1,46 @@
+{
+	"sources" : 
+	[
+		{
+			"file" : "/home/victor/software/v4r/build/3rdparty/siftgpu/downloader/CMakeFiles/siftgpu"
+		},
+		{
+			"file" : "/home/victor/software/v4r/build/3rdparty/siftgpu/downloader/CMakeFiles/siftgpu.rule"
+		},
+		{
+			"file" : "/home/victor/software/v4r/build/3rdparty/siftgpu/downloader/CMakeFiles/siftgpu-complete.rule"
+		},
+		{
+			"file" : "/home/victor/software/v4r/build/3rdparty/siftgpu/stamp/siftgpu-install.rule"
+		},
+		{
+			"file" : "/home/victor/software/v4r/build/3rdparty/siftgpu/stamp/siftgpu-mkdir.rule"
+		},
+		{
+			"file" : "/home/victor/software/v4r/build/3rdparty/siftgpu/stamp/siftgpu-download.rule"
+		},
+		{
+			"file" : "/home/victor/software/v4r/build/3rdparty/siftgpu/stamp/siftgpu-update.rule"
+		},
+		{
+			"file" : "/home/victor/software/v4r/build/3rdparty/siftgpu/stamp/siftgpu-patch.rule"
+		},
+		{
+			"file" : "/home/victor/software/v4r/build/3rdparty/siftgpu/stamp/siftgpu-configure.rule"
+		},
+		{
+			"file" : "/home/victor/software/v4r/build/3rdparty/siftgpu/stamp/siftgpu-build.rule"
+		},
+		{
+			"file" : "/home/victor/software/v4r/build/3rdparty/siftgpu/stamp/siftgpu-ROBUST_PATCH.rule"
+		}
+	],
+	"target" : 
+	{
+		"labels" : 
+		[
+			"siftgpu"
+		],
+		"name" : "siftgpu"
+	}
+}
